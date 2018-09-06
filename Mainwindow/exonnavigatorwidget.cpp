@@ -179,7 +179,8 @@ void ExonNavigatorWidget::mousePressEvent(QMouseEvent *event)
             {
                 m_iSelectPos = pos.x();
                 update();
-                emit signalExonFocusPosition(ScreenPosToPeakPos(m_iSelectPos), exon.i_exonstartpos, exon.i_exonindex);
+                emit signalExonFocusPosition(m_vecExonIndex[m_Exoninfo.minExonIndex-1],ScreenPosToPeakPos(m_iSelectPos),
+                        exon.i_exonstartpos, exon.i_exonindex);
                 break;
             }
         } 

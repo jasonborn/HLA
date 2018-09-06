@@ -31,7 +31,8 @@ private:
     int ScreenPosToPeakPos(int newpos);
 
 signals:
-    void signalExonFocusPosition(int selectpos,int exonstart, int index);//选中的峰图pos，导航条起始pos,导航条index
+    //导航条起始pos,选中的峰图pos，选中的导航条起始pos,选中的导航条index
+    void signalExonFocusPosition(int startpos,int selectpos,int exonstart, int index);
 private:
     int m_iwidth;
     int m_iheight;

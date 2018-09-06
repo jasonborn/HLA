@@ -31,7 +31,7 @@ private:
 
 public slots:
     void slotSampleTreeItemChanged(QTreeWidgetItem *item, int col);
-    void slotExonFocusPosition(int selectpos, int exonstartpos, int index);
+    void slotExonFocusPosition(int startpos, int selectpos, int exonstartpos, int index);
 
 private:
     Ui::MainWindow *ui;

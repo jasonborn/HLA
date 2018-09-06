@@ -23,7 +23,7 @@ public:
     void SetBaseCPoint(int index,double x, double y);
     QPointF *getBaseAPoint(char type);
     void AddGeneLetter(GeneLetter &geneletter);
-    QVector<GeneLetter>& GetGeneLetter();
+    QList<GeneLetter>& GetGeneLetter();
 
     void SetFileName(QString &str);
     QString& GetFileName();
@@ -43,7 +43,8 @@ private:
     QPointF *base_g;
     QPointF *base_c;
     QString m_strFileName;
-    QVector<GeneLetter> m_vec_GeneLetter;
+    //QVector<GeneLetter> m_vec_GeneLetter;
+    QList<GeneLetter> m_list_GeneLetter;
 };
 
 

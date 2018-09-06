@@ -12,7 +12,9 @@
 #include "basealigntablewidget.h"
 #include <QtDebug>
 #include <QScrollBar>
+#include <QTime>
 
+QTime g_time;
 QT_CHARTS_USE_NAMESPACE
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -134,7 +136,6 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 {
     QString str_name = item->text(0);
     QString str_info = item->text(1);
-    qDebug()<<col<<str_name<<str_info;
 
     QStringList str_list = str_name.split('_');
     m_pMatchListWidget->SetTableData(str_list[0],"");
@@ -143,15 +144,18 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 
     m_pBaseAlignTableWidget->SetAlignTableData(str_list[0]);
 
+    g_time.start();
     m_pMultiPeakWidget->SetPeakData(str_list[0],str_info.left(1));
+    qDebug()<<g_time.elapsed();
 }
 
-void MainWindow::slotExonFocusPosition(int selectpos, int exonstartpos, int index)
+void MainWindow::slotExonFocusPosition(int startpos, int selectpos, int exonstartpos, int index)
 {
-    int i_sub = selectpos - exonstartpos;
-    m_pBaseAlignTableWidget->selectColumn(i_sub);
-    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(i_sub*20);//不能和峰图同步
+    int i_sub_table = selectpos - startpos;
+    m_pBaseAlignTableWidget->selectColumn(i_sub_table+1);
+    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition((i_sub_table+1)*20+230);//不能和峰图同步
 
+    int i_sub = selectpos - exonstartpos;
     m_pSampleTreeWidget->SetSelectItem(index);
     m_pMultiPeakWidget->SetSelectPos(i_sub);
 

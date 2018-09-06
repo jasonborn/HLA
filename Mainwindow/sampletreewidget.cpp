@@ -112,5 +112,18 @@ void SampleTreeWidget::SetTreeData()
 
 void SampleTreeWidget::SetSelectItem(int index)
 {
+    QString str_last_select = currentItem()->text(0);
+    QStringList str_list = str_last_select.split('_');
 
+    QString str = QString("%1F").arg(index);
+    QList<QTreeWidgetItem *> item_list = findItems(str,Qt::MatchRecursive,1);
+    foreach(QTreeWidgetItem *item, item_list)
+    {
+        if(item->text(0).contains(str_list[0]))
+        {
+            setCurrentItem(item);
+            emit itemClicked(item,0);
+            break;
+        }
+    }
 }

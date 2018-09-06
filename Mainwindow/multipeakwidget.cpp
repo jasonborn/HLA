@@ -6,10 +6,12 @@
 #include <QtAlgorithms>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QTime>
 
 const int PEAKLINEHIGHT = 200;
 const int HLINEHIGHT = 20;
 
+extern QTime g_time;
 PeakLine::PeakLine(long size):m_lsize(size)
 {
     m_loffset = 0;
@@ -71,12 +73,12 @@ QPointF * PeakLine::getBaseAPoint(char type)
 
 void PeakLine::AddGeneLetter(GeneLetter &geneletter)
 {
-    m_vec_GeneLetter.push_back(geneletter);
+    m_list_GeneLetter.push_back(geneletter);
 }
 
-QVector<GeneLetter>& PeakLine::GetGeneLetter()
+QList<GeneLetter>& PeakLine::GetGeneLetter()
 {
-    return m_vec_GeneLetter;
+    return m_list_GeneLetter;
 }
 
 void PeakLine::SetFileName(QString &str)
@@ -139,10 +141,14 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
         return;
     }
 
+
     m_vec_filetable.clear();
-    QVector<QSharedPointer<PeakLine>>().swap(m_vec_Peakline);//clear无法释放内存
+    m_vec_Peakline.clear();
+    //QVector<QSharedPointer<PeakLine>>().swap(m_vec_Peakline);//clear无法释放内存
+    qDebug()<<"clear"<<g_time.elapsed();
 
     SoapTypingDB::GetInstance()->getAlldataFormRealTime(str_samplename, str_exon, m_vec_filetable);
+    qDebug()<<"query"<<g_time.elapsed();
     int i_count_peak = m_vec_filetable.size();
     QVector<int> vec_left,vec_right; //以AlignEndPos为界，计算左右两边的长度
     for(int i=0;i<i_count_peak;i++)
@@ -155,6 +161,7 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
         vec_left.push_back(i_AlginEndPos);
         vec_right.push_back(i_right);
     }
+    qDebug()<<"first for"<<g_time.elapsed();
 
     QVector<int> vec_left_copy(vec_left);
     std::sort(vec_left.begin(),vec_left.end());
@@ -162,6 +169,8 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
 
     m_l_xSize = *(vec_left.crbegin()) + *(vec_right.crbegin());//取左右最大值，相加为总长度
     m_l_xSize *= m_x_step;
+
+    qDebug()<<"sort & "<<g_time.elapsed();
 
     for(int k=0;k<i_count_peak;k++)
     {
@@ -228,6 +237,7 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
             pPeakLine->SetBaseCPoint(i_index,pos_j,c_y);
         }
 
+        qDebug()<<"set peakline "<<g_time.elapsed();
 
         QByteArray baseseq = table.getBaseSequence();
         for(int i=0;i<i_basenum;i++)
@@ -240,6 +250,8 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
             pPeakLine->AddGeneLetter(geneletter);
         }
 
+        qDebug()<<"set letter "<<g_time.elapsed();
+
         m_vec_Peakline.push_back(pPeakLine);
     }
 
@@ -251,11 +263,17 @@ void MultiPeakWidget::paintEvent(QPaintEvent *event)
 {
     (void)event;
     QPainter pter(this);
+    //g_time.restart();
     DrawExcludeArea(&pter);
+    //qDebug()<<"DrawExcludeArea"<<g_time.elapsed();
     DrawSelectFrame(&pter);
+    //qDebug()<<"DrawSelectFrame"<<g_time.elapsed();
     DrawPeakLines(&pter);
+    //qDebug()<<"DrawPeakLines"<<g_time.elapsed();
     DrawHLines(&pter);
+    //qDebug()<<"DrawHLines"<<g_time.elapsed();
     DrawPeakHead(&pter);
+    //qDebug()<<"DrawPeakHead"<<g_time.elapsed();
 }
 
 void MultiPeakWidget::DrawPeakLines(QPainter *pter)
@@ -369,7 +387,7 @@ void MultiPeakWidget::DrawExcludeArea(QPainter *pter)
         int left_exclude,right_exclude;
         m_vec_Peakline[i]->GetExcludePos(left_exclude, right_exclude);
 
-        QVector<GeneLetter> &vec_geneLetter = m_vec_Peakline[i]->GetGeneLetter();
+        QList<GeneLetter> &vec_geneLetter = m_vec_Peakline[i]->GetGeneLetter();
         int w_left =  vec_geneLetter[left_exclude].pos.x();
         pter->drawRect(0,60+i_height, w_left,140);
         int w_right = vec_geneLetter[right_exclude-1].pos.x();
@@ -398,7 +416,7 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
         }
     }
 
-    QVector<GeneLetter> &vec_GeneLetter = m_vec_Peakline[m_index_PeakLine]->GetGeneLetter();
+    QList<GeneLetter> &vec_GeneLetter = m_vec_Peakline[m_index_PeakLine]->GetGeneLetter();
     int left_exclude,right_exclude;
     m_vec_Peakline[m_index_PeakLine]->GetExcludePos(left_exclude, right_exclude);
 
@@ -445,7 +463,7 @@ void MultiPeakWidget::keyPressEvent(QKeyEvent *event)
         qDebug()<<"keyPressEvent"<<type;
 
         QByteArray byetary("ATGCRYKMSWBDHVN-");
-        QVector<GeneLetter> &vec_GeneLetter = m_vec_Peakline[m_index_PeakLine]->GetGeneLetter();
+        QList<GeneLetter> &vec_GeneLetter = m_vec_Peakline[m_index_PeakLine]->GetGeneLetter();
         if(byetary.contains(type) && vec_GeneLetter[m_index_Select].type != type)
         {
             vec_GeneLetter[m_index_Select].oldtype = vec_GeneLetter[m_index_Select].type;
@@ -459,7 +477,7 @@ void MultiPeakWidget::SetSelectPos(int pos)
 {
     int left_exclude,right_exclude;
     m_vec_Peakline[0]->GetExcludePos(left_exclude, right_exclude);
-    QVector<GeneLetter> &vec_GeneLetter = m_vec_Peakline[0]->GetGeneLetter();
+    QList<GeneLetter> &vec_GeneLetter = m_vec_Peakline[0]->GetGeneLetter();
 
     int i_tmp = left_exclude + pos -1;
     m_select_pos = vec_GeneLetter[i_tmp].pos;
