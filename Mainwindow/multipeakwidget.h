@@ -51,6 +51,8 @@ private:
 
 class MultiPeakWidget:public QWidget
 {
+    Q_OBJECT
+
 public:
     MultiPeakWidget(QWidget *parent = nullptr);
     ~MultiPeakWidget();
@@ -69,6 +71,10 @@ private:
 
     void mousePressEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
+
+signals:
+    //index:当前导航条index colnum：选中的位置和left_exclude的差值
+    void signalPeakFocusPosition(int index, int colnum);
 private:
     QVector<Ab1FileTableBase> m_vec_filetable;
     int m_x_step;            //x轴间距

@@ -15,6 +15,9 @@ private:
     void InitUI();
     void clearBaseAlignTableSampleItem();
     void getTableHead(QStringList &head, int length, int start);
+
+private slots:
+    void onSliderMoved(int pos);
 private:
     int m_iRowNum;
     int m_iColNum;

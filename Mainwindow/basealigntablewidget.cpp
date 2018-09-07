@@ -3,12 +3,14 @@
 #include "DataBase/soaptypingdb.h"
 #include "Core/core.h"
 #include <QDebug>
+#include <QScrollBar>
 
 BaseAlignTableWidget::BaseAlignTableWidget()
 {
     m_iRowNum = 9;
     m_iColNum = 1200;
     InitUI();
+    connect(verticalScrollBar(),&QScrollBar::valueChanged,this,&BaseAlignTableWidget::onSliderMoved);
 }
 
 
@@ -305,4 +307,10 @@ void BaseAlignTableWidget::getTableHead(QStringList &head, int length, int start
             head<<"";
         }
     }
+}
+
+
+void BaseAlignTableWidget::onSliderMoved(int pos)
+{
+    qDebug()<<pos;
 }

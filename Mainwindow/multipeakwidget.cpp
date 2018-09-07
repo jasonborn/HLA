@@ -141,10 +141,9 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
         return;
     }
 
-
+    g_time.start();
     m_vec_filetable.clear();
     m_vec_Peakline.clear();
-    //QVector<QSharedPointer<PeakLine>>().swap(m_vec_Peakline);//clear无法释放内存
     qDebug()<<"clear"<<g_time.elapsed();
 
     SoapTypingDB::GetInstance()->getAlldataFormRealTime(str_samplename, str_exon, m_vec_filetable);
@@ -439,6 +438,8 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
                     m_index_Select = i-1;
                 }
                 m_select_pos = vec_GeneLetter[i-1].pos;
+                emit signalPeakFocusPosition(m_str_Exon.toInt(), i-1-left_exclude);
+                break;
             }
             else if (pos.x() > i_mid && pos.x() < i_high)
             {
@@ -449,6 +450,8 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
                     m_index_Select = i;
                 }
                 m_select_pos = vec_GeneLetter[i].pos;
+                emit signalPeakFocusPosition(m_str_Exon.toInt(), i-left_exclude);
+                break;
             }
         }
         update();
@@ -479,7 +482,7 @@ void MultiPeakWidget::SetSelectPos(int pos)
     m_vec_Peakline[0]->GetExcludePos(left_exclude, right_exclude);
     QList<GeneLetter> &vec_GeneLetter = m_vec_Peakline[0]->GetGeneLetter();
 
-    int i_tmp = left_exclude + pos -1;
+    int i_tmp = left_exclude + pos;
     m_select_pos = vec_GeneLetter[i_tmp].pos;
     update();
 

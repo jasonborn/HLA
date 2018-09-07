@@ -9,7 +9,7 @@ public:
     SampleTreeWidget(QWidget *parent = 0);
     ~SampleTreeWidget();
     void SetTreeData();
-    void SetSelectItem(int index);
+    void SetSelectItem(int index, QString &str_name);
 private:
     void InitUI();
 

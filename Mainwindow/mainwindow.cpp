@@ -86,6 +86,10 @@ void MainWindow::ConnectSignalandSolt()
     connect(m_pSampleTreeWidget, &QTreeWidget::itemClicked, this, &MainWindow::slotSampleTreeItemChanged);
     connect(m_pExonNavigatorWidget, &ExonNavigatorWidget::signalExonFocusPosition,
             this, &MainWindow::slotExonFocusPosition);
+
+    connect(m_pBaseAlignTableWidget, &QTableWidget::itemClicked, this, &MainWindow::slotAlignTableFocusPosition);
+
+    connect(m_pMultiPeakWidget, &MultiPeakWidget::signalPeakFocusPosition, this, &MainWindow::slotPeakFocusPosition);
 }
 
 void MainWindow::DisConnectSignalandSolt()
@@ -144,11 +148,22 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 
     m_pBaseAlignTableWidget->SetAlignTableData(str_list[0]);
 
-    g_time.start();
     m_pMultiPeakWidget->SetPeakData(str_list[0],str_info.left(1));
-    qDebug()<<g_time.elapsed();
+
+    int startpos;
+    int selectpos;
+    int exonstartpos;
+    m_pExonNavigatorWidget->setSelectFramePosition(str_info.left(1).toInt(), startpos, selectpos, exonstartpos);
+
+    int i_sub_table = selectpos - startpos;
+    m_pBaseAlignTableWidget->selectColumn(i_sub_table);
+    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition((i_sub_table+1)*20+230);//不能和峰图同步
+
+    int i_sub = selectpos - exonstartpos;
+    m_pMultiPeakWidget->SetSelectPos(i_sub);
 }
 
+//导航条起始pos,选中的峰图pos，选中的导航条起始pos,选中的导航条index
 void MainWindow::slotExonFocusPosition(int startpos, int selectpos, int exonstartpos, int index)
 {
     int i_sub_table = selectpos - startpos;
@@ -156,8 +171,35 @@ void MainWindow::slotExonFocusPosition(int startpos, int selectpos, int exonstar
     m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition((i_sub_table+1)*20+230);//不能和峰图同步
 
     int i_sub = selectpos - exonstartpos;
-    m_pSampleTreeWidget->SetSelectItem(index);
+    QString str_name;
+    m_pSampleTreeWidget->SetSelectItem(index, str_name);
+    QStringList str_list = str_name.split('_');
+    m_pMultiPeakWidget->SetPeakData(str_list[0],str_list[2].left(1));
     m_pMultiPeakWidget->SetSelectPos(i_sub);
+}
 
+void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
+{
+    int selectpos;
+    int exonstartpos;
+    int index;
 
+    int i_colnum = item->column();
+
+    m_pExonNavigatorWidget->SetSelectPos(i_colnum, selectpos, exonstartpos ,index);//不能和峰图同步
+
+    int i_sub = selectpos - exonstartpos;
+    QString str_name;
+    m_pSampleTreeWidget->SetSelectItem(index, str_name);
+    QStringList str_list = str_name.split('_');
+    m_pMultiPeakWidget->SetPeakData(str_list[0],str_list[2].left(1));
+    m_pMultiPeakWidget->SetSelectPos(i_sub);
+}
+
+void MainWindow::slotPeakFocusPosition(int index, int colnum)
+{
+    int test;
+    m_pExonNavigatorWidget->SetSelectFramePos(index, colnum,test);
+    m_pBaseAlignTableWidget->selectColumn(test+1);
+    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition((test+1)*20+230);
 }

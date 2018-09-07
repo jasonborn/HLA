@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "all_base_struct.h"
+#include <set>
 
 typedef struct _tagExon
 {
@@ -20,8 +21,11 @@ public:
     ExonNavigatorWidget(QWidget *parent = nullptr);
     ~ExonNavigatorWidget();
     void SetExonData(QString &str_sample, QString &str_gene);
+    void SetSelectPos(int colnum, int &selectpos,int &exonstartpos, int &index);
+    void setSelectFramePosition(int index, int &startpos, int &selectpos, int &exonstartpos);
+    void SetSelectFramePos(int index, int colnum ,int &test);
 private:
-
+    void CalcExonData();
     void paintEvent(QPaintEvent *event);
     void DrawExonArea(QPainter &paiter);
     void DrawSelectFrame(QPainter &paiter);
@@ -48,12 +52,14 @@ private:
     int m_igap;             //碱基导航条两端间距
     int m_isub_index;       //外显子index,最大最小值之差
     int m_isub_pos;         //外显子x坐标，最大最小之差
+    int m_iSelectindex;     //当前选中的导航条index
     double m_dXscale;       //计算每个碱基的间距
     QVector<Exon> m_vec_Exon; //导航条信息
     QVector<int> m_vecExonIndex;
     ExonNavigatorInfo m_Exoninfo;
     QString m_str_SampleName;
     QString m_str_GeneName;
+    std::set<int> m_set_mispos; //保存所有错配位置，自动排序
 };
 
 #endif // EXONNAVIGATORWIDGET_H

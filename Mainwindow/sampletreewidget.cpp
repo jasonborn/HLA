@@ -110,7 +110,7 @@ void SampleTreeWidget::SetTreeData()
     expandItem(topLevelItem(0));
 }
 
-void SampleTreeWidget::SetSelectItem(int index)
+void SampleTreeWidget::SetSelectItem(int index, QString &str_name)
 {
     QString str_last_select = currentItem()->text(0);
     QStringList str_list = str_last_select.split('_');
@@ -122,7 +122,8 @@ void SampleTreeWidget::SetSelectItem(int index)
         if(item->text(0).contains(str_list[0]))
         {
             setCurrentItem(item);
-            emit itemClicked(item,0);
+            str_name = item->text(0);
+            //emit itemClicked(item,0);
             break;
         }
     }

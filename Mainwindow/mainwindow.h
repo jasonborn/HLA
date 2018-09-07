@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <qscrollarea.h>
 #include <QTreeWidgetItem>
+#include <QTableWidgetItem>
 
 namespace Ui {
 class MainWindow;
@@ -32,7 +33,8 @@ private:
 public slots:
     void slotSampleTreeItemChanged(QTreeWidgetItem *item, int col);
     void slotExonFocusPosition(int startpos, int selectpos, int exonstartpos, int index);
-
+    void slotAlignTableFocusPosition(QTableWidgetItem *item);
+    void slotPeakFocusPosition(int index, int colnum);
 private:
     Ui::MainWindow *ui;
     SampleTreeWidget *m_pSampleTreeWidget;
