@@ -7,10 +7,16 @@
 #include <QMutex>
 #include <QTime>
 #include <QThread>
+#include <QFile>
+#include <QDir>
 #include "all_base_struct.h"
 
 QMutex g_mutex;
 QSqlDatabase SoapTypingDB::m_SqlDB;
+
+const int SAMPLE_TABLE_FIELD = 24;
+const int FILE_TABLE_FIELD = 30;
+const int GSSP_FILE_TABLE_FIELD =32;
 
 SoapTypingDB::SoapTypingDB()
 {
@@ -674,7 +680,7 @@ void SoapTypingDB::updateGsspFileResultToRealTimeDatabase(const QString &fileNam
     }
 }
 
-void SoapTypingDB::getSampleTreeDataFromRealTimeDatabase(QVector<SampleTreeInfo_t> &sampleTreeInfoList)
+void SoapTypingDB::getSampleTreeDataFromSampleTable(QMap<QString,SampleTreeInfo_t> &map_sampleTreeInfo)
 {
     QSqlQuery query(m_SqlDB);
     bool isSuccess = query.exec("SELECT sampleName,geneName,analysisType,markType FROM sampleTable ORDER BY sampleName DESC");
@@ -689,7 +695,8 @@ void SoapTypingDB::getSampleTreeDataFromRealTimeDatabase(QVector<SampleTreeInfo_
             sampleTreeInfo.markType = query.value(3).toInt();
             getFileTreeInfosFromRealTimeDatabase(sampleTreeInfo.sampleName, sampleTreeInfo.treeinfo);
             getGsspFileTreeInfosFromRealTimeDatabase(sampleTreeInfo.sampleName, sampleTreeInfo.treeinfo);
-            sampleTreeInfoList.push_front(sampleTreeInfo);
+            //sampleTreeInfoList.push_front(sampleTreeInfo);
+            map_sampleTreeInfo.insert(sampleTreeInfo.sampleName, sampleTreeInfo);
 
         }
     }
@@ -741,7 +748,6 @@ void SoapTypingDB::getGsspFileTreeInfosFromRealTimeDatabase(const QString &sampl
         }
     }
 }
-
 
 void SoapTypingDB::getResultDataFromsampleTable(const QString &sampleName, bool isCombined, QStringList &typeResult)
 {
@@ -969,3 +975,217 @@ void SoapTypingDB::getBaseAlignSampleInfo(const QString &sampleName, BaseAlignSa
         }
     }
 }
+
+
+void SoapTypingDB::getMarkTypeAndAnalysisFromSampleTable(const QString &sampleName, int &marktype, int &analysis)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT markType, analysisType FROM sampleTable WHERE sampleName =?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+    if (isSuccess)
+    {
+        while(query.next())
+        {
+            marktype = query.value(0).toInt();
+            analysis = query.value(1).toInt();
+            break;
+        }
+    }
+}
+
+void SoapTypingDB::setMarkTypeBySampleName(const QString &sampleName, int type)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("UPDATE sampleTable SET markType=? WHERE sampleName=?");
+    query.bindValue(0, type);
+    query.bindValue(1, sampleName);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+         qDebug()<<"setMarkTypeBySampleName error"<<sampleName;
+    }
+}
+
+void SoapTypingDB::getSetNoteFromSampleTable(const QString &sampleName, QString &noteinfo)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT setNote FROM sampleTable WHERE sampleName=?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            noteinfo =  query.value(0).toString();
+        }
+    }
+}
+
+void SoapTypingDB::updateSetNoteBySampleName(const QString &sampleName, const QString &info)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("UPDATE sampleTable SET setNote=? WHERE sampleName=?");
+    query.bindValue(0, info);
+    query.bindValue(1, sampleName);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+         qDebug()<<"updateSetNoteBySampleName error"<<sampleName;
+    }
+}
+
+void SoapTypingDB::deleteSample(const QString &sampleName)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("DELETE FROM sampleTable where sampleName=?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+         qDebug()<<"delete sample from sampleTable error:"<<sampleName;
+
+    query.prepare("delete from fileTable where sampleName=?");
+    query.bindValue(0, sampleName);
+    isSuccess = query.exec();
+    if(!isSuccess)
+         qDebug()<<"delete sample from fileTable error:"<<sampleName;
+
+    query.prepare("delete from gsspFileTable where sampleName=?");
+    query.bindValue(0, sampleName);
+    isSuccess = query.exec();
+    if(!isSuccess)
+         qDebug()<<"delete from gsspFileTable error:"<<sampleName;
+
+    return;
+}
+
+void SoapTypingDB::deleteFile(bool isgssp, const QString &str_filename)
+{
+    QSqlQuery query(m_SqlDB);
+    if(isgssp)
+    {
+        query.prepare("delete from gsspFileTable where fileName=?");
+    }
+    else
+    {
+        query.prepare("delete from fileTable where fileName=?");
+    }
+
+    query.bindValue(0, str_filename);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+        qDebug()<<"delete file from fileTable error:"<<str_filename;
+    }
+}
+
+
+void SoapTypingDB::saveSample(const QString &sampleName,const QString &samplePath,const QString &date)
+{
+    QFile file(samplePath);
+    if(!file.open(QIODevice::ReadWrite | QIODevice::Text))
+    {
+         qDebug()<<"Can't open the file!"<<endl;
+    }
+    QTextStream stream(&file);
+
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT * FROM sampleTable where sampleName=?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            if(!date.isEmpty())
+            {
+                if(!sampleName.contains("_"))
+                    stream << query.value(0).toString().append(QString("_%1").arg(date))<<"\n";
+                else
+                    stream << query.value(0).toString().split("_")[0].append(QString("_%1").arg(date))<<"\n";
+            }
+            else
+                stream << query.value(0).toString()<<"\n";
+            for(int i = 1; i < SAMPLE_TABLE_FIELD; i++)
+                stream << query.value(i).toString()<<"\n";
+        }
+    }
+
+    file.close();
+}
+
+
+void SoapTypingDB::saveFile(bool isGssp, const QString &fileName, const QString &filePath,
+                            const QString &dir,const QString &date)
+{
+    QString orignalFilePath;
+    QStringList newFileName = QString(fileName).split("_");
+    QString desPath;
+    if(newFileName.size()==4)
+    {
+        desPath = QString("%1%2%3").arg(dir).arg(QDir::separator()).arg(QString(fileName));
+    }
+    else
+    {
+        newFileName.removeAt(1);
+        desPath = QString("%1%2%3").arg(dir).arg(QDir::separator()).arg(newFileName.join("_"));
+    }
+
+    QFile file(filePath);
+    if(!file.open(QIODevice::ReadWrite | QIODevice::Text))
+    {
+         qDebug()<<"Can't open the file!"<<endl;
+    }
+    QTextStream stream(&file);
+
+    int i_count = 0;
+    QSqlQuery query(m_SqlDB);
+    if (isGssp)
+    {
+        query.prepare("SELECT * FROM gsspFileTable where fileName=?");
+        i_count = GSSP_FILE_TABLE_FIELD;
+    }
+    else
+    {
+        query.prepare("SELECT * FROM fileTable where fileName=?");
+        i_count = FILE_TABLE_FIELD;
+    }
+
+    query.bindValue(0, fileName);
+    bool isSuccess = query.exec();
+
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            if(!date.isEmpty())
+            {
+                newFileName[0].append(QString("_%1").arg(date));
+                stream<<newFileName.join("_")<<"\n";
+                stream<<query.value(1).toString().split("_")[0].append(QString("_%1").arg(date))<<"\n";
+            }
+            else
+            {
+                stream << query.value(0).toString()<<"\n";
+                stream << query.value(1).toString()<<"\n";
+            }
+
+            stream << desPath<<"\n";
+
+            for(int i = 3; i < i_count; i++)
+                stream << query.value(i).toString()<<"\n";
+
+            orignalFilePath = query.value(2).toString();
+        }
+    }
+
+    QFileInfo ab1(desPath);
+    if(!ab1.exists())
+    {
+        QFile::copy(orignalFilePath,desPath);
+    }
+
+    file.close();
+}
+

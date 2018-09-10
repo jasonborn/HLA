@@ -234,11 +234,21 @@ int ExonNavigatorWidget::ScreenPosToPeakPos(int screenpos) //显示坐标转换�
     int peakpos = 0;
     foreach(const Exon &exon, m_vec_Exon)
     {
-        if(screenpos >= exon.i_screenstartpos && screenpos <= exon.i_screenstartpos+exon.i_screenwidth)
+        if(screenpos > exon.i_screenstartpos && screenpos < exon.i_screenstartpos+exon.i_screenwidth)
         {
             peakpos = (screenpos - m_igap - (exon.i_exonindex-m_isub_index)*m_iMidgap)/m_dXscale
                     + m_vecExonIndex[m_Exoninfo.minExonIndex - 1]+1;
             break;
+        }
+        else if (screenpos == exon.i_screenstartpos)
+        {
+            peakpos = exon.i_exonstartpos;
+             break;
+        }
+        else if (screenpos == exon.i_screenstartpos+exon.i_screenwidth)
+        {
+            peakpos = exon.i_exonendpos;
+             break;
         }
     }
     return peakpos;
@@ -263,14 +273,14 @@ void ExonNavigatorWidget::SetSelectPos(int colnum, int &selectpos, int &exonstar
 
 void ExonNavigatorWidget::setSelectFramePosition(int index, int &startpos, int &selectpos, int &exonstartpos)
 {
-    if(m_iSelectindex != index)
-    {
-        m_iSelectindex = index;
-    }
-    else
-    {
-        return;
-    }
+//    if(m_iSelectindex != index)
+//    {
+//        m_iSelectindex = index;
+//    }
+//    else
+//    {
+//        return;
+//    }
 
     foreach(const Exon &exon, m_vec_Exon)
     {
@@ -281,13 +291,12 @@ void ExonNavigatorWidget::setSelectFramePosition(int index, int &startpos, int &
 
             foreach(int peakpos, m_set_mispos)
             {
-                peakpos++;
                 if(peakpos > exon.i_exonstartpos && peakpos < exon.i_exonendpos)
                 {
                     m_iSelectPos = (peakpos - m_vecExonIndex[m_Exoninfo.minExonIndex - 1])*m_dXscale
                             + m_igap + (exon.i_exonindex-m_isub_index)*m_iMidgap;
 
-                    selectpos = peakpos-1;
+                    selectpos = peakpos;
                     update();
                     return;
                 }
@@ -300,8 +309,6 @@ void ExonNavigatorWidget::setSelectFramePosition(int index, int &startpos, int &
             break;
         }
     }
-
-
 }
 
 void ExonNavigatorWidget::SetSelectFramePos(int index, int colnum, int &test)

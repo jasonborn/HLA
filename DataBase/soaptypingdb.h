@@ -59,7 +59,7 @@ public:
     void updateGsspFileResultToRealTimeDatabase(const QString &fileName, int alignResult,
                                                 const QString &typeResult, const QString &filterResult);
 
-    void getSampleTreeDataFromRealTimeDatabase(QVector<SampleTreeInfo_t> &sampleTreeInfoList);
+    void getSampleTreeDataFromSampleTable(QMap<QString,SampleTreeInfo_t> &map_sampleTreeInfo);
     void getFileTreeInfosFromRealTimeDatabase(const QString &sampleName, QVector<FileTreeInfo_t> &fileTreeInfos);
     void getGsspFileTreeInfosFromRealTimeDatabase(const QString &sampleName, QVector<FileTreeInfo_t> &gsspTreeInfos);
     void getResultDataFromsampleTable(const QString &sampleName, bool isCombined, QStringList &typeResult);
@@ -73,6 +73,18 @@ public:
     void getExonNavigatorInfo(const QString &sampleName, ExonNavigatorInfo &exonNavigatorInfo);
 
     void getBaseAlignSampleInfo(const QString &sampleName, BaseAlignSampleInfo &baseAlignSampleInfo);
+
+    void getMarkTypeAndAnalysisFromSampleTable(const QString &sampleName, int &marktype, int &analysis);
+    void setMarkTypeBySampleName(const QString &sampleName, int type);
+
+    void getSetNoteFromSampleTable(const QString &sampleName, QString &noteinfo);
+    void updateSetNoteBySampleName(const QString &sampleName, const QString &info);
+
+    void deleteSample(const QString &sampleName);
+    void deleteFile(bool isgssp, const QString &str_filename);
+
+    void saveSample(const QString &sampleName,const QString &samplePath,const QString &date);
+    void saveFile(bool isGssp, const QString &fileName, const QString &filePath,const QString &dir,const QString &date);
 private:
     bool InitDB();
 

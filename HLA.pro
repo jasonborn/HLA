@@ -38,7 +38,9 @@ SOURCES += \
     Mainwindow/matchlistwidget.cpp \
     Mainwindow/multipeakwidget.cpp \
     Mainwindow/exonnavigatorwidget.cpp \
-    Mainwindow/basealigntablewidget.cpp
+    Mainwindow/basealigntablewidget.cpp \
+    Dialog/usercommentdlg.cpp \
+    Dialog/savefiledlg.cpp
 
 HEADERS += \
     Mainwindow/mainwindow.h \
@@ -54,10 +56,14 @@ HEADERS += \
     Mainwindow/matchlistwidget.h \
     Mainwindow/multipeakwidget.h \
     Mainwindow/exonnavigatorwidget.h \
-    Mainwindow/basealigntablewidget.h
+    Mainwindow/basealigntablewidget.h \
+    Dialog/usercommentdlg.h \
+    Dialog/savefiledlg.h
 
 FORMS += \
     Mainwindow/mainwindow.ui \
-    Dialog/openfiledialog.ui
+    Dialog/openfiledialog.ui \
+    Dialog/usercommentdlg.ui \
+    Dialog/savefiledlg.ui
 RESOURCES += \
     hla.qrc

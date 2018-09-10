@@ -7,8 +7,8 @@
 typedef struct _tagGeneLetter
 {
     QPoint pos;
-    QChar type;
-    QChar oldtype;
+    char type;
+    char oldtype;
 }GeneLetter;
 
 class PeakLine
@@ -17,13 +17,15 @@ public:
     PeakLine(long size);
     ~PeakLine();
     int getSize();
-    void SetBaseAPoint(int index,double x, double y);
-    void SetBaseTPoint(int index,double x, double y);
-    void SetBaseGPoint(int index,double x, double y);
-    void SetBaseCPoint(int index,double x, double y);
-    QPointF *getBaseAPoint(char type);
+//    void SetBaseAPoint(int index,double x, double y);
+//    void SetBaseTPoint(int index,double x, double y);
+//    void SetBaseGPoint(int index,double x, double y);
+//    void SetBaseCPoint(int index,double x, double y);
+    void SetBasePoint(char type, double x, double y);
+    QPolygonF& GetBasePoint(char type);
+    //QPointF *getBaseAPoint(char type);
     void AddGeneLetter(GeneLetter &geneletter);
-    QList<GeneLetter>& GetGeneLetter();
+    QVector<GeneLetter>& GetGeneLetter();
 
     void SetFileName(QString &str);
     QString& GetFileName();
@@ -38,13 +40,17 @@ private:
     int m_right_exclude;
     long m_lsize;
     long m_loffset;
-    QPointF *base_a;
-    QPointF *base_t;
-    QPointF *base_g;
-    QPointF *base_c;
+//    QPointF *base_a;
+//    QPointF *base_t;
+//    QPointF *base_g;
+//    QPointF *base_c;
+    QPolygonF m_vec_baseA;
+    QPolygonF m_vec_baseT;
+    QPolygonF m_vec_baseG;
+    QPolygonF m_vec_baseC;
+
     QString m_strFileName;
-    //QVector<GeneLetter> m_vec_GeneLetter;
-    QList<GeneLetter> m_list_GeneLetter;
+    QVector<GeneLetter> m_vec_GeneLetter;
 };
 
 

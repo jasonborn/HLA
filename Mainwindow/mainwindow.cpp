@@ -14,7 +14,7 @@
 #include <QScrollBar>
 #include <QTime>
 
-QTime g_time;
+QTime g_time_main;
 QT_CHARTS_USE_NAMESPACE
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -148,7 +148,9 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 
     m_pBaseAlignTableWidget->SetAlignTableData(str_list[0]);
 
+    g_time_main.start();
     m_pMultiPeakWidget->SetPeakData(str_list[0],str_info.left(1));
+    qDebug()<<"total time"<<g_time_main.elapsed();
 
     int startpos;
     int selectpos;
@@ -167,8 +169,9 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 void MainWindow::slotExonFocusPosition(int startpos, int selectpos, int exonstartpos, int index)
 {
     int i_sub_table = selectpos - startpos;
+    int sliderPos = (i_sub_table+1)*20+230;
+    m_pBaseAlignTableWidget->horizontalScrollBar()->setValue(sliderPos);//不能和峰图同步
     m_pBaseAlignTableWidget->selectColumn(i_sub_table+1);
-    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition((i_sub_table+1)*20+230);//不能和峰图同步
 
     int i_sub = selectpos - exonstartpos;
     QString str_name;
