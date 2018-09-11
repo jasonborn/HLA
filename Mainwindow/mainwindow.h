@@ -27,7 +27,7 @@ private:
     void SetStatusbar();                    //显示底部左侧状态栏信息
     void ConnectSignalandSolt();            //连接信号与槽函数
     void DisConnectSignalandSolt();         //断开信号与槽函数连接
-    void slotShowOpenDlg();
+
     void InitUI();
 
 public slots:
@@ -35,6 +35,36 @@ public slots:
     void slotExonFocusPosition(int startpos, int selectpos, int exonstartpos, int index);
     void slotAlignTableFocusPosition(QTableWidgetItem *item);
     void slotPeakFocusPosition(int index, int colnum);
+
+    void slotShowSaveDlg();
+    void slotShowLoadFileDlg();
+    void slotShowOpenDlg();
+    void slotShowDeleteDlg();
+    void slotShowExportDlg();
+
+    void slotReset();
+    void slotMisPosForward();
+    void slotMisPosBackward();
+    void slotMarkAllSampleApproved();
+    void slotMarkAllSampleReviewed();
+    void slotAlignPair();
+    void slotAlignLab();
+    void slotUpdateDatabase();
+    void slotControl();
+
+    void slotyRangeRoomUp();
+    void slotyRangeRoomDown();
+    void slotyRoomUp();
+    void slotyRoomDown();
+    void slotxRoomUp();
+    void slotxRoomDown();
+    void resetRoomSetting();
+
+    void slotApplyOne();
+    void slotApplyAll();
+    void slotAnalyseLater();
+    void slotAnalyseNow();
+    void slotanalyse();
 private:
     Ui::MainWindow *ui;
     SampleTreeWidget *m_pSampleTreeWidget;

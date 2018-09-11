@@ -224,6 +224,29 @@ struct BaseAlignSampleInfo
     }
 };
 
+struct IndelInfo
+{
+    int isIndel;
+    int indelPostion;
+    QString indelInfo;
+};
+
+struct AllelePair
+{
+    QString allele1;
+    QString allele2;
+};
+
+struct GsspTable
+{
+    QString gsspKey;
+    QString gsspName;
+    QString geneName;
+    int exonIndex;
+    QString rOrF;
+    int position;
+    QByteArray base;
+};
 
 #endif // ALL_BASE_STRUCT_H
 

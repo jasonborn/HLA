@@ -89,8 +89,8 @@
     </widget>
     <addaction name="actionReset"/>
     <addaction name="separator"/>
-    <addaction name="actionPrevious_Mismatch_Position"/>
-    <addaction name="actionNext_Mismatch_Position"/>
+    <addaction name="actionForward"/>
+    <addaction name="actionBackward"/>
     <addaction name="separator"/>
     <addaction name="actionApproval"/>
     <addaction name="actionReview"/>
@@ -146,8 +146,8 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionReset"/>
-   <addaction name="actionPrevious_Mismatch_Position"/>
-   <addaction name="actionNext_Mismatch_Position"/>
+   <addaction name="actionForward"/>
+   <addaction name="actionBackward"/>
    <addaction name="actionApproval"/>
    <addaction name="actionReview"/>
    <addaction name="actionAllele_Comparator"/>
@@ -242,7 +242,7 @@
     <string>Ctrl+R</string>
    </property>
   </action>
-  <action name="actionPrevious_Mismatch_Position">
+  <action name="actionForward">
    <property name="icon">
     <iconset resource="../hla.qrc">
      <normaloff>:/png/images/backward.png</normaloff>:/png/images/backward.png</iconset>
@@ -251,7 +251,7 @@
     <string>Previous Mismatch Position</string>
    </property>
   </action>
-  <action name="actionNext_Mismatch_Position">
+  <action name="actionBackward">
    <property name="icon">
     <iconset resource="../hla.qrc">
      <normaloff>:/png/images/forward.png</normaloff>:/png/images/forward.png</iconset>

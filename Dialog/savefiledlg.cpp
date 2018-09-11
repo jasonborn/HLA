@@ -14,6 +14,8 @@ SaveFileDlg::SaveFileDlg(QWidget *parent) :
 {
     ui->setupUi(this);
     InitUI();
+    setTableDefaultData();
+    ConnectSignalandSolt();
 }
 
 SaveFileDlg::~SaveFileDlg()
@@ -92,27 +94,15 @@ void SaveFileDlg::slotClickSaveButton()
 
 void SaveFileDlg::saveFileT(QVector<SampleTreeInfo_t> &sampleInfos)
 {
-    QDir dir;
-    dir.mkpath(RESULTPATH);
     ui->status->setText("Waiting:..");
     ui->progressBar->setRange(0, sampleInfos.size());
-    if(m_bSaveByDate)
+
+    for(int i=0; i<sampleInfos.size(); i++)
     {
-        QString dates = QDate::currentDate().toString("yyyymmdd");
-        for(int i=0; i<sampleInfos.size(); i++)
-        {
-            saveSampleTByDate(sampleInfos.at(i), dates);
-            ui->progressBar->setValue(i+1);
-        }
+        saveSampleT(m_bSaveByDate,sampleInfos.at(i));
+        ui->progressBar->setValue(i+1);
     }
-    else
-    {
-        for(int i=0; i<sampleInfos.size(); i++)
-        {
-            //saveSampleT(sampleInfos.at(i));
-            ui->progressBar->setValue(i+1);
-        }
-    }
+
     ui->status->setText("Ready:");
     return;
 }
@@ -163,6 +153,7 @@ void SaveFileDlg::setTableDefaultData()
 {
     SoapTypingDB::GetInstance()->getSampleTreeDataFromSampleTable(m_map_SampleTreeInfo);
 
+    ui->tableWidget->setRowCount(m_map_SampleTreeInfo.size()); //必须设置，且要放置到前面，否则不显示表格内容
     int i = 0;
     foreach(const SampleTreeInfo_t& info, m_map_SampleTreeInfo.values())
     {
@@ -187,22 +178,26 @@ void SaveFileDlg::setTableDefaultData()
         ui->tableWidget->setItem(i, 3, item);
         i++;
     }
+
 }
 
-void SaveFileDlg::saveSampleTByDate(const SampleTreeInfo_t &sampleInfo, QString &date)
+void SaveFileDlg::saveSampleT(bool isBydate, const SampleTreeInfo_t &sampleInfo)
 {
-    QString dirPath = QString("%1%2%3_%4").arg(RESULTPATH).arg(QDir::separator()).arg(sampleInfo.sampleName).arg(date);
-//    if(sampleInfo.sampleName.contains('_'))
-//    {
-//        QStringList sp = sampleInfo.sampleName.split("_",QString::SkipEmptyParts);
-//        QString dirPath = QString("%1%2%3_%4").arg(RESULTPATH).arg(QDir::separator()).arg(sp.at(0)).arg(date);
-//    }
-    QDir dir0(dirPath);
-    if(!dir0.exists())
+    QString dirPath;
+    QString str_date("");
+    if (isBydate)
     {
-        QDir dir;
-        dir.mkpath(dirPath);
+        str_date = QDate::currentDate().toString("yyyyMMdd");
+        dirPath = QString("%1%2%3_%4").arg(RESULTPATH).arg(QDir::separator()).arg(sampleInfo.sampleName).arg(str_date);
     }
+    else
+    {
+        dirPath = QString("%1%2%3").arg(RESULTPATH).arg(QDir::separator()).arg(sampleInfo.sampleName);
+    }
+
+    QDir dir0;
+    dir0.mkpath(dirPath);
+
     QString listFileName = QString("%1%2list.txt").arg(dirPath).arg(QDir::separator());
     QFile file(listFileName);
     if(file.exists())
@@ -215,7 +210,7 @@ void SaveFileDlg::saveSampleTByDate(const SampleTreeInfo_t &sampleInfo, QString 
     stream<<"AType:"<<sampleInfo.analysisType<<"\n";
     stream<<"MType:"<<sampleInfo.markType<<"\n";
     stream<<"sampleTable:"<<outFile<<"\n";
-    SoapTypingDB::GetInstance()->saveSample(sampleInfo.sampleName, outFile, date);
+    SoapTypingDB::GetInstance()->saveSample(sampleInfo.sampleName, outFile, str_date);
 
     for(int i=0; i<sampleInfo.treeinfo.size(); i++)
     {
@@ -224,12 +219,12 @@ void SaveFileDlg::saveSampleTByDate(const SampleTreeInfo_t &sampleInfo, QString 
         if (fileInfo.isGssp)
         {
             stream<<"gsspFileTable:"<<outFile<<"\n";
-            SoapTypingDB::GetInstance()->saveFile(fileInfo.isGssp, fileInfo.fileName, outFile, dirPath, date);
+            SoapTypingDB::GetInstance()->saveFile(fileInfo.isGssp, fileInfo.fileName, outFile, dirPath, str_date);
         }
         else
         {
             stream<<"fileTable:"<<outFile<<"\n";
-            SoapTypingDB::GetInstance()->saveFile(fileInfo.isGssp, fileInfo.fileName, outFile, dirPath, date);
+            SoapTypingDB::GetInstance()->saveFile(fileInfo.isGssp, fileInfo.fileName, outFile, dirPath, str_date);
         }
 
     }

@@ -1101,14 +1101,23 @@ void SoapTypingDB::saveSample(const QString &sampleName,const QString &samplePat
             if(!date.isEmpty())
             {
                 if(!sampleName.contains("_"))
+                {
                     stream << query.value(0).toString().append(QString("_%1").arg(date))<<"\n";
+                }
                 else
+                {
                     stream << query.value(0).toString().split("_")[0].append(QString("_%1").arg(date))<<"\n";
+                }
             }
             else
+            {
                 stream << query.value(0).toString()<<"\n";
+            }
+
             for(int i = 1; i < SAMPLE_TABLE_FIELD; i++)
+            {
                 stream << query.value(i).toString()<<"\n";
+            }
         }
     }
 
@@ -1174,7 +1183,9 @@ void SoapTypingDB::saveFile(bool isGssp, const QString &fileName, const QString 
             stream << desPath<<"\n";
 
             for(int i = 3; i < i_count; i++)
+            {
                 stream << query.value(i).toString()<<"\n";
+            }
 
             orignalFilePath = query.value(2).toString();
         }
@@ -1189,3 +1200,172 @@ void SoapTypingDB::saveFile(bool isGssp, const QString &fileName, const QString 
     file.close();
 }
 
+
+void SoapTypingDB::getIndelInfoFromalleleTable(const QString &alleleName, IndelInfo &indelInfo)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT isIndel,indelPostion,indelInfo FROM alleleTable WHERE alleleName=?");
+    query.bindValue(0, alleleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            indelInfo.isIndel = query.value(0).toInt();
+            indelInfo.indelPostion = query.value(1).toInt();
+            indelInfo.indelInfo = query.value(2).toString();
+            break;
+        }
+    }
+}
+
+void SoapTypingDB::updateShieldAllelesToSampleTable(const QString &sampleName, const QString &alleles)
+{
+    QSqlQuery query(m_SqlDB);
+    QString  line;
+    query.prepare("SELECT shieldAllele FROM sampleTable WHERE sampleName=?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+         qDebug()<<"insertShieldAllelesToSampleTable select error"<<sampleName;
+    }
+    else
+    {
+        while(query.next())
+        {
+            line = query.value(0).toString();
+            break;
+        }
+    }
+
+    if(line.size()>0)
+        line.append(";");
+    line.append(alleles);
+    query.prepare("UPDATE sampleTable SET shieldAllele=? WHERE sampleName=?");
+    query.bindValue(0, line);
+    query.bindValue(1, sampleName);
+    isSuccess = query.exec();
+    if(!isSuccess)
+    {
+         qDebug()<<"insertShieldAllelesToSampleTable update error"<<sampleName;
+    }
+}
+
+void SoapTypingDB::updateSetGsspBySampleName(const QString& sampleName, const QString &gsspInfo)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("UPDATE sampleTable SET setGSSP=? WHERE sampleName=?");
+    query.bindValue(0, gsspInfo);
+    query.bindValue(1, sampleName);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+         qDebug()<<"updateSetGsspBySampleName error!"<<sampleName;
+    }
+}
+
+void SoapTypingDB::updateSetResultBySampleName(const QString &sampleName, const QString &result)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("UPDATE sampleTable SET setResult=? WHERE sampleName=?");
+    query.bindValue(0, result);
+    query.bindValue(1, sampleName);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+         qDebug()<<"updateSetResultBySampleName error";
+    }
+}
+
+void SoapTypingDB::getSetResultBySampleName(const QString &sampleName, QString & result)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT setResult FROM sampleTable WHERE sampleName=?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            result =  query.value(0).toString();
+        }
+    }
+}
+
+void SoapTypingDB::getAlleleSequence(const QString &alleleName, QByteArray &alleleSeq)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT alleleSequence FROM alleleTable WHERE alleleName=?");
+    query.bindValue(0, alleleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            alleleSeq = query.value(0).toByteArray();
+        }
+    }
+}
+
+void SoapTypingDB::getExonIndexAndGeneBySampleName(const QString &sampleName, int &exonStart,
+                                                   int &exonEnd, QByteArray &geneName)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT minExonIndex,maxExonIndex,geneName FROM sampleTable WHERE sampleName=?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            exonStart = query.value(0).toInt();
+            exonEnd = query.value(1).toInt();
+            geneName = query.value(2).toByteArray();
+            return;
+        }
+    }
+}
+
+void SoapTypingDB::getGsspTablesFromGsspDatabase(const QString &geneName, int exon, QVector<GsspTable> &gsspTables)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT gsspName,rOrF,position,base FROM gsspTable WHERE geneName =? AND exonIndex=?");
+    query.bindValue(0, geneName);
+    query.bindValue(1, exon);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            GsspTable t;
+            t.geneName = geneName;
+            t.exonIndex = exon;
+            t.gsspName = query.value(0).toByteArray();
+            t.rOrF = query.value(1).toByteArray();
+            t.position = query.value(2).toInt();
+            t.base = query.value(3).toByteArray();
+            gsspTables.push_back(t);
+        }
+    }
+}
+
+void SoapTypingDB::getExonPositionIndexFromStaticDatabase(const QString &geneName, QVector<int> &position)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT exonPositionIndex FROM geneTable WHERE geneName = ?");
+    query.bindValue(0, geneName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            QStringList line = query.value(0).toString().split(":", QString::SkipEmptyParts);
+            for(int i=0; i<line.size();i++)
+            {
+                position.push_back(line.at(i).toInt());
+            }
+            return;
+        }
+    }
+}

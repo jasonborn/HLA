@@ -293,6 +293,7 @@ void ExonNavigatorWidget::setSelectFramePosition(int index, int &startpos, int &
             {
                 if(peakpos > exon.i_exonstartpos && peakpos < exon.i_exonendpos)
                 {
+                    peakpos++;//从数据库获取的要加1？？？？
                     m_iSelectPos = (peakpos - m_vecExonIndex[m_Exoninfo.minExonIndex - 1])*m_dXscale
                             + m_igap + (exon.i_exonindex-m_isub_index)*m_iMidgap;
 

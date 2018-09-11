@@ -8,6 +8,7 @@
 #include <QScrollBar>
 #include <QTime>
 #include <set>
+#include "ThreadTask/analysissamplethreadtask.h"
 
 const int PEAKLINEHIGHT = 200;
 const int HLINEHIGHT = 20;
@@ -153,6 +154,15 @@ int PeakLine::GetOffset()
     return m_loffset;
 }
 
+void PeakLine::SetGssp(bool isGssp)
+{
+    m_bGssp = isGssp;
+}
+bool PeakLine::GetGssp()
+{
+    return  m_bGssp;
+}
+
 MultiPeakWidget::MultiPeakWidget(QWidget *parent)
     :QWidget(parent)
 {
@@ -161,7 +171,9 @@ MultiPeakWidget::MultiPeakWidget(QWidget *parent)
     m_bIsSelect = false;
     m_l_xSize = 0;
     setFocusPolicy(Qt::StrongFocus);//如果不调用，keyPressEvent不响应
-    setAutoFillBackground(true);
+    //setAutoFillBackground(true);
+    CreateRightMenu();
+    ConnectSignalandSolt();
 }
 
 MultiPeakWidget::~MultiPeakWidget()
@@ -213,6 +225,7 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
         QSharedPointer<PeakLine> pPeakLine = QSharedPointer<PeakLine>(new PeakLine(l_size));
         pPeakLine->SetFileName(table.getFileName());
         pPeakLine->SetExcludePos(table.getAlignStartPos(),table.getAlignEndPos());
+        pPeakLine->SetGssp(table.getIsGssp());
 
         qDebug()<<"new  pPeakLine"<<g_time_peak.restart();
 
@@ -532,4 +545,172 @@ void MultiPeakWidget::SetSelectPos(int pos)
 
     QScrollArea *pParent = dynamic_cast<QScrollArea*>(parentWidget()->parentWidget());
     pParent->horizontalScrollBar()->setSliderPosition(m_select_pos.x()-230);
+}
+
+
+void MultiPeakWidget::CreateRightMenu()
+{
+    m_pActDelete = new QAction(tr("Delete Selected File"),this);
+    m_pActInsertBaseN = new QAction(tr("Insert Base 'N'"),this);
+    m_pActHideTraceDisplay = new QAction(tr("Hide Trace Display"),this);
+//    m_pActFilterByCurrentBase = new QAction(tr("Filter By Current Base"),this);
+//    m_pActRemoveLastBaseFilter = new QAction(tr("Remove Last Base Filter"),this);
+//    m_pActRemoveAllBaseFilters = new QAction(tr("Remove All Base Filters"),this);
+//    m_pActRemoveLastNullAlleleFilter = new QAction(tr("Remove Last Null AlleleFilter"),this);
+
+//    m_pActInsertBaseN->setDisabled(true);
+//    m_pActHideTraceDisplay->setDisabled(true);
+//    m_pActFilterByCurrentBase->setDisabled(true);
+//    m_pActRemoveLastBaseFilter->setDisabled(true);
+//    m_pActRemoveAllBaseFilters->setDisabled(true);
+//    m_pActRemoveLastNullAlleleFilter->setDisabled(true);
+
+
+    m_pActApplyOne = new QAction(QIcon(":/images/apply.png"),tr("Apply One"),this);
+    m_pActApplyOne->setIconVisibleInMenu(false);
+    m_pActApplyOne->setShortcut(QKeySequence(Qt::ALT+Qt::Key_E));
+
+    m_pActApplyAll = new QAction(QIcon(":/images/apply.png"),tr("Apply All"),this);
+    m_pActApplyAll->setDisabled(true);
+    m_pActApplyAll->setShortcut(QKeySequence(Qt::ALT+Qt::Key_R));
+
+    m_pActanalyzeNow = new QAction(QIcon(":/images/apply.png"),tr("Edit One"),this);
+    m_pActanalyzeNow->setDisabled(true);
+    m_pActanalyzeNow->setShortcut(QKeySequence(Qt::ALT+Qt::Key_O));
+
+    m_pActanalyzeLater = new QAction(QIcon(":/images/apply.png"),tr("Edit Multi"),this);
+    m_pActanalyzeLater->setIconVisibleInMenu(false);
+    m_pActanalyzeLater->setShortcut(QKeySequence(Qt::ALT+Qt::Key_M));
+
+    m_pActanalyze = new QAction(tr("Analyze"),this);
+    m_pActanalyze->setShortcut(QKeySequence(Qt::ALT+Qt::Key_T));
+    m_pActanalyze->setDisabled(true);
+
+    m_pActExcludeLeft = new QAction(tr("Exclude left"),this);
+    m_pActExcludeRight = new QAction(tr("Exclude right"),this);
+    m_pActResetExclude = new QAction(tr("Reset Exclude"),this);
+
+//    m_pActIntelligent_Analysis = new QAction(tr("Smart Analysis"),this);
+//    m_pActReset_Analysis = new QAction(tr("Reset Analysis"),this);
+//    m_pActChangeToTrace = new QAction(tr("Change Exon Or Direction To This Trace"),this);
+//    m_pActRemoveThisTrace = new QAction(tr("Remove This Trace"),this);
+
+//    m_pActChangeToTrace->setDisabled(true);
+//    m_pActRemoveThisTrace->setDisabled(true);
+
+//    m_pActIntelligent_Analysis->setVisible(false);
+//    m_pActReset_Analysis->setVisible(false);
+
+    m_pRightMenu->addAction(m_pActDelete);
+    m_pRightMenu->addAction(m_pActInsertBaseN);
+    m_pRightMenu->addAction(m_pActHideTraceDisplay);
+    m_pRightMenu->addSeparator();
+
+    m_pRightMenu->addAction(m_pActApplyOne);
+    m_pRightMenu->addAction(m_pActApplyAll);
+    m_pRightMenu->addSeparator();
+
+    m_pRightMenu->addAction(m_pActanalyzeNow);
+    m_pRightMenu->addAction(m_pActanalyzeLater);
+    m_pRightMenu->addSeparator();
+
+    m_pRightMenu->addAction(m_pActanalyze);
+    m_pRightMenu->addSeparator();
+    m_pRightMenu->addAction(m_pActExcludeLeft);
+    m_pRightMenu->addAction(m_pActExcludeRight);
+    m_pRightMenu->addAction(m_pActResetExclude);
+    m_pRightMenu->addSeparator();
+
+//    m_pRightMenu->addAction(m_pActIntelligent_Analysis);
+//    m_pRightMenu->addAction(m_pActReset_Analysis);
+}
+
+void MultiPeakWidget::ConnectSignalandSolt()
+{
+    connect(m_pActDelete, &QAction::triggered, this, &MultiPeakWidget::slotDelteThisFile);
+    connect(m_pActApplyOne, &QAction::triggered, this, &MultiPeakWidget::slotActApplyOne);
+    connect(m_pActApplyAll, &QAction::triggered, this, &MultiPeakWidget::slotActApplyAll);
+    connect(m_pActanalyzeLater, &QAction::triggered, this, &MultiPeakWidget::slotActanalyzeLater);
+    connect(m_pActanalyzeNow, &QAction::triggered, this, &MultiPeakWidget::slotActanalyzeNow);
+    connect(m_pActanalyze, &QAction::triggered, this, &MultiPeakWidget::slotActanalyze);
+    connect(m_pActExcludeLeft, &QAction::triggered, this, &MultiPeakWidget::slotHighLightLeftPart);
+    connect(m_pActExcludeRight, &QAction::triggered, this, &MultiPeakWidget::slotHighLightRightPart);
+    connect(m_pActResetExclude, &QAction::triggered, this, &MultiPeakWidget::slotResetExclude);
+}
+
+void MultiPeakWidget::slotDelteThisFile()
+{
+    QString &str_file = m_vec_Peakline[m_index_PeakLine]->GetFileName();
+    bool isgssp = m_vec_Peakline[m_index_PeakLine]->GetGssp();
+    SoapTypingDB::GetInstance()->deleteFile(isgssp, str_file);
+
+    AnalysisSampleThreadTask *pTask = new AnalysisSampleThreadTask(m_str_SampleName);
+    pTask->run();
+    delete pTask;
+
+    emit signalChangeDB();
+}
+
+void MultiPeakWidget::slotActApplyOne()
+{
+    m_pActApplyOne->setDisabled(true);
+    m_pActApplyAll->setDisabled(false);
+    m_pActApplyOne->setIconVisibleInMenu(true);
+    m_pActApplyAll->setIconVisibleInMenu(false);
+
+    emit signalActApplyOne();
+}
+
+void MultiPeakWidget::slotActApplyAll()
+{
+    m_pActApplyOne->setIconVisibleInMenu(false);
+    m_pActApplyAll->setIconVisibleInMenu(true);
+    m_pActApplyOne->setDisabled(false);
+    m_pActApplyAll->setDisabled(true);
+
+    emit signalActApplyAll();
+}
+
+void MultiPeakWidget::slotActanalyzeLater()
+{
+    m_pActanalyzeNow->setIconVisibleInMenu(false);
+    m_pActanalyzeLater->setIconVisibleInMenu(true);
+    m_pActanalyzeLater->setDisabled(true);
+    m_pActanalyzeNow->setDisabled(false);
+
+    emit signalActanalyzeLater();
+}
+
+void MultiPeakWidget::slotActanalyzeNow()
+{
+    m_pActanalyzeNow->setIconVisibleInMenu(true);
+    m_pActanalyzeLater->setIconVisibleInMenu(false);
+    m_pActanalyzeLater->setDisabled(false);
+    m_pActanalyzeNow->setDisabled(true);
+}
+
+void MultiPeakWidget::slotActanalyze()
+{
+    m_pActanalyze->setDisabled(true);
+
+    AnalysisSampleThreadTask *pTask = new AnalysisSampleThreadTask(m_str_SampleName);
+    pTask->run();
+    delete pTask;
+
+    emit signalChangeDB();
+}
+
+void MultiPeakWidget::slotHighLightLeftPart()
+{
+
+}
+
+void MultiPeakWidget::slotHighLightRightPart()
+{
+
+}
+
+void MultiPeakWidget::slotResetExclude()
+{
+
 }

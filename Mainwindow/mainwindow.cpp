@@ -13,6 +13,7 @@
 #include <QtDebug>
 #include <QScrollBar>
 #include <QTime>
+#include "Dialog/savefiledlg.h"
 
 QTime g_time_main;
 QT_CHARTS_USE_NAMESPACE
@@ -83,6 +84,37 @@ void MainWindow::InitUI()
 void MainWindow::ConnectSignalandSolt()
 {
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::slotShowOpenDlg);
+    connect(ui->actionLoad, &QAction::triggered, this, &MainWindow::slotShowLoadFileDlg);
+    connect(ui->actionSave, &QAction::triggered, this, &MainWindow::slotShowSaveDlg);
+    connect(ui->actionDelete, &QAction::triggered, this, &MainWindow::slotShowDeleteDlg);
+    connect(ui->actionExport, &QAction::triggered, this, &MainWindow::slotShowExportDlg);
+
+    connect(ui->actionReset, &QAction::triggered, this, &MainWindow::slotReset);
+    connect(ui->actionForward, &QAction::triggered, this, &MainWindow::slotMisPosForward);
+    connect(ui->actionBackward, &QAction::triggered, this, &MainWindow::slotMisPosBackward);
+    connect(ui->actionApproval, &QAction::triggered, this, &MainWindow::slotMarkAllSampleApproved);
+    connect(ui->actionReview, &QAction::triggered, this, &MainWindow::slotMarkAllSampleReviewed);
+    connect(ui->actionAllele_Comparator, &QAction::triggered, this, &MainWindow::slotAlignPair);
+    connect(ui->actionAllele_Alignment, &QAction::triggered, this, &MainWindow::slotAlignLab);
+    connect(ui->actionUpdate_Database, &QAction::triggered, this, &MainWindow::slotUpdateDatabase);
+    connect(ui->actionSetting, &QAction::triggered, this, &MainWindow::slotControl);
+
+    connect(ui->actionY_Range_Zoom_Increase, &QAction::triggered, this, &MainWindow::slotyRangeRoomUp);
+    connect(ui->actionY_Range_Zoom_Reduce, &QAction::triggered, this, &MainWindow::slotyRangeRoomDown);
+    connect(ui->actionY_Zoom_Increase, &QAction::triggered, this, &MainWindow::slotyRoomUp);
+    connect(ui->actionY_Zoom_Reduce, &QAction::triggered, this, &MainWindow::slotyRoomDown);
+    connect(ui->actionX_Zoom_Increase, &QAction::triggered, this, &MainWindow::slotxRoomUp);
+    connect(ui->actionX_Zoom_Reduce, &QAction::triggered, this, &MainWindow::slotxRoomDown);
+    connect(ui->actionReset_Zoom_Setting, &QAction::triggered, this, &MainWindow::resetRoomSetting);
+
+
+    connect(ui->actionApply_All, &QAction::triggered, this, &MainWindow::slotApplyAll);
+    connect(ui->actionApply_One, &QAction::triggered, this, &MainWindow::slotApplyOne);
+    connect(ui->actionEdit_Multi, &QAction::triggered, this, &MainWindow::slotAnalyseLater);
+    connect(ui->actionEdit_One, &QAction::triggered, this, &MainWindow::slotAnalyseNow);
+    connect(ui->actionAnalyze, &QAction::triggered, this, &MainWindow::slotanalyse);
+
+
     connect(m_pSampleTreeWidget, &QTreeWidget::itemClicked, this, &MainWindow::slotSampleTreeItemChanged);
     connect(m_pExonNavigatorWidget, &ExonNavigatorWidget::signalExonFocusPosition,
             this, &MainWindow::slotExonFocusPosition);
@@ -90,6 +122,8 @@ void MainWindow::ConnectSignalandSolt()
     connect(m_pBaseAlignTableWidget, &QTableWidget::itemClicked, this, &MainWindow::slotAlignTableFocusPosition);
 
     connect(m_pMultiPeakWidget, &MultiPeakWidget::signalPeakFocusPosition, this, &MainWindow::slotPeakFocusPosition);
+
+
 }
 
 void MainWindow::DisConnectSignalandSolt()
@@ -205,4 +239,132 @@ void MainWindow::slotPeakFocusPosition(int index, int colnum)
     m_pExonNavigatorWidget->SetSelectFramePos(index, colnum,test);
     m_pBaseAlignTableWidget->selectColumn(test+1);
     m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition((test+1)*20+230);
+}
+
+
+void MainWindow::slotShowSaveDlg()
+{
+    SaveFileDlg dlg(this);
+    dlg.exec();
+}
+
+
+void MainWindow::slotShowLoadFileDlg()
+{
+
+}
+
+void MainWindow::slotShowDeleteDlg()
+{
+
+}
+
+void MainWindow::slotShowExportDlg()
+{
+
+}
+
+void MainWindow::slotReset()
+{
+
+}
+
+void MainWindow::slotMisPosForward()
+{
+
+}
+
+void MainWindow::slotMisPosBackward()
+{
+
+}
+
+void MainWindow::slotMarkAllSampleApproved()
+{
+
+}
+
+void MainWindow::slotMarkAllSampleReviewed()
+{
+
+}
+
+void MainWindow::slotAlignPair()
+{
+
+}
+
+void MainWindow::slotAlignLab()
+{
+
+}
+
+void MainWindow::slotUpdateDatabase()
+{
+
+}
+
+void MainWindow::slotControl()
+{
+
+}
+
+void MainWindow::slotyRangeRoomUp()
+{
+
+}
+
+void MainWindow::slotyRangeRoomDown()
+{
+
+}
+
+void MainWindow::slotyRoomUp()
+{
+
+}
+
+void MainWindow::slotyRoomDown()
+{
+
+}
+
+void MainWindow::slotxRoomUp()
+{
+
+}
+
+void MainWindow::slotxRoomDown()
+{
+
+}
+
+void MainWindow::resetRoomSetting()
+{
+
+}
+
+void MainWindow::slotApplyOne()
+{
+
+}
+
+void MainWindow::slotApplyAll()
+{
+
+}
+
+void MainWindow::slotAnalyseLater()
+{
+
+}
+
+void MainWindow::slotAnalyseNow()
+{
+
+}
+
+void MainWindow::slotanalyse()
+{
+
 }

@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "Core/fileTablebase.h"
+#include <QMenu>
 
 typedef struct _tagGeneLetter
 {
@@ -35,11 +36,15 @@ public:
 
     void SetOffset(int offset);
     int GetOffset();
+
+    void SetGssp(bool isGssp);
+    bool GetGssp();
 private:
     int m_left_exclude;
     int m_right_exclude;
     long m_lsize;
     long m_loffset;
+    bool m_bGssp;
 //    QPointF *base_a;
 //    QPointF *base_t;
 //    QPointF *base_g;
@@ -65,6 +70,8 @@ public:
     void SetPeakData(const QString &str_samplename, const QString &str_exon);
     void SetSelectPos(int pos);
 private:
+    void CreateRightMenu();
+    void ConnectSignalandSolt();
 
     void paintEvent(QPaintEvent *event);
     void DrawPeakLines(QPainter *pter);
@@ -78,9 +85,24 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
+private slots:
+    void slotDelteThisFile();
+    void slotActApplyOne();
+    void slotActApplyAll();
+    void slotActanalyzeLater();
+    void slotActanalyzeNow();
+    void slotActanalyze();
+    void slotHighLightLeftPart();
+    void slotHighLightRightPart();
+    void slotResetExclude();
+
 signals:
     //index:当前导航条index colnum：选中的位置和left_exclude的差值
     void signalPeakFocusPosition(int index, int colnum);
+    void signalChangeDB();
+    void signalActApplyOne();
+    void signalActApplyAll();
+    void signalActanalyzeLater();
 private:
     QVector<Ab1FileTableBase> m_vec_filetable;
     int m_x_step;            //x轴间距
@@ -94,6 +116,28 @@ private:
     QString m_str_SampleName;
     QString m_str_Exon;
     QVector<QSharedPointer<PeakLine>> m_vec_Peakline;
+
+    QMenu *m_pRightMenu;
+    QAction *m_pActDelete;
+    QAction *m_pActInsertBaseN;
+    QAction *m_pActHideTraceDisplay;
+//    QAction *m_pActFilterByCurrentBase;
+//    QAction *m_pActRemoveLastBaseFilter;
+//    QAction *m_pActRemoveAllBaseFilters;
+//    QAction *m_pActRemoveLastNullAlleleFilter;
+    QAction *m_pActApplyOne;
+    QAction *m_pActApplyAll;
+    QAction *m_pActanalyzeLater;
+    QAction *m_pActanalyzeNow;
+    QAction *m_pActanalyze;
+    QAction *m_pActExcludeLeft;
+    QAction *m_pActExcludeRight;
+    QAction *m_pActResetExclude;
+    //QAction *m_pActIntelligent_Analysis;
+    //QAction *m_pActReset_Analysis;
+//    QAction *m_pActChangeToTrace;
+//    QAction *m_pActRemoveThisTrace;
+
 };
 
 #endif // MULTIPEAKWIDGET_H

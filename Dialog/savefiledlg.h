@@ -16,7 +16,7 @@ public:
     explicit SaveFileDlg(QWidget *parent = nullptr);
     ~SaveFileDlg();
 public:
-    static void saveSampleTByDate(const SampleTreeInfo_t &sampleInfo, QString &date);
+    static void saveSampleT(bool isBydate, const SampleTreeInfo_t &sampleInfo);
 private:
     void InitUI();
     void ConnectSignalandSolt();

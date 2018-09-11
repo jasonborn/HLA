@@ -84,7 +84,19 @@ public:
     void deleteFile(bool isgssp, const QString &str_filename);
 
     void saveSample(const QString &sampleName,const QString &samplePath,const QString &date);
-    void saveFile(bool isGssp, const QString &fileName, const QString &filePath,const QString &dir,const QString &date);
+    void saveFile(bool isGssp, const QString &fileName, const QString &filePath,const QString &dir,
+                  const QString &date);
+
+    void getIndelInfoFromalleleTable(const QString &alleleName, IndelInfo &indelInfo);
+    void updateShieldAllelesToSampleTable(const QString &sampleName, const QString &alleles);
+
+    void updateSetGsspBySampleName(const QString& sampleName, const QString &gsspInfo);
+    void updateSetResultBySampleName(const QString &sampleName, const QString &result);
+    void getSetResultBySampleName(const QString &sampleName, QString & result);
+    void getAlleleSequence(const QString &alleleName, QByteArray &alleleSeq);
+    void getExonIndexAndGeneBySampleName(const QString &sampleName, int &exonStart, int &exonEnd, QByteArray &geneName);
+    void getGsspTablesFromGsspDatabase(const QString &geneName, int exon, QVector<GsspTable> &gsspTables);
+    void getExonPositionIndexFromStaticDatabase(const QString &geneName, QVector<int> &position);
 private:
     bool InitDB();
 

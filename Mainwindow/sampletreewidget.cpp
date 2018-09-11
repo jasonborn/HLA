@@ -9,6 +9,7 @@
 #include <QContextMenuEvent>
 #include "Dialog/usercommentdlg.h"
 #include "ThreadTask/analysissamplethreadtask.h"
+#include "Dialog/savefiledlg.h"
 
 SampleTreeWidget::SampleTreeWidget(QWidget *parent)
     :QTreeWidget(parent)
@@ -249,12 +250,16 @@ void SampleTreeWidget::slotQuickSaveAndClear()
 
 void SampleTreeWidget::slotQuickSave()
 {
+    QString str_sample = m_pSelByRightItem->text(0).split('_').at(0);
 
+    SaveFileDlg::saveSampleT(false, m_map_SampleTreeInfo[str_sample]);
 }
 
 void SampleTreeWidget::slotSaveByDate()
 {
+    QString str_sample = m_pSelByRightItem->text(0).split('_').at(0);
 
+    SaveFileDlg::saveSampleT(true, m_map_SampleTreeInfo[str_sample]);
 }
 
 void SampleTreeWidget::slotDelete()

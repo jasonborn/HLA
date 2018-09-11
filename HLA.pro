@@ -40,7 +40,10 @@ SOURCES += \
     Mainwindow/exonnavigatorwidget.cpp \
     Mainwindow/basealigntablewidget.cpp \
     Dialog/usercommentdlg.cpp \
-    Dialog/savefiledlg.cpp
+    Dialog/savefiledlg.cpp \
+    Dialog/gsspinfodlg.cpp \
+    Dialog/finaltypedlg.cpp \
+    Dialog/loadfiledlg.cpp
 
 HEADERS += \
     Mainwindow/mainwindow.h \
@@ -58,12 +61,18 @@ HEADERS += \
     Mainwindow/exonnavigatorwidget.h \
     Mainwindow/basealigntablewidget.h \
     Dialog/usercommentdlg.h \
-    Dialog/savefiledlg.h
+    Dialog/savefiledlg.h \
+    Dialog/gsspinfodlg.h \
+    Dialog/finaltypedlg.h \
+    Dialog/loadfiledlg.h
 
 FORMS += \
     Mainwindow/mainwindow.ui \
     Dialog/openfiledialog.ui \
     Dialog/usercommentdlg.ui \
-    Dialog/savefiledlg.ui
+    Dialog/savefiledlg.ui \
+    Dialog/gsspinfodlg.ui \
+    Dialog/finaltypedlg.ui \
+    Dialog/loadfiledlg.ui
 RESOURCES += \
     hla.qrc
