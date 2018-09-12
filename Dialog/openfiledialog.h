@@ -76,7 +76,6 @@ private:
     void SetProcessbarValue();
 private:
     Ui::OpenFileDialog *ui;
-    QSettings *m_pConfigSet;                    //读写ini文件
 
     QStringList m_geneNames_List;               //基因名称列表
     QStringList m_gsspNames_List;               //gssp名称列表

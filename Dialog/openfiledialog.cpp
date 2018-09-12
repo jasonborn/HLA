@@ -8,6 +8,7 @@
 #include "ThreadTask/analysisab1threadtask.h"
 #include "ThreadTask/analysissamplethreadtask.h"
 #include "Core/fileTablebase.h"
+#include "Core/core.h"
 
 
 
@@ -16,7 +17,6 @@ OpenFileDialog::OpenFileDialog(QWidget *parent) :
     ui(new Ui::OpenFileDialog)
 {
     ui->setupUi(this);
-    m_pConfigSet = new QSettings("./config.ini", QSettings::IniFormat);
     InitUi();
     InitData();
     ConnectSignalandSolt();
@@ -68,13 +68,14 @@ void OpenFileDialog::ConnectSignalandSolt()
 
 void OpenFileDialog::SlotOpenFile()
 {
-    QString strdir = m_pConfigSet->value("Path/OpenDir").toString();
+    QString strdir;
+    Core::GetInstance()->GetConfig("Path/OpenDir", strdir);
     QStringList filePathList = QFileDialog::getOpenFileNames(this, tr("open files"),
                                                              strdir, "Peak Files(*.ab1;*abi)");
 
     if(!filePathList.empty())
     {
-        m_pConfigSet->setValue("Path/OpenDir", filePathList[0]);
+        Core::GetInstance()->SetConfig("Path/OpenDir", filePathList[0]);
         ui->progressBar->setRange(0, filePathList.size());
         FilePathListProcess(filePathList);
         ui->progressBar->reset();

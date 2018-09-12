@@ -69,10 +69,13 @@ public:
     ~MultiPeakWidget();
     void SetPeakData(const QString &str_samplename, const QString &str_exon);
     void SetSelectPos(int pos);
+    void AdjustPeakHeight(int height);
+    void AdjustPeakY(int y);
+    void AdjustPeakX(int x);
 private:
     void CreateRightMenu();
     void ConnectSignalandSolt();
-
+    void AdjustPeak();
     void paintEvent(QPaintEvent *event);
     void DrawPeakLines(QPainter *pter);
     void DrawHLines(QPainter *pter);
@@ -112,7 +115,7 @@ private:
     int m_index_Select;    //选中碱基的下标
     int m_index_PeakLine;   //当前选中的峰图下标
     long m_l_xSize;         //x轴的长度
-
+    int m_iPeaklinehight;
     QString m_str_SampleName;
     QString m_str_Exon;
     QVector<QSharedPointer<PeakLine>> m_vec_Peakline;

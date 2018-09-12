@@ -71,14 +71,14 @@ void MatchListWidget::InitUI()
 void MatchListWidget::SetTableData(const QString &str_sample, const QString &str_gssp)
 {
     m_str_SampleName = str_sample;
-    QStringList typeResult;
-    SoapTypingDB::GetInstance()->getResultDataFromGsspTable(str_gssp,false,false,typeResult);
-    SoapTypingDB::GetInstance()->getResultDataFromsampleTable(str_sample,false,typeResult);
+    m_strlist_result.clear();
+    SoapTypingDB::GetInstance()->getResultDataFromGsspTable(str_gssp,false,false,m_strlist_result);
+    SoapTypingDB::GetInstance()->getResultDataFromsampleTable(str_sample,false,m_strlist_result);
 
-    m_iRowCount = typeResult.size();
+    m_iRowCount = m_strlist_result.size();
     for(int i=0; i<m_iRowCount; i++)
     {
-        QStringList line = typeResult.at(i).split(",");
+        QStringList line = m_strlist_result.at(i).split(",");
         if(line.at(3).toInt()!=0)
         {
             line[0].append("*");
@@ -96,6 +96,11 @@ void MatchListWidget::SetTableData(const QString &str_sample, const QString &str
         }
     }
     setGssp();
+}
+
+QStringList & MatchListWidget::GetMatchList()
+{
+    return m_strlist_result;
 }
 
 void MatchListWidget::setGssp()

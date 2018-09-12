@@ -14,9 +14,18 @@
 #include <QScrollBar>
 #include <QTime>
 #include "Dialog/savefiledlg.h"
+#include "Dialog/loadfiledlg.h"
+#include "Dialog/deletefiledlg.h"
+#include "Dialog/reportdlg.h"
+#include "DataBase/soaptypingdb.h"
+#include <QMessageBox>
+#include "ThreadTask/analysissamplethreadtask.h"
+#include "Dialog/allelepairdlg.h"
 
 QTime g_time_main;
 QT_CHARTS_USE_NAMESPACE
+
+const QString VERSION("1.0.6.0");
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -172,10 +181,10 @@ void MainWindow::SetStatusbar()
 
 void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 {
-    QString str_name = item->text(0);
+    m_str_SelectFile = item->text(0);
     QString str_info = item->text(1);
 
-    QStringList str_list = str_name.split('_');
+    QStringList str_list = m_str_SelectFile.split('_');
     m_pMatchListWidget->SetTableData(str_list[0],"");
 
     m_pExonNavigatorWidget->SetExonData(str_list[0],str_list[1]);
@@ -251,22 +260,69 @@ void MainWindow::slotShowSaveDlg()
 
 void MainWindow::slotShowLoadFileDlg()
 {
-
+    LoadFileDlg load(this);
+    load.exec();
 }
 
 void MainWindow::slotShowDeleteDlg()
 {
-
+    DeleteFileDlg dlg(this);
+    dlg.exec();
 }
 
 void MainWindow::slotShowExportDlg()
 {
-
+    ReportDlg report(this);
+    report.setVersion(VERSION); //新增
+    report.exec();
 }
 
 void MainWindow::slotReset()
-{
+{   
+    QStringList str_list = m_str_SelectFile.split('_');
 
+    int isApproved = SoapTypingDB::GetInstance()->getMarkTypeBySampleName(str_list.at(0));
+    if(isApproved == APPROVED || isApproved == -1)
+    {
+        QMessageBox::warning(this, tr("Soap Typing"),tr("Please unlock the sample as it was marked approved"));
+        return;
+    }
+    QString info;
+    info.append(QString("Exon %1\n").arg(str_list.at(2)));
+    bool bIsGssp = true;
+    if(str_list.at(2).contains('R') || str_list.at(2).contains('F'))
+    {
+        bIsGssp = false;
+    }
+    else
+    {
+        info.append("Is Gssp file\n");
+    }
+
+    info.append(QString("File: %1\n").arg(m_str_SelectFile));
+    info.append(QString("Would you like to reset this file?"));
+    QMessageBox informationBox;
+    informationBox.setWindowTitle(tr("SoapTyping"));
+    informationBox.setIcon(QMessageBox::Information);
+    informationBox.setText(info);
+    informationBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+    switch(informationBox.exec())
+    {
+    case QMessageBox::Yes:
+    {
+        SoapTypingDB::GetInstance()->resetFileByFileName(str_list.at(0), bIsGssp);
+
+        AnalysisSampleThreadTask *pTask = new AnalysisSampleThreadTask(str_list.at(0));
+        pTask->run();
+        delete pTask;
+        //emit signalFileChanged(signalInfo_, 1);
+        break;
+    }
+    case QMessageBox::No:
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::slotMisPosForward()
@@ -281,17 +337,66 @@ void MainWindow::slotMisPosBackward()
 
 void MainWindow::slotMarkAllSampleApproved()
 {
-
+    QMessageBox informationBox;
+    informationBox.setWindowTitle(tr("Soap Typing"));
+    informationBox.setIcon(QMessageBox::Information);
+    informationBox.setText(tr("Would you really like to Mark all samples as approved"));
+    informationBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+    switch(informationBox.exec())
+    {
+    case QMessageBox::Yes:
+        SoapTypingDB::GetInstance()->markAllSampleApproved();
+        //emit signalFileChanged(signalInfo_, 1);
+        break;
+    case QMessageBox::No:
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::slotMarkAllSampleReviewed()
 {
+    QMessageBox informationBox;
+    informationBox.setWindowTitle(tr("Soap Typing"));
+    informationBox.setIcon(QMessageBox::Information);
+    informationBox.setText(tr("Would you really like to Marked all samples as reviewed?"));
+    informationBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+    switch(informationBox.exec())
+    {
+    case QMessageBox::Yes:
+    {
+        int t = SoapTypingDB::GetInstance()->markAllSampleReviewed();
+        if(t==1)
+        {
+            QMessageBox::warning(this, tr("Soap Typing"),tr("Please unlock the sample witch were marked approved"));
+        }
+        //emit signalFileChanged(signalInfo_, 1);
+        break;
+    }
+    case QMessageBox::No:
+        return;
+    default:
+        return;
+    }
 
 }
 
 void MainWindow::slotAlignPair()
 {
+    QStringList str_list = m_str_SelectFile.split('_');
+    QStringList typeResultList = m_pMatchListWidget->GetMatchList();
+    QStringList typeResult;
 
+    AllelePairDlg align;
+    align.SetData(str_list.at(1));
+    align.exec();
+    QString allele1, allele2;
+    align.getSelectAllele(allele1,allele2);
+    if(!allele1.isEmpty()&&!allele2.isEmpty())
+    {
+        //emit signalAllelePair(allele1, allele2);
+    }
 }
 
 void MainWindow::slotAlignLab()
@@ -311,12 +416,12 @@ void MainWindow::slotControl()
 
 void MainWindow::slotyRangeRoomUp()
 {
-
+    m_pMultiPeakWidget->AdjustPeakHeight(20);
 }
 
 void MainWindow::slotyRangeRoomDown()
 {
-
+    m_pMultiPeakWidget->AdjustPeakHeight(-20);
 }
 
 void MainWindow::slotyRoomUp()

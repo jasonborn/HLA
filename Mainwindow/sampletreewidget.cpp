@@ -10,6 +10,7 @@
 #include "Dialog/usercommentdlg.h"
 #include "ThreadTask/analysissamplethreadtask.h"
 #include "Dialog/savefiledlg.h"
+#include "Core/core.h"
 
 SampleTreeWidget::SampleTreeWidget(QWidget *parent)
     :QTreeWidget(parent)
@@ -102,11 +103,6 @@ void SampleTreeWidget::CreateRightMenu()
     m_pRightMenu->addAction(m_pActMarkApprovedAndClear);
 }
 
-QIcon getIcon(int analysisType, int markType)
-{
-    return QIcon(QString(":/png/images/filetree%1%2.png").arg(markType).arg(analysisType));
-}
-
 void SampleTreeWidget::SetTreeData()
 {
     m_map_SampleTreeInfo.clear();
@@ -121,7 +117,7 @@ void SampleTreeWidget::SetTreeData()
         top->setText(0, sampleTreeInfo.sampleName);
         top->setText(1, sampleTreeInfo.geneName);
         //top->setForeground(1, brush);
-        top->setIcon(0, getIcon(sampleTreeInfo.analysisType, sampleTreeInfo.markType));
+        top->setIcon(0, Core::GetInstance()->getIcon(sampleTreeInfo.analysisType, sampleTreeInfo.markType));
         top->setSizeHint(0,QSize(200,15));
         int treeSize=sampleTreeInfo.treeinfo.size();
         for(int j=0; j<treeSize; j++)
@@ -153,7 +149,7 @@ void SampleTreeWidget::SetTreeData()
                 else
                 {
                     child->setText(1, QString("Filter:%1").arg(fileTreeInfo.gsspName));//2
-                    child->setIcon(0, getIcon(fileTreeInfo.analysisType, 0));
+                    child->setIcon(0, Core::GetInstance()->getIcon(fileTreeInfo.analysisType, 0));
                 }
                 gsspSize++;
             }
@@ -163,7 +159,7 @@ void SampleTreeWidget::SetTreeData()
         {
             QTreeWidgetItem *child = new QTreeWidgetItem;
             child->setText(0, "Combined");
-            child->setIcon(0, getIcon(sampleTreeInfo.analysisType, 0));
+            child->setIcon(0, Core::GetInstance()->getIcon(sampleTreeInfo.analysisType, 0));
             top->addChild(child);
         }
         addTopLevelItem(top);
@@ -209,7 +205,7 @@ void SampleTreeWidget::markSampleType(int markType)
     {
         item = item->parent();
     }
-    item->setIcon(0, getIcon(analysis, markType));
+    item->setIcon(0, Core::GetInstance()->getIcon(analysis, markType));
 }
 
 void SampleTreeWidget::markSampleTypeAndClear(int markType)

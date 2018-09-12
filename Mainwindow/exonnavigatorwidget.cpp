@@ -105,6 +105,7 @@ void ExonNavigatorWidget::CalcExonData()
 
 void ExonNavigatorWidget::paintEvent(QPaintEvent *event)
 {
+    qDebug()<<"ExonNavigatorWidget::paintEvent";
     QPainter exonPainter(this);
     int i_width = width();
     exonPainter.setPen(QColor(139,139,139));

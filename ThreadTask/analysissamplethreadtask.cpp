@@ -3,7 +3,7 @@
 #include "Core/core.h"
 #include "DataBase/soaptypingdb.h"
 
-AnalysisSampleThreadTask::AnalysisSampleThreadTask(QString &str_sample):m_sample(str_sample)
+AnalysisSampleThreadTask::AnalysisSampleThreadTask(const QString &str_sample):m_sample(str_sample)
 {
 
 }

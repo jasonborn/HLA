@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QDate>
 #include <QTextStream>
+#include "Core/core.h"
 
 const QString RESULTPATH = "Result";
 
@@ -107,48 +108,6 @@ void SaveFileDlg::saveFileT(QVector<SampleTreeInfo_t> &sampleInfos)
     return;
 }
 
-
-QString getAnalysisType(int type)
-{
-    switch(type)
-    {
-    case 0:
-        return "Match(common)";
-    case 1:
-        return "Match(rare)";
-    case 2:
-        return "Match(bad quality)";
-    case 3:
-        return "Mismatch";
-    default:
-        return "Undefined";
-    }
-    return "Undefined";
-}
-
-QString getMarkType(int type)
-{
-    switch(type)
-    {
-    case 0:
-        return "OWNED";
-    case 1:
-        return "PENDING";
-    case 2:
-        return "REVIEWED";
-    case 3:
-        return "APPROVED";
-    default:
-        return "OWNED";
-    }
-    return "OWNED";
-}
-
-QIcon getIcon_dlg(int analysisType, int markType)
-{
-    return QIcon(QString(":/images/filetree%1%2.png").arg(markType).arg(analysisType));
-}
-
 void SaveFileDlg::setTableDefaultData()
 {
     SoapTypingDB::GetInstance()->getSampleTreeDataFromSampleTable(m_map_SampleTreeInfo);
@@ -161,16 +120,16 @@ void SaveFileDlg::setTableDefaultData()
 
         ui->tableWidget->setRowHeight(i, 20);
         item->setCheckState(Qt::Checked);
-        item->setIcon(getIcon_dlg(info.analysisType, info.markType));
+        item->setIcon(Core::GetInstance()->getIcon(info.analysisType, info.markType));
         item->setText(info.sampleName);
         ui->tableWidget->setItem(i, 0, item);
 
         item = new QTableWidgetItem;
-        item->setText(getAnalysisType(info.analysisType));
+        item->setText(Core::GetInstance()->getAnalysisType(info.analysisType));
         ui->tableWidget->setItem(i, 1, item);
 
         item = new QTableWidgetItem;
-        item->setText(getMarkType(info.markType));
+        item->setText(Core::GetInstance()->getMarkType(info.markType));
         ui->tableWidget->setItem(i, 2, item);
 
         item = new QTableWidgetItem;

@@ -1369,3 +1369,243 @@ void SoapTypingDB::getExonPositionIndexFromStaticDatabase(const QString &geneNam
         }
     }
 }
+
+
+void SoapTypingDB::insertOneSampleTable(SampleTable &sampleTable)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("INSERT or replace INTO sampleTable (sampleName,"
+                  "geneName,"
+                  "fileType,"
+                  "markType,"
+                  "analysisType,"
+                  "minExonIndex,"
+                  "maxExonIndex,"
+                  "exonStartPos,"
+                  "exonEndPos,"
+                  "consensusSequence,"
+                  "forwardSequence,"
+                  "reverseSequence,"
+                  "patternSequence,"
+                  "mismatchBetweenPC,"
+                  "mismatchBetweenFR,"
+                  "mmismatchBetweenFR,"
+                  "editPostion,"
+                  "typeResult,"
+                  "gsspInfo,"
+                  "shieldAllele,"
+                  "setResult,"
+                  "setNote,"
+                  "setGSSP,"
+                  "combinedResult)"
+                  "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    query.bindValue(0, sampleTable.getSampleName());
+    query.bindValue(1, sampleTable.getGeneName());
+    query.bindValue(2, sampleTable.getFileType());
+    query.bindValue(3, sampleTable.getMarkType());
+    query.bindValue(4, sampleTable.getAnalysisType());
+    query.bindValue(5, sampleTable.getMinExonIndex());
+    query.bindValue(6, sampleTable.getMaxExonIndex());
+    query.bindValue(7, sampleTable.getExonStartPos());
+    query.bindValue(8, sampleTable.getExonEndPos());
+    query.bindValue(9, sampleTable.getConsensusSequence());
+    query.bindValue(10, sampleTable.getForwardSequence());
+    query.bindValue(11, sampleTable.getReverseSequence());
+    query.bindValue(12, sampleTable.getPatternSequence());
+    query.bindValue(13, sampleTable.getMismatchBetweenPC());
+    query.bindValue(14, sampleTable.getMismatchBetweenFR());
+    query.bindValue(15, sampleTable.getMmismatchBetweenFR());
+    query.bindValue(16, sampleTable.getEditPostion());
+    query.bindValue(17, sampleTable.getTypeResult());
+    query.bindValue(18, sampleTable.getGsspInfo());
+    query.bindValue(19, sampleTable.getShieldAllele());
+    query.bindValue(20, sampleTable.getSetResult());
+    query.bindValue(21, sampleTable.getSetNote());
+    query.bindValue(22, sampleTable.getSetGSSP());
+    query.bindValue(23, sampleTable.getCombinedResult());
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+         qDebug()<<"Insert sampleTable error";
+    }
+
+}
+
+void SoapTypingDB::getSampleNamesFromRealTimeDatabase(QStringList &sampleNames)
+{
+    QSqlQuery query(m_SqlDB);
+    bool isSuccess = query.exec("SELECT sampleName FROM sampleTable ORDER BY sampleName");
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            sampleNames.push_back(query.value(0).toString());
+        }
+    }
+}
+
+void SoapTypingDB::getSampleStartEndBySampleName(const QString &sampleName, int &start, int &end)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT exonStartPos,exonEndPos FROM sampleTable WHERE sampleName=?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            start = query.value(0).toInt();
+            end = query.value(1).toInt();
+            return;
+        }
+    }
+}
+
+int SoapTypingDB::getResultFromRealTimeDatabaseBySampleName(const QString &sampleName, QString &result)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT typeResult,setResult,combinedResult FROM sampleTable WHERE sampleName=?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            QString type = query.value(0).toString();
+            QString set = query.value(1).toString();
+            QString combined = query.value(2).toString();
+
+            if(!set.isEmpty())
+            {
+                result = set;
+                return 2;
+            }
+
+            if(!combined.isEmpty())
+            {
+                result = combined;
+                return 1;
+            }
+
+            if(!type.isEmpty())
+            {
+                result = type;
+                return 0;
+            }
+            return 3;
+        }
+    }
+    return 3;
+}
+
+bool SoapTypingDB::isIndelInRange(const QString &alleleName, int start, int end)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT isIndel,indelPostion FROM alleleTable WHERE alleleName=?");
+    query.bindValue(0, alleleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            if(query.value(0).toInt()> 0 && query.value(1).toInt()>=start && query.value(1).toInt()<end)
+                return true;
+        }
+    }
+    return false;
+}
+
+
+int SoapTypingDB::getMarkTypeBySampleName(const QString &sampleName)
+{
+    int is = -1;
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT markType FROM sampleTable WHERE sampleName =?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            is = query.value(0).toInt();
+            break;
+        }
+    }
+    return is;
+}
+
+void SoapTypingDB::resetFileByFileName(const QString &fileName, bool isGssp)
+{
+    QSqlQuery query(m_SqlDB);
+    if(isGssp)
+    {
+        query.prepare("UPDATE gsspFileTable SET excludeLeft=?,excludeRight=?,editInfo=? WHERE fileName=?");
+    }
+    else
+    {
+        query.prepare("UPDATE fileTable SET excludeLeft=?,excludeRight=?,editInfo=? WHERE fileName=?");
+    }
+
+    query.bindValue(0, -1);
+    query.bindValue(1, -1);
+    query.bindValue(2, "");
+    query.bindValue(3, fileName);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+        qDebug()<<"resetGsspFileByFileName error"<<fileName;
+    }
+}
+
+void SoapTypingDB::markAllSampleApproved()
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("UPDATE sampleTable SET markType =?");
+    query.bindValue(0, APPROVED);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+         qDebug()<<"markAllSampleApproved error";
+    }
+}
+
+int SoapTypingDB::markAllSampleReviewed()
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("UPDATE sampleTable SET markType =? WHERE (markType <> ?)");
+    query.bindValue(0, REVIEWED);
+    query.bindValue(1, APPROVED);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+         qDebug()<<"markAllSampleApproved error";
+        return -1;
+    }
+
+    query.prepare("SELECT sampleName FROM sampleTable WHERE markType=?");
+    query.bindValue(0, APPROVED);
+    query.exec();
+    if(query.next())
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void SoapTypingDB::getAlleleNameListFromStaticDabase(const QString &geneName, QStringList &alleleNames)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT alleleName FROM alleleTable WHERE geneName=?");
+    query.bindValue(0, geneName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            alleleNames.push_back(query.value(0).toString());
+        }
+    }
+}

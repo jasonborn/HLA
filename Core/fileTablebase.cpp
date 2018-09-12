@@ -48,3 +48,19 @@ Ab1GsspFileTable::~Ab1GsspFileTable()
 {
 
 }
+
+SampleTable::SampleTable()
+{
+    m_iFileType = 0;
+    m_iMarkType = 0;
+    m_iAnalysisType = 0;
+    m_iMinExonIndex = 0;
+    m_iMaxExonIndex = 0;
+    m_iExonStartPos = 0;
+    m_iExonEndPos = 0;
+}
+
+SampleTable::~SampleTable()
+{
+
+}

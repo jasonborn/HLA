@@ -99,4 +99,38 @@ public:
     DEF_SET_GET_REF(QString, m_strFilterResult, FilterResult)
 };
 
+class SampleTable
+{
+public:
+    SampleTable();
+    ~SampleTable();
+
+    DEF_SET_GET_REF(QString, m_strSampleName, SampleName)
+    DEF_SET_GET_REF(QString, m_strGeneName, GeneName)
+
+    DEF_SET_GET(int, m_iFileType, FileType)
+    DEF_SET_GET(int, m_iMarkType, MarkType)
+    DEF_SET_GET(int, m_iAnalysisType, AnalysisType)
+    DEF_SET_GET(int, m_iMinExonIndex, MinExonIndex)
+    DEF_SET_GET(int, m_iMaxExonIndex, MaxExonIndex)
+    DEF_SET_GET(int, m_iExonStartPos, ExonStartPos)
+    DEF_SET_GET(int, m_iExonEndPos, ExonEndPos)
+
+    DEF_SET_GET_REF(QString, m_strConsensusSequence, ConsensusSequence)
+    DEF_SET_GET_REF(QString, m_strForwardSequence, ForwardSequence)
+    DEF_SET_GET_REF(QString, m_strReverseSequence, ReverseSequence)
+    DEF_SET_GET_REF(QString, m_strPatternSequence, PatternSequence)
+    DEF_SET_GET_REF(QString, m_strMismatchBetweenPC, MismatchBetweenPC)
+    DEF_SET_GET_REF(QString, m_strMismatchBetweenFR, MismatchBetweenFR)
+    DEF_SET_GET_REF(QString, m_strMmismatchBetweenFR, MmismatchBetweenFR)
+    DEF_SET_GET_REF(QString, m_strEditPostion, EditPostion)
+    DEF_SET_GET_REF(QString, m_strTypeResult, TypeResult)
+    DEF_SET_GET_REF(QString, m_strGsspInfo, GsspInfo)
+    DEF_SET_GET_REF(QString, m_strShieldAllele, ShieldAllele)
+    DEF_SET_GET_REF(QString, m_strSetResult, SetResult)
+    DEF_SET_GET_REF(QString, m_strSetNote, SetNote)
+    DEF_SET_GET_REF(QString, m_strSetGSSP, SetGSSP)
+    DEF_SET_GET_REF(QString, m_strCombinedResult, CombinedResult)
+};
+
 #endif // FILEINFOBASE_H

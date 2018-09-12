@@ -11,6 +11,7 @@ public:
     MatchListWidget(QWidget *parent=0);
     ~MatchListWidget();
     void SetTableData(const QString &str_sample, const QString &str_gssp);
+    QStringList & GetMatchList();
 private:
     void InitUI();
     void CreateRightMenu();
@@ -37,6 +38,7 @@ private:
     QAction *m_pActShowGSSPZCode;
     QAction *m_pActSetFinalType;
     QVector<QStringList> m_vec_gsspInfo;
+    QStringList m_strlist_result;
 };
 
 #endif // MATCHLISTWIDGET_H

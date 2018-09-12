@@ -9,7 +9,7 @@ class AnalysisSampleThreadTask:public QObject,public QRunnable
 {
     Q_OBJECT
 public:
-    AnalysisSampleThreadTask(QString &str_sample);
+    AnalysisSampleThreadTask(const QString &str_sample);
     ~AnalysisSampleThreadTask();
     virtual void run();
 //    void analysisSample(SampleInfo &sampleInfo, ExonInfo &exonInfo,

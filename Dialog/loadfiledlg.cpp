@@ -4,6 +4,8 @@
 #include <QDateTime>
 #include <QTextStream>
 #include "Core/fileTablebase.h"
+#include "DataBase/soaptypingdb.h"
+#include "Core/core.h"
 
 const QString RESULTPATH = "Result";
 
@@ -187,47 +189,6 @@ void LoadFileDlg::getLoadInfo()
     }
 }
 
-QString getAnalysisType_load(int type)
-{
-    switch(type)
-    {
-    case 0:
-        return "Match(common)";
-    case 1:
-        return "Match(rare)";
-    case 2:
-        return "Match(bad quality)";
-    case 3:
-        return "Mismatch";
-    default:
-        return "Undefined";
-    }
-    return "Undefined";
-}
-
-QString getMarkType_load(int type)
-{
-    switch(type)
-    {
-    case 0:
-        return "OWNED";
-    case 1:
-        return "PENDING";
-    case 2:
-        return "REVIEWED";
-    case 3:
-        return "APPROVED";
-    default:
-        return "OWNED";
-    }
-    return "OWNED";
-}
-
-QIcon getIcon_load(int analysisType, int markType)
-{
-    return QIcon(QString(":/images/filetree%1%2.png").arg(markType).arg(analysisType));
-}
-
 void LoadFileDlg::getOkIndex()
 {
     m_vec_index.clear();
@@ -254,15 +215,15 @@ void LoadFileDlg::SetTableData()
         QTableWidgetItem *itemN = new QTableWidgetItem;
         const LoadInfo &loadInfo = m_vec_LoadInfo.at(m_vec_index.at(i));
         itemN->setCheckState(ui->checkBox->checkState());
-        itemN->setIcon(getIcon_load(loadInfo.analysisType, loadInfo.markType));
+        itemN->setIcon(Core::GetInstance()->getIcon(loadInfo.analysisType, loadInfo.markType));
         itemN->setText(loadInfo.sampleName);
         ui->tableWidget->setItem(i, 0, itemN);
         itemN = new QTableWidgetItem;
-        itemN->setText(getAnalysisType_load(loadInfo.analysisType));
+        itemN->setText(Core::GetInstance()->getAnalysisType(loadInfo.analysisType));
         ui->tableWidget->setItem(i, 1, itemN);
 
         itemN = new QTableWidgetItem;
-        itemN->setText(getMarkType_load(loadInfo.markType));
+        itemN->setText(Core::GetInstance()->getMarkType(loadInfo.markType));
         ui->tableWidget->setItem(i, 2, itemN);
 
         itemN = new QTableWidgetItem;
@@ -302,7 +263,7 @@ void LoadFileDlg::readListFile(const QString &listFilePath, QVector<QString> &sa
 
 void LoadFileDlg::loadSample(const QString &samplePath)
 {
-    Ab1FileTableBase sampletable;
+    SampleTable sampletable;
 
     QFile file(samplePath);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -312,93 +273,83 @@ void LoadFileDlg::loadSample(const QString &samplePath)
 
     QTextStream stream(&file);
 
-//    sampletable.setSampleName(stream.readLine());
-//    sampletable.setGeneName(stream.readLine());
-//    sampletable.setFileType(stream.readLine().toInt());
-//    sampletable.setMarkType(stream.readLine().toInt());
-//    sampletable.setAnalysisType(stream.readLine().toInt());
-//    sampletable.setMinExonIndex(stream.readLine().toInt());
-//    sampletbale.setMaxExonIndex(stream.readLine().toInt());
-//    sampletable.setExonStartPos(stream.readLine().toInt());
-//    sampletable.setExonEndPos(stream.readLine().toInt());
-//    sampletable.setConsensusSequence(stream.readLine());
-//    sampletable.set
+    sampletable.setSampleName(stream.readLine());
+    sampletable.setGeneName(stream.readLine());
+    sampletable.setFileType(stream.readLine().toInt());
+    sampletable.setMarkType(stream.readLine().toInt());
+    sampletable.setAnalysisType(stream.readLine().toInt());
+    sampletable.setMinExonIndex(stream.readLine().toInt());
+    sampletable.setMaxExonIndex(stream.readLine().toInt());
+    sampletable.setExonStartPos(stream.readLine().toInt());
+    sampletable.setExonEndPos(stream.readLine().toInt());
+    sampletable.setConsensusSequence(stream.readLine());
+    sampletable.setForwardSequence(stream.readLine());
+    sampletable.setReverseSequence(stream.readLine());
+    sampletable.setPatternSequence(stream.readLine());
+    sampletable.setMismatchBetweenPC(stream.readLine());
+    sampletable.setMismatchBetweenFR(stream.readLine());
+    sampletable.setMmismatchBetweenFR(stream.readLine());
+    sampletable.setEditPostion(stream.readLine());
+    sampletable.setTypeResult(stream.readLine());
+    sampletable.setGsspInfo(stream.readLine());
+    sampletable.setShieldAllele(stream.readLine());
+    sampletable.setSetResult(stream.readLine());
+    sampletable.setSetNote(stream.readLine());
+    sampletable.setSetGSSP(stream.readLine());
+    sampletable.setCombinedResult(stream.readLine());
 
-
-//    sampletable.consensusSequence = stream.readLine().toAscii();
-//    sampletable.forwardSequence = stream.readLine().toAscii();
-//    sampletable.reverseSequence = stream.readLine().toAscii();
-//    sampletable.patternSequence = stream.readLine().toAscii();
-//    sampletable.mismatchBetweenPC = stream.readLine();
-//    sampletable.mismatchBetweenFR = stream.readLine();
-//    sampletable.mmismatchBetweenFR = stream.readLine();
-//    sampletable.editPostion = stream.readLine();
-//    sampletable.typeResult = stream.readLine();
-//    sampletable.gsspInfo = stream.readLine();
-//    sampletable.shieldAllele = stream.readLine();
-//    sampletable.setResult = stream.readLine();
-//    sampletable.setNote = stream.readLine();
-//    sampletable.setGSSP = stream.readLine();
-//    sampletable.combinedResult = stream.readLine();
-//    file.close();
-//    insertSampleToRealTimeDatabase(sampletable);
+    SoapTypingDB::GetInstance()->insertOneSampleTable(sampletable);
     return;
 }
 
 void LoadFileDlg::loadFile(const QString &filePath)
 {
-    Ab1FileTableBase filetable;
-
     QFile file(filePath);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         return;
     }
-
     QTextStream stream(&file);
 
-//    filetable.fileName = stream.readLine().toAscii();
-//    filetable.sampleName = stream.readLine().toAscii();
-//    filetable.filePath = stream.readLine();
-//    filetable.isExtraFile = stream.readLine().toInt();
-//    filetable.geneName = stream.readLine().toAscii();
-//    filetable.exonIndex = stream.readLine().toInt();
-//    filetable.rOrF = stream.readLine().toAscii();
-//    filetable.exonStartPos = stream.readLine().toInt();
-//    filetable.exonEndPos = stream.readLine().toInt();
-//    filetable.usefulSequence = stream.readLine().toAscii();
-//    filetable.baseSequence = stream.readLine().toAscii();
-//    filetable.basePostion = stream.readLine();
-//    filetable.baseQuality = stream.readLine();
-//    filetable.baseNumber = stream.readLine().toInt();
-//    filetable.baseASignal = stream.readLine();
-//    filetable.baseTSignal = stream.readLine();
-//    filetable.baseGSignal = stream.readLine();
-//    filetable.baseCSignal = stream.readLine();
-//    filetable.signalNumber = stream.readLine().toInt();
-//    filetable.maxSignal = stream.readLine().toInt();
-//    filetable.maxQuality = stream.readLine().toInt();
-//    filetable.averageBaseWidth = stream.readLine().toFloat();
-//    filetable.isGood = stream.readLine().toInt();
-//    filetable.alignResult = stream.readLine().toInt();
-//    filetable.alignStartPos = stream.readLine().toInt();
-//    filetable.alignEndPos = stream.readLine().toInt();
-//    filetable.alignInfo = stream.readLine();
-//    filetable.excludeLeft = stream.readLine().toInt();
-//    filetable.excludeRight = stream.readLine().toInt();
-//    filetable.editInfo = stream.readLine();
+    Ab1FileTableBase filetable;
+    filetable.setFileName(stream.readLine());
+    filetable.setSampleName(stream.readLine());
+    filetable.setFilePath(stream.readLine());
+    filetable.setExtraFile(stream.readLine().toInt());
+    filetable.setGeneName(stream.readLine());
+    filetable.setExonIndex(stream.readLine().toInt());
+    filetable.setROrF(stream.readLine().at(0));
+    filetable.setExonStartPos(stream.readLine().toInt());
+    filetable.setExonEndPos(stream.readLine().toInt());
+    filetable.setUsefulSequence(stream.readLine());
+    filetable.setBaseSequence(stream.readLine().toLatin1());
+    filetable.setBasePostion(stream.readLine());
+    filetable.setBaseQuality(stream.readLine());
+    filetable.setBaseNumber(stream.readLine().toInt());
+    filetable.setBaseASignal(stream.readLine());
+    filetable.setBaseTSignal(stream.readLine());
+    filetable.setBaseGSignal(stream.readLine());
+    filetable.setBaseCSignal(stream.readLine());
+    filetable.setSignalNumber(stream.readLine().toInt());
+    filetable.setMaxSignal(stream.readLine().toInt());
+    filetable.setMaxQuality(stream.readLine().toInt());
+    filetable.setAverageBaseWidth(stream.readLine().toFloat());
+    filetable.setIsGood(stream.readLine().toInt());
+    filetable.setAlignResult(stream.readLine().toInt());
+    filetable.setAlignStartPos(stream.readLine().toInt());
+    filetable.setAlignEndPos(stream.readLine().toInt());
+    filetable.setAlignInfo(stream.readLine());
+    filetable.setExcludeLeft(stream.readLine().toInt());
+    filetable.setExcludeRight(stream.readLine().toInt());
+    filetable.setEditInfo(stream.readLine());
 
-//    insertFileToRealTimeDatabase(filetable);
-
+    SoapTypingDB::GetInstance()->InsertOneFileTable(filetable);
     file.close();
-
     return;
 }
 
 void LoadFileDlg::loadGssp(const QString &gsspFilePath)
 {
-    Ab1FileTableBase gsspfiletable;
-
     QFile file(gsspFilePath);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -407,42 +358,41 @@ void LoadFileDlg::loadGssp(const QString &gsspFilePath)
 
     QTextStream stream(&file);
 
-//    gsspfiletable.fileName = stream.readLine().toAscii();
-//    gsspfiletable.sampleName = stream.readLine().toAscii();
-//    gsspfiletable.filePath = stream.readLine();
-//    gsspfiletable.gsspName = stream.readLine().toAscii();
-//    gsspfiletable.geneName = stream.readLine().toAscii();
-//    gsspfiletable.exonIndex = stream.readLine().toInt();
-//    gsspfiletable.rOrF = stream.readLine().toAscii();
-//    gsspfiletable.exonStartPos = stream.readLine().toInt();
-//    gsspfiletable.exonEndPos = stream.readLine().toInt();
-//    gsspfiletable.usefulSequence = stream.readLine().toAscii();
-//    gsspfiletable.baseSequence = stream.readLine().toAscii();
-//    gsspfiletable.basePostion = stream.readLine();
-//    gsspfiletable.baseQuality = stream.readLine();
-//    gsspfiletable.baseNumber = stream.readLine().toInt();
-//    gsspfiletable.baseASignal = stream.readLine();
-//    gsspfiletable.baseTSignal = stream.readLine();
-//    gsspfiletable.baseGSignal = stream.readLine();
-//    gsspfiletable.baseCSignal = stream.readLine();
-//    gsspfiletable.signalNumber = stream.readLine().toInt();
-//    gsspfiletable.maxSignal = stream.readLine().toInt();
-//    gsspfiletable.maxQuality = stream.readLine().toInt();
-//    gsspfiletable.averageBaseWidth = stream.readLine().toFloat();
-//    gsspfiletable.isGood = stream.readLine().toInt();
-//    gsspfiletable.alignResult = stream.readLine().toInt();
-//    gsspfiletable.alignStartPos = stream.readLine().toInt();
-//    gsspfiletable.alignEndPos = stream.readLine().toInt();
-//    gsspfiletable.alignInfo = stream.readLine().toAscii();
-//    gsspfiletable.excludeLeft = stream.readLine().toInt();
-//    gsspfiletable.excludeRight = stream.readLine().toInt();
-//    gsspfiletable.editInfo = stream.readLine();
-//    gsspfiletable.typeResult = stream.readLine();
-//    gsspfiletable.filterResult = stream.readLine();
+    Ab1FileTableBase filetable;
+    filetable.setFileName(stream.readLine());
+    filetable.setSampleName(stream.readLine());
+    filetable.setFilePath(stream.readLine());
+    filetable.setGsspName(stream.readLine());
+    filetable.setGeneName(stream.readLine());
+    filetable.setExonIndex(stream.readLine().toInt());
+    filetable.setROrF(stream.readLine().at(0));
+    filetable.setExonStartPos(stream.readLine().toInt());
+    filetable.setExonEndPos(stream.readLine().toInt());
+    filetable.setUsefulSequence(stream.readLine());
+    filetable.setBaseSequence(stream.readLine().toLatin1());
+    filetable.setBasePostion(stream.readLine());
+    filetable.setBaseQuality(stream.readLine());
+    filetable.setBaseNumber(stream.readLine().toInt());
+    filetable.setBaseASignal(stream.readLine());
+    filetable.setBaseTSignal(stream.readLine());
+    filetable.setBaseGSignal(stream.readLine());
+    filetable.setBaseCSignal(stream.readLine());
+    filetable.setSignalNumber(stream.readLine().toInt());
+    filetable.setMaxSignal(stream.readLine().toInt());
+    filetable.setMaxQuality(stream.readLine().toInt());
+    filetable.setAverageBaseWidth(stream.readLine().toFloat());
+    filetable.setIsGood(stream.readLine().toInt());
+    filetable.setAlignResult(stream.readLine().toInt());
+    filetable.setAlignStartPos(stream.readLine().toInt());
+    filetable.setAlignEndPos(stream.readLine().toInt());
+    filetable.setAlignInfo(stream.readLine());
+    filetable.setExcludeLeft(stream.readLine().toInt());
+    filetable.setExcludeRight(stream.readLine().toInt());
+    filetable.setEditInfo(stream.readLine());
+    filetable.setTypeResult(stream.readLine());
+    filetable.setFilterResult(stream.readLine());
 
-//    insertGsspFileToRealTimeDatabase(gsspfiletable);
-
+    SoapTypingDB::GetInstance()->insertOneGsspFileTable(filetable);
     file.close();
-
     return;
 }

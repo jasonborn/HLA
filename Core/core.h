@@ -2,6 +2,8 @@
 #define CORE_H
 
 #include "all_base_struct.h"
+#include <QIcon>
+#include <QSettings>
 
 class Core
 {
@@ -24,10 +26,18 @@ public:
     unsigned int formatMerge(char A);
     char reFormatMerge(unsigned int a);
     char mergeBases(char A, char B);
+    QIcon getIcon(int analysisType, int markType);
+    QString getAnalysisType(int type);
+    QString getMarkType(int type);
+    void SetConfig(const QString &key, const QString &value);
+    void GetConfig(const QString &key, QString &value);
 private: //禁用构造函数
-    Core(){}
+    Core();
     Core(const Core &){}
     Core& operator=(const Core&){}
+
+private:
+    QSettings *m_pConfigSet;                    //读写ini文件
 };
 
 #endif // CORE_H

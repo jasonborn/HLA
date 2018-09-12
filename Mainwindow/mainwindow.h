@@ -73,6 +73,7 @@ private:
     ExonNavigatorWidget *m_pExonNavigatorWidget;
     BaseAlignTableWidget *m_pBaseAlignTableWidget;
     QScrollArea *m_pPeak_area;
+    QString m_str_SelectFile;           //保存样品列表选中的文件名称
 };
 
 #endif // MAINWINDOW_H

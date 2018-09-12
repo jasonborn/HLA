@@ -43,7 +43,10 @@ SOURCES += \
     Dialog/savefiledlg.cpp \
     Dialog/gsspinfodlg.cpp \
     Dialog/finaltypedlg.cpp \
-    Dialog/loadfiledlg.cpp
+    Dialog/loadfiledlg.cpp \
+    Dialog/deletefiledlg.cpp \
+    Dialog/reportdlg.cpp \
+    Dialog/allelepairdlg.cpp
 
 HEADERS += \
     Mainwindow/mainwindow.h \
@@ -64,7 +67,10 @@ HEADERS += \
     Dialog/savefiledlg.h \
     Dialog/gsspinfodlg.h \
     Dialog/finaltypedlg.h \
-    Dialog/loadfiledlg.h
+    Dialog/loadfiledlg.h \
+    Dialog/deletefiledlg.h \
+    Dialog/reportdlg.h \
+    Dialog/allelepairdlg.h
 
 FORMS += \
     Mainwindow/mainwindow.ui \
@@ -73,6 +79,9 @@ FORMS += \
     Dialog/savefiledlg.ui \
     Dialog/gsspinfodlg.ui \
     Dialog/finaltypedlg.ui \
-    Dialog/loadfiledlg.ui
+    Dialog/loadfiledlg.ui \
+    Dialog/deletefiledlg.ui \
+    Dialog/reportdlg.ui \
+    Dialog/allelepairdlg.ui
 RESOURCES += \
     hla.qrc

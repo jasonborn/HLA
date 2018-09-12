@@ -6,6 +6,22 @@
 #include <QVector>
 #include <QMap>
 
+enum MarkType
+{
+    OWNED = 0,
+    PENDING,
+    REVIEWED,
+    APPROVED
+};
+enum AnalysisType
+{
+    MATCHTOTAL = 0,
+    MATCHRARE,
+    MATCHBAD,
+    MISMATCH,
+    UNMATCH
+};
+
 struct ExonAndRF
 {
     QString exonIndex;      //外显子序号

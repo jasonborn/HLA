@@ -5,24 +5,6 @@
 #include "all_base_struct.h"
 #include "Core/fileTablebase.h"
 
-enum AnalysisType
-{
-    MATCHTOTAL = 0,
-    MATCHRARE,
-    MATCHBAD,
-    MISMATCH,
-    UNMATCH
-};
-
-enum MarkType
-{
-    OWNED = 0,
-    PENDING,
-    REVIEWED,
-    APPROVED
-};
-
-
 class SoapTypingDB
 {
 public:
@@ -97,6 +79,17 @@ public:
     void getExonIndexAndGeneBySampleName(const QString &sampleName, int &exonStart, int &exonEnd, QByteArray &geneName);
     void getGsspTablesFromGsspDatabase(const QString &geneName, int exon, QVector<GsspTable> &gsspTables);
     void getExonPositionIndexFromStaticDatabase(const QString &geneName, QVector<int> &position);
+    void insertOneSampleTable(SampleTable &sampleTable);
+    void getSampleNamesFromRealTimeDatabase(QStringList &sampleNames);
+    void getSampleStartEndBySampleName(const QString &sampleName, int &start, int &end);
+    int getResultFromRealTimeDatabaseBySampleName(const QString &sampleName, QString &result);
+    bool isIndelInRange(const QString &alleleName, int start, int end);
+
+    int getMarkTypeBySampleName(const QString &sampleName);
+    void resetFileByFileName(const QString &fileName, bool isGssp);
+    void markAllSampleApproved();
+    int markAllSampleReviewed();
+    void getAlleleNameListFromStaticDabase(const QString &geneName, QStringList &alleleNames);
 private:
     bool InitDB();
 

@@ -1,5 +1,6 @@
 #include "core.h"
 
+
 #define LEFT 1
 #define TOP  2
 #define DIAG 3
@@ -13,9 +14,15 @@
 #define MIN_MIS 15
 #define MIN_CUT_MIS 10
 
+Core::Core()
+{
+    m_pConfigSet = new QSettings("./config.ini", QSettings::IniFormat);
+}
+
 Core::~Core()
 {
-
+    delete m_pConfigSet;
+    m_pConfigSet = nullptr;
 }
 
 void Core::AnalysisAb1()
@@ -576,4 +583,56 @@ char Core::mergeBases(char A, char B)
     unsigned int a = formatMerge(A);
     unsigned int b = formatMerge(B);
     return reFormatMerge(a|b);
+}
+
+
+QIcon Core::getIcon(int analysisType, int markType)
+{
+    return QIcon(QString(":/png/images/filetree%1%2.png").arg(markType).arg(analysisType));
+}
+
+QString Core::getAnalysisType(int type)
+{
+    switch(type)
+    {
+    case 0:
+        return "Match(common)";
+    case 1:
+        return "Match(rare)";
+    case 2:
+        return "Match(bad quality)";
+    case 3:
+        return "Mismatch";
+    default:
+        return "Undefined";
+    }
+    return "Undefined";
+}
+
+QString Core::getMarkType(int type)
+{
+    switch(type)
+    {
+    case 0:
+        return "OWNED";
+    case 1:
+        return "PENDING";
+    case 2:
+        return "REVIEWED";
+    case 3:
+        return "APPROVED";
+    default:
+        return "OWNED";
+    }
+    return "OWNED";
+}
+
+void Core::SetConfig(const QString &key, const QString &value)
+{
+    m_pConfigSet->setValue(key, value);
+}
+
+void Core::GetConfig(const QString &key,QString &value)
+{
+    value = m_pConfigSet->value(key).toString();
 }
