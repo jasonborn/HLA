@@ -1609,3 +1609,65 @@ void SoapTypingDB::getAlleleNameListFromStaticDabase(const QString &geneName, QS
         }
     }
 }
+
+void SoapTypingDB::getGeneNames(QStringList &geneNames)
+{
+    QSqlQuery query(m_SqlDB);
+    bool isSuccess = query.exec("SELECT geneName FROM geneTable");
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            geneNames.push_back(query.value(0).toString());
+        }
+    }
+}
+
+void SoapTypingDB::getExonTrimListByGeneName(const QString &geneName, QVector<ExonTrimTable> &exonTrimTableList)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT * FROM exonTrimTable WHERE geneName=? ORDER BY etKey DESC");
+    query.bindValue(0, geneName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            ExonTrimTable exonTrimTable;
+            exonTrimTable.etKey = query.value(0).toString();
+            exonTrimTable.geneName = query.value(1).toString();
+            exonTrimTable.exonIndex = query.value(2).toString();
+            exonTrimTable.fOrR = query.value(3).toString();
+            exonTrimTable.exonStart = query.value(4).toString();
+            exonTrimTable.exonEnd = query.value(5).toString();
+            exonTrimTable.excludeLeft = query.value(6).toString();
+            exonTrimTable.excludeRight = query.value(7).toString();
+            exonTrimTableList.push_front(exonTrimTable);
+        }
+    }
+}
+
+void SoapTypingDB::updateExonTrim(const ExonTrimTable &exonTrimTable)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("UPDATE exonTrimTable set geneName=?,"
+                  "exonIndex=?,"
+                  "fOrR=?,"
+                  "exonStart=?,"
+                  "exonEnd=?,"
+                  "excludeLeft=?,"
+                  "excludeRight=? WHERE etKey=?");
+    query.bindValue(7, exonTrimTable.etKey);
+    query.bindValue(0, exonTrimTable.geneName);
+    query.bindValue(1, exonTrimTable.exonIndex);
+    query.bindValue(2, exonTrimTable.fOrR);
+    query.bindValue(3, exonTrimTable.exonStart);
+    query.bindValue(4, exonTrimTable.exonEnd);
+    query.bindValue(5, exonTrimTable.excludeLeft);
+    query.bindValue(6, exonTrimTable.excludeRight);
+    bool isSuccess = query.exec();
+    if(!isSuccess)
+    {
+        qDebug()<<"updateExonTrim Error exonTrimTable";
+    }
+}

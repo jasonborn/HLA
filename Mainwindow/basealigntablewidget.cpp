@@ -10,7 +10,7 @@ BaseAlignTableWidget::BaseAlignTableWidget()
     m_iRowNum = 9;
     m_iColNum = 1200;
     InitUI();
-    connect(verticalScrollBar(),&QScrollBar::valueChanged,this,&BaseAlignTableWidget::onSliderMoved);
+    connect(horizontalScrollBar(),&QScrollBar::valueChanged,this,&BaseAlignTableWidget::onSliderMoved);
 }
 
 
@@ -312,5 +312,5 @@ void BaseAlignTableWidget::getTableHead(QStringList &head, int length, int start
 
 void BaseAlignTableWidget::onSliderMoved(int pos)
 {
-    qDebug()<<pos;
+    qDebug()<<"BaseAlignTableWidget::onSliderMoved"<<pos;
 }

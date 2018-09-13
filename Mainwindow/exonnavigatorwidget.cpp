@@ -105,7 +105,6 @@ void ExonNavigatorWidget::CalcExonData()
 
 void ExonNavigatorWidget::paintEvent(QPaintEvent *event)
 {
-    qDebug()<<"ExonNavigatorWidget::paintEvent";
     QPainter exonPainter(this);
     int i_width = width();
     exonPainter.setPen(QColor(139,139,139));
@@ -274,15 +273,6 @@ void ExonNavigatorWidget::SetSelectPos(int colnum, int &selectpos, int &exonstar
 
 void ExonNavigatorWidget::setSelectFramePosition(int index, int &startpos, int &selectpos, int &exonstartpos)
 {
-//    if(m_iSelectindex != index)
-//    {
-//        m_iSelectindex = index;
-//    }
-//    else
-//    {
-//        return;
-//    }
-
     foreach(const Exon &exon, m_vec_Exon)
     {
         if(exon.i_exonindex == index)
@@ -329,5 +319,59 @@ void ExonNavigatorWidget::SetSelectFramePos(int index, int colnum, int &test)
             }
         }
     }
+    update();
+}
+
+void ExonNavigatorWidget::ActForward()
+{
+    int peakpos = ScreenPosToPeakPos(m_iSelectPos);
+    auto itor = m_set_mispos.begin();
+    auto end = m_set_mispos.end();
+
+    if(peakpos > *m_set_mispos.rbegin())
+    {
+        m_iSelectPos = PeakPosToScreenPos(*m_set_mispos.begin());
+    }
+    else
+    {
+        for(;itor != end; itor++)
+        {
+            if(peakpos < *itor)
+            {
+                m_iSelectPos = PeakPosToScreenPos(*itor);
+                break;
+            }
+        }
+    }
+
+    update();
+
+//    emit signalExonFocusPosition(m_vecExonIndex[m_Exoninfo.minExonIndex-1]+1,
+//            ScreenPosToPeakPos(m_iSelectPos),
+//            exon.i_exonstartpos, exon.i_exonindex);
+}
+
+void ExonNavigatorWidget::ActBackward()
+{
+    int peakpos = ScreenPosToPeakPos(m_iSelectPos);
+    auto itor = m_set_mispos.begin();
+    auto end = m_set_mispos.end();
+
+    if(peakpos < *itor)
+    {
+        m_iSelectPos = PeakPosToScreenPos(*m_set_mispos.rbegin());
+    }
+    else
+    {
+        for(;itor != end; itor++)
+        {
+            if(peakpos > *itor)
+            {
+                m_iSelectPos = PeakPosToScreenPos(*itor);
+                break;
+            }
+        }
+    }
+
     update();
 }

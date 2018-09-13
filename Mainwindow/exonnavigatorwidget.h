@@ -24,6 +24,8 @@ public:
     void SetSelectPos(int colnum, int &selectpos,int &exonstartpos, int &index);
     void setSelectFramePosition(int index, int &startpos, int &selectpos, int &exonstartpos);
     void SetSelectFramePos(int index, int colnum ,int &test);
+    void ActForward();
+    void ActBackward();
 private:
     void CalcExonData();
     void paintEvent(QPaintEvent *event);

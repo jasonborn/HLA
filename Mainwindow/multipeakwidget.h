@@ -67,7 +67,6 @@ public:
 private:
     void CreateRightMenu();
     void ConnectSignalandSolt();
-    void AdjustPeak();
     void paintEvent(QPaintEvent *event);
     void DrawPeakLines(QPainter *pter);
     void DrawHLines(QPainter *pter);
@@ -76,7 +75,7 @@ private:
     void DrawSelectFrame(QPainter *pter);
     void DrawExcludeArea(QPainter *pter);
     void GetBaseColor(QPainter *pter, const QChar &base);
-
+    void contextMenuEvent(QContextMenuEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void SetPeakLineData();

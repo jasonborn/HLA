@@ -264,5 +264,17 @@ struct GsspTable
     QByteArray base;
 };
 
+struct ExonTrimTable
+{
+    QString etKey;
+    QString geneName;
+    QString exonIndex;
+    QString fOrR;
+    QString exonStart;
+    QString exonEnd;
+    QString excludeLeft;
+    QString excludeRight;
+};
+
 #endif // ALL_BASE_STRUCT_H
 

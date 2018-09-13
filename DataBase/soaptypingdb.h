@@ -90,6 +90,10 @@ public:
     void markAllSampleApproved();
     int markAllSampleReviewed();
     void getAlleleNameListFromStaticDabase(const QString &geneName, QStringList &alleleNames);
+
+    void getGeneNames(QStringList &geneNames);
+    void getExonTrimListByGeneName(const QString &geneName, QVector<ExonTrimTable> &exonTrimTableList);
+    void updateExonTrim(const ExonTrimTable &exonTrimTable);
 private:
     bool InitDB();
 

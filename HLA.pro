@@ -46,7 +46,9 @@ SOURCES += \
     Dialog/loadfiledlg.cpp \
     Dialog/deletefiledlg.cpp \
     Dialog/reportdlg.cpp \
-    Dialog/allelepairdlg.cpp
+    Dialog/allelepairdlg.cpp \
+    Dialog/setdlg.cpp \
+    Dialog/exontimdlg.cpp
 
 HEADERS += \
     Mainwindow/mainwindow.h \
@@ -70,7 +72,9 @@ HEADERS += \
     Dialog/loadfiledlg.h \
     Dialog/deletefiledlg.h \
     Dialog/reportdlg.h \
-    Dialog/allelepairdlg.h
+    Dialog/allelepairdlg.h \
+    Dialog/setdlg.h \
+    Dialog/exontimdlg.h
 
 FORMS += \
     Mainwindow/mainwindow.ui \
@@ -82,6 +86,8 @@ FORMS += \
     Dialog/loadfiledlg.ui \
     Dialog/deletefiledlg.ui \
     Dialog/reportdlg.ui \
-    Dialog/allelepairdlg.ui
+    Dialog/allelepairdlg.ui \
+    Dialog/setdlg.ui \
+    Dialog/exontimdlg.ui
 RESOURCES += \
     hla.qrc

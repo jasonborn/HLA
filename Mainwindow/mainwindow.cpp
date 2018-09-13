@@ -21,6 +21,10 @@
 #include <QMessageBox>
 #include "ThreadTask/analysissamplethreadtask.h"
 #include "Dialog/allelepairdlg.h"
+#include "Dialog/setdlg.h"
+#include "Dialog/exontimdlg.h"
+#include <QFileInfo>
+#include <QDesktopServices>
 
 QTime g_time_main;
 QT_CHARTS_USE_NAMESPACE
@@ -87,6 +91,7 @@ void MainWindow::InitUI()
     ui->statusbarleft->setStyleSheet("QLabel{border:1px solid rgb(139,139,139);}");
     ui->statusbarright->setStyleSheet("QLabel{border:1px solid rgb(139,139,139);}");
 
+    ui->actionAnalyze->setEnabled(false);
     m_pSampleTreeWidget->SetTreeData();
 }
 
@@ -106,7 +111,8 @@ void MainWindow::ConnectSignalandSolt()
     connect(ui->actionAllele_Comparator, &QAction::triggered, this, &MainWindow::slotAlignPair);
     connect(ui->actionAllele_Alignment, &QAction::triggered, this, &MainWindow::slotAlignLab);
     connect(ui->actionUpdate_Database, &QAction::triggered, this, &MainWindow::slotUpdateDatabase);
-    connect(ui->actionSetting, &QAction::triggered, this, &MainWindow::slotControl);
+    connect(ui->actionSet_Thread, &QAction::triggered, this, &MainWindow::slotControl);
+    connect(ui->actionSet_Exon_Trim, &QAction::triggered, this, &MainWindow::slotSetExonTrim);
 
     connect(ui->actionY_Range_Zoom_Increase, &QAction::triggered, this, &MainWindow::slotyRangeRoomUp);
     connect(ui->actionY_Range_Zoom_Reduce, &QAction::triggered, this, &MainWindow::slotyRangeRoomDown);
@@ -122,6 +128,9 @@ void MainWindow::ConnectSignalandSolt()
     connect(ui->actionEdit_Multi, &QAction::triggered, this, &MainWindow::slotAnalyseLater);
     connect(ui->actionEdit_One, &QAction::triggered, this, &MainWindow::slotAnalyseNow);
     connect(ui->actionAnalyze, &QAction::triggered, this, &MainWindow::slotanalyse);
+
+    connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::slotAbout);
+    connect(ui->actionHelp_Documents, &QAction::triggered, this, &MainWindow::slotHelp);
 
 
     connect(m_pSampleTreeWidget, &QTreeWidget::itemClicked, this, &MainWindow::slotSampleTreeItemChanged);
@@ -200,9 +209,10 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
     int exonstartpos;
     m_pExonNavigatorWidget->setSelectFramePosition(str_info.left(1).toInt(), startpos, selectpos, exonstartpos);
 
-    int i_sub_table = selectpos - startpos;
-    m_pBaseAlignTableWidget->selectColumn(i_sub_table);
-    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition((i_sub_table+1)*20+230);//不能和峰图同步
+    int i_columnPos = selectpos - startpos;
+    int sliderPos = i_columnPos*25+8;
+    m_pBaseAlignTableWidget->selectColumn(i_columnPos);
+    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(sliderPos);//不能和峰图同步
 
     int i_sub = selectpos - exonstartpos;
     m_pMultiPeakWidget->SetSelectPos(i_sub);
@@ -211,10 +221,10 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 //导航条起始pos,选中的峰图pos，选中的导航条起始pos,选中的导航条index
 void MainWindow::slotExonFocusPosition(int startpos, int selectpos, int exonstartpos, int index)
 {
-    int i_sub_table = selectpos - startpos;
-    int sliderPos = (i_sub_table+1)*20+230;
-    m_pBaseAlignTableWidget->horizontalScrollBar()->setValue(sliderPos);//不能和峰图同步
-    m_pBaseAlignTableWidget->selectColumn(i_sub_table+1);
+    int i_columnPos = selectpos - startpos; //二者之差为表格的第几列
+    int sliderPos = i_columnPos*25+8;
+    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(sliderPos);
+    m_pBaseAlignTableWidget->selectColumn(i_columnPos+1);
 
     int i_sub = selectpos - exonstartpos;
     QString str_name;
@@ -222,6 +232,8 @@ void MainWindow::slotExonFocusPosition(int startpos, int selectpos, int exonstar
     QStringList str_list = str_name.split('_');
     m_pMultiPeakWidget->SetPeakData(str_list[0],str_list[2].left(1));
     m_pMultiPeakWidget->SetSelectPos(i_sub);
+
+    qDebug()<<selectpos<<startpos<<i_columnPos<<sliderPos<<exonstartpos;
 }
 
 void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
@@ -327,12 +339,12 @@ void MainWindow::slotReset()
 
 void MainWindow::slotMisPosForward()
 {
-
+    m_pExonNavigatorWidget->ActForward();
 }
 
 void MainWindow::slotMisPosBackward()
 {
-
+    m_pExonNavigatorWidget->ActBackward();
 }
 
 void MainWindow::slotMarkAllSampleApproved()
@@ -411,7 +423,14 @@ void MainWindow::slotUpdateDatabase()
 
 void MainWindow::slotControl()
 {
+    SetDlg dlg(this);
+    dlg.exec();
+}
 
+void MainWindow::slotSetExonTrim()
+{
+    ExonTimDlg exonTrimDlg;
+    exonTrimDlg.exec();
 }
 
 void MainWindow::slotyRangeRoomUp()
@@ -446,30 +465,59 @@ void MainWindow::slotxRoomDown()
 
 void MainWindow::resetRoomSetting()
 {
-
+    m_pMultiPeakWidget->RestorePeak();
 }
 
 void MainWindow::slotApplyOne()
 {
-
+    ui->actionApply_All->setIconVisibleInMenu(false);
+    ui->actionApply_One->setIconVisibleInMenu(true);
 }
 
 void MainWindow::slotApplyAll()
 {
-
+    ui->actionApply_All->setIconVisibleInMenu(true);
+    ui->actionApply_One->setIconVisibleInMenu(false);
 }
 
 void MainWindow::slotAnalyseLater()
 {
-
+    ui->actionEdit_Multi->setIconVisibleInMenu(true);
+    ui->actionEdit_One->setIconVisibleInMenu(false);
 }
 
 void MainWindow::slotAnalyseNow()
 {
-
+    ui->actionEdit_Multi->setIconVisibleInMenu(false);
+    ui->actionEdit_One->setIconVisibleInMenu(true);
 }
 
 void MainWindow::slotanalyse()
 {
+    ui->actionAnalyze->setEnabled(false);
+}
 
+void MainWindow::slotAbout()
+{
+    QMessageBox message(QMessageBox::NoIcon, "About SoapTyping Software",
+                        QString("SoapTyping V%1\nCopyright (C) 2012-2013 BGI").arg(VERSION));
+    message.setIconPixmap(QPixmap(":/images/about.png"));
+    message.exec();
+}
+
+void MainWindow::slotHelp()
+{
+    QFileInfo info("Documents/Help.pdf");
+    if(info.exists())
+    {
+        bool ok= QDesktopServices::openUrl(QUrl(info.absoluteFilePath(), QUrl::TolerantMode));
+        if(!ok)
+        {
+            QMessageBox::warning(this, "SoapTyping", QString("Can't open %1").arg(info.absoluteFilePath()));
+        }
+    }
+    else
+    {
+        QMessageBox::warning(this, "SoapTyping", "Documents are missing!");
+    }
 }

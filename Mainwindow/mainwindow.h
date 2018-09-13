@@ -51,6 +51,7 @@ public slots:
     void slotAlignLab();
     void slotUpdateDatabase();
     void slotControl();
+    void slotSetExonTrim();
 
     void slotyRangeRoomUp();
     void slotyRangeRoomDown();
@@ -65,6 +66,9 @@ public slots:
     void slotAnalyseLater();
     void slotAnalyseNow();
     void slotanalyse();
+
+    void slotAbout();
+    void slotHelp();
 private:
     Ui::MainWindow *ui;
     SampleTreeWidget *m_pSampleTreeWidget;

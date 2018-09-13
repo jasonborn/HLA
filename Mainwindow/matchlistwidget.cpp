@@ -7,6 +7,7 @@
 #include "ThreadTask/analysissamplethreadtask.h"
 #include "Dialog/gsspinfodlg.h"
 #include "Dialog/finaltypedlg.h"
+#include <QContextMenuEvent>
 
 const int I_COLNUM = 5;
 const int I_ROWNUM = 500;
@@ -138,6 +139,16 @@ void MatchListWidget::CreateRightMenu()
 
     m_pRightMenu->addAction(m_pActShowGSSPZCode);
     m_pRightMenu->addAction(m_pActSetFinalType);
+}
+
+void MatchListWidget::contextMenuEvent(QContextMenuEvent *event)
+{
+    QTableWidgetItem *itemNow = itemAt(event->pos());
+    if(itemNow->row() < m_iRowCount)
+    {
+        m_pRightMenu->exec(QCursor::pos());
+        event->accept();
+    }
 }
 
 void MatchListWidget::ConnectSignalandSolt()
