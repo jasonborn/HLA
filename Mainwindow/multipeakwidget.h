@@ -18,13 +18,8 @@ public:
     PeakLine(long size);
     ~PeakLine();
     int getSize();
-//    void SetBaseAPoint(int index,double x, double y);
-//    void SetBaseTPoint(int index,double x, double y);
-//    void SetBaseGPoint(int index,double x, double y);
-//    void SetBaseCPoint(int index,double x, double y);
     void SetBasePoint(char type, double x, double y);
     QPolygonF& GetBasePoint(char type);
-    //QPointF *getBaseAPoint(char type);
     void AddGeneLetter(GeneLetter &geneletter);
     QVector<GeneLetter>& GetGeneLetter();
 
@@ -45,10 +40,6 @@ private:
     long m_lsize;
     long m_loffset;
     bool m_bGssp;
-//    QPointF *base_a;
-//    QPointF *base_t;
-//    QPointF *base_g;
-//    QPointF *base_c;
     QPolygonF m_vec_baseA;
     QPolygonF m_vec_baseT;
     QPolygonF m_vec_baseG;
@@ -72,6 +63,7 @@ public:
     void AdjustPeakHeight(int height);
     void AdjustPeakY(int y);
     void AdjustPeakX(int x);
+    void RestorePeak();
 private:
     void CreateRightMenu();
     void ConnectSignalandSolt();
@@ -87,6 +79,7 @@ private:
 
     void mousePressEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void SetPeakLineData();
 
 private slots:
     void slotDelteThisFile();
@@ -109,13 +102,14 @@ signals:
 private:
     QVector<Ab1FileTableBase> m_vec_filetable;
     int m_x_step;            //x轴间距
-    double m_y_step;         //y轴缩放比例
+    int m_y_step;            //y轴间距
     QPoint m_select_pos;    //选中碱基的位置
     bool m_bIsSelect;      //是否选中了一个碱基
     int m_index_Select;    //选中碱基的下标
     int m_index_PeakLine;   //当前选中的峰图下标
     long m_l_xSize;         //x轴的长度
-    int m_iPeaklinehight;
+    int m_iPeakHeight;      //峰图实际高度
+    int m_iAdjustPeakHeight; //峰图调整度
     QString m_str_SampleName;
     QString m_str_Exon;
     QVector<QSharedPointer<PeakLine>> m_vec_Peakline;

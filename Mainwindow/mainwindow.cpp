@@ -426,22 +426,22 @@ void MainWindow::slotyRangeRoomDown()
 
 void MainWindow::slotyRoomUp()
 {
-
+    m_pMultiPeakWidget->AdjustPeakY(1);
 }
 
 void MainWindow::slotyRoomDown()
 {
-
+    m_pMultiPeakWidget->AdjustPeakY(-1);
 }
 
 void MainWindow::slotxRoomUp()
 {
-
+    m_pMultiPeakWidget->AdjustPeakX(14);
 }
 
 void MainWindow::slotxRoomDown()
 {
-
+    m_pMultiPeakWidget->AdjustPeakX(-14);
 }
 
 void MainWindow::resetRoomSetting()
