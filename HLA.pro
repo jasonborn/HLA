@@ -48,7 +48,8 @@ SOURCES += \
     Dialog/reportdlg.cpp \
     Dialog/allelepairdlg.cpp \
     Dialog/setdlg.cpp \
-    Dialog/exontimdlg.cpp
+    Dialog/exontimdlg.cpp \
+    Dialog/alignmentdlg.cpp
 
 HEADERS += \
     Mainwindow/mainwindow.h \
@@ -74,7 +75,8 @@ HEADERS += \
     Dialog/reportdlg.h \
     Dialog/allelepairdlg.h \
     Dialog/setdlg.h \
-    Dialog/exontimdlg.h
+    Dialog/exontimdlg.h \
+    Dialog/alignmentdlg.h
 
 FORMS += \
     Mainwindow/mainwindow.ui \
@@ -88,6 +90,7 @@ FORMS += \
     Dialog/reportdlg.ui \
     Dialog/allelepairdlg.ui \
     Dialog/setdlg.ui \
-    Dialog/exontimdlg.ui
+    Dialog/exontimdlg.ui \
+    Dialog/alignmentdlg.ui
 RESOURCES += \
     hla.qrc

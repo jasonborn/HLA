@@ -94,6 +94,9 @@ public:
     void getGeneNames(QStringList &geneNames);
     void getExonTrimListByGeneName(const QString &geneName, QVector<ExonTrimTable> &exonTrimTableList);
     void updateExonTrim(const ExonTrimTable &exonTrimTable);
+    void getAlleleNamesAndSeqsByGeneName(const QString &geneName, QStringList &alleleNames,
+                                         QStringList &alleleSeqs, QVector< QVector<int> > &misPositions);
+    void getAlleleSequenceByAlleleName(const QString &alleleName, QString &alleleSeq);
 private:
     bool InitDB();
 

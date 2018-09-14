@@ -153,6 +153,7 @@
    <addaction name="actionAllele_Comparator"/>
    <addaction name="actionAllele_Alignment"/>
    <addaction name="actionUpdate_Database"/>
+   <addaction name="menuSetting"/>
   </widget>
   <widget class="QToolBar" name="ToolBarPeak">
    <attribute name="toolBarArea">

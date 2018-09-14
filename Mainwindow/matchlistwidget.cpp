@@ -35,18 +35,18 @@ void MatchListWidget::InitUI()
 
     verticalHeader()->setVisible(false);
     horizontalHeader()->setStretchLastSection(true);
-    horizontalHeader()->setFixedHeight(40); //新增，设置表头的高度
-    horizontalHeader()->setDefaultAlignment(Qt::AlignLeft|Qt::AlignVCenter); //新增
-    setShowGrid(false); //新增，设置不显示格子线
+    horizontalHeader()->setFixedHeight(40);
+    horizontalHeader()->setDefaultAlignment(Qt::AlignLeft|Qt::AlignVCenter);
+    setShowGrid(false);
     setRowCount(I_ROWNUM);
     setColumnCount(I_COLNUM);
 
     QStringList defaultHead_;
     defaultHead_<<"  Mis"<<"Allele1"<<"Allele2"<<"Info"<<"GSSP";
-    this->setColumnWidth(0,60); //改40->60
-    this->setColumnWidth(1,92); //改90->92
-    this->setColumnWidth(2,92); //改90->92
-    this->setColumnWidth(3,62); //改70->62
+    this->setColumnWidth(0,60);
+    this->setColumnWidth(1,92);
+    this->setColumnWidth(2,92);
+    this->setColumnWidth(3,62);
     this->setColumnWidth(4,40);
     this->setHorizontalHeaderLabels(defaultHead_);
     QTableWidgetItem *itemArray = new QTableWidgetItem[I_ROWNUM * I_COLNUM];
@@ -54,15 +54,15 @@ void MatchListWidget::InitUI()
     {
         for(int j=0; j<I_COLNUM; j++)
         {
-            itemArray->setTextAlignment(Qt::AlignLeft|Qt::AlignVCenter); //新增
+            itemArray->setTextAlignment(Qt::AlignLeft|Qt::AlignVCenter);
             this->setItem(i, j, itemArray++);
-            if(i%2==0) //新增
+            if(i%2==0)
             {
-                item(i,j)->setBackgroundColor(QColor(235,244,223)); //新增
+                item(i,j)->setBackgroundColor(QColor(235,244,223));
             }
             else
             {
-                item(i,j)->setBackgroundColor(QColor(255,255,255)); //新增
+                item(i,j)->setBackgroundColor(QColor(255,255,255));
             }
         }
     }
@@ -246,7 +246,7 @@ void MatchListWidget::slotShowGsspZCode()
 {
     GsspInfoDlg gssp(this);
     gssp.setSampleName(m_str_SampleName);
-    //gssp.setGsspTable1(gsspInfos_);
+    gssp.setGsspTable1(m_vec_gsspInfo);
     gssp.exec();
 }
 

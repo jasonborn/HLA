@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Delete File</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../hla.qrc">
+    <normaloff>:/png/images/about.png</normaloff>:/png/images/about.png</iconset>
   </property>
   <widget class="QTableWidget" name="tableWidget">
    <property name="geometry">
@@ -85,13 +89,15 @@
     </rect>
    </property>
    <property name="value">
-    <number>24</number>
+    <number>0</number>
    </property>
    <property name="textVisible">
     <bool>false</bool>
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="../hla.qrc"/>
+ </resources>
  <connections/>
 </ui>

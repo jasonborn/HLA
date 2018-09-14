@@ -7,6 +7,7 @@ AllelePairDlg::AllelePairDlg(QWidget *parent) :
     ui(new Ui::AllelePairDlg)
 {
     ui->setupUi(this);
+    ConnectSignalandSolt();
 }
 
 AllelePairDlg::~AllelePairDlg()

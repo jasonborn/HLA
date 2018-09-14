@@ -28,6 +28,7 @@ public:
 
     void SetExcludePos(int left, int right);
     void GetExcludePos(int &left, int &right);
+    void GetExcludePos_bak(int &left, int &right);//保存排除区域的备份，方便进行恢复
 
     void SetOffset(int offset);
     int GetOffset();
@@ -37,6 +38,8 @@ public:
 private:
     int m_left_exclude;
     int m_right_exclude;
+    int m_left_exclude_bak;
+    int m_right_exclude_bak;
     long m_lsize;
     long m_loffset;
     bool m_bGssp;
@@ -79,7 +82,7 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void SetPeakLineData();
-
+    void ExcludeArea(int type); //type:1代表左排除，2代表右排除,3代表恢复
 private slots:
     void slotDelteThisFile();
     void slotActApplyOne();
@@ -103,6 +106,7 @@ private:
     int m_x_step;            //x轴间距
     int m_y_step;            //y轴间距
     QPoint m_select_pos;    //选中碱基的位置
+    QPoint m_Rightbtn_pos;  //鼠标右键选中的位置
     bool m_bIsSelect;      //是否选中了一个碱基
     int m_index_Select;    //选中碱基的下标
     int m_index_PeakLine;   //当前选中的峰图下标

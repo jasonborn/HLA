@@ -1671,3 +1671,43 @@ void SoapTypingDB::updateExonTrim(const ExonTrimTable &exonTrimTable)
         qDebug()<<"updateExonTrim Error exonTrimTable";
     }
 }
+
+void SoapTypingDB::getAlleleNamesAndSeqsByGeneName(const QString &geneName, QStringList &alleleNames,
+                                     QStringList &alleleSeqs, QVector< QVector<int> > &misPositions)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT alleleName,alleleSequence,misPosition FROM labAlignTable WHERE geneName=?");
+    query.bindValue(0, geneName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            alleleNames.push_back(query.value(0).toString());
+            alleleSeqs.push_back(query.value(1).toString());
+            QStringList line = query.value(2).toString().split(":",QString::SkipEmptyParts);
+            QVector<int> mis;
+            for (int i=0; i<line.size(); i++)
+            {
+                mis.push_back(line.at(i).toInt());
+            }
+            misPositions.push_back(mis);
+        }
+    }
+}
+
+void SoapTypingDB::getAlleleSequenceByAlleleName(const QString &alleleName, QString &alleleSeq)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT alleleSequence FROM alleleTable WHERE alleleName=?");
+    query.bindValue(0, alleleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            alleleSeq = query.value(0).toString();
+        }
+    }
+
+}

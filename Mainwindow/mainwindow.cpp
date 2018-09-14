@@ -23,6 +23,7 @@
 #include "Dialog/allelepairdlg.h"
 #include "Dialog/setdlg.h"
 #include "Dialog/exontimdlg.h"
+#include "Dialog/alignmentdlg.h"
 #include <QFileInfo>
 #include <QDesktopServices>
 
@@ -151,7 +152,7 @@ void MainWindow::DisConnectSignalandSolt()
 
 void MainWindow::slotShowOpenDlg()
 {
-    OpenFileDialog dlg;
+    OpenFileDialog dlg(this);
     dlg.exec();
     m_pSampleTreeWidget->SetTreeData();
 }
@@ -210,9 +211,9 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
     m_pExonNavigatorWidget->setSelectFramePosition(str_info.left(1).toInt(), startpos, selectpos, exonstartpos);
 
     int i_columnPos = selectpos - startpos;
-    int sliderPos = i_columnPos*25+8;
+    int sliderPos = i_columnPos*25-20;
     m_pBaseAlignTableWidget->selectColumn(i_columnPos);
-    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(sliderPos);//不能和峰图同步
+    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(sliderPos);
 
     int i_sub = selectpos - exonstartpos;
     m_pMultiPeakWidget->SetSelectPos(i_sub);
@@ -232,8 +233,6 @@ void MainWindow::slotExonFocusPosition(int startpos, int selectpos, int exonstar
     QStringList str_list = str_name.split('_');
     m_pMultiPeakWidget->SetPeakData(str_list[0],str_list[2].left(1));
     m_pMultiPeakWidget->SetSelectPos(i_sub);
-
-    qDebug()<<selectpos<<startpos<<i_columnPos<<sliderPos<<exonstartpos;
 }
 
 void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
@@ -244,7 +243,7 @@ void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
 
     int i_colnum = item->column();
 
-    m_pExonNavigatorWidget->SetSelectPos(i_colnum, selectpos, exonstartpos ,index);//不能和峰图同步
+    m_pExonNavigatorWidget->SetSelectPos(i_colnum, selectpos, exonstartpos ,index);
 
     int i_sub = selectpos - exonstartpos;
     QString str_name;
@@ -259,7 +258,7 @@ void MainWindow::slotPeakFocusPosition(int index, int colnum)
     int test;
     m_pExonNavigatorWidget->SetSelectFramePos(index, colnum,test);
     m_pBaseAlignTableWidget->selectColumn(test+1);
-    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition((test+1)*20+230);
+    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(test*25+8);
 }
 
 
@@ -313,7 +312,7 @@ void MainWindow::slotReset()
 
     info.append(QString("File: %1\n").arg(m_str_SelectFile));
     info.append(QString("Would you like to reset this file?"));
-    QMessageBox informationBox;
+    QMessageBox informationBox(this);
     informationBox.setWindowTitle(tr("SoapTyping"));
     informationBox.setIcon(QMessageBox::Information);
     informationBox.setText(info);
@@ -349,7 +348,7 @@ void MainWindow::slotMisPosBackward()
 
 void MainWindow::slotMarkAllSampleApproved()
 {
-    QMessageBox informationBox;
+    QMessageBox informationBox(this);
     informationBox.setWindowTitle(tr("Soap Typing"));
     informationBox.setIcon(QMessageBox::Information);
     informationBox.setText(tr("Would you really like to Mark all samples as approved"));
@@ -369,7 +368,7 @@ void MainWindow::slotMarkAllSampleApproved()
 
 void MainWindow::slotMarkAllSampleReviewed()
 {
-    QMessageBox informationBox;
+    QMessageBox informationBox(this);
     informationBox.setWindowTitle(tr("Soap Typing"));
     informationBox.setIcon(QMessageBox::Information);
     informationBox.setText(tr("Would you really like to Marked all samples as reviewed?"));
@@ -397,10 +396,14 @@ void MainWindow::slotMarkAllSampleReviewed()
 void MainWindow::slotAlignPair()
 {
     QStringList str_list = m_str_SelectFile.split('_');
+    if(str_list.isEmpty())
+    {
+        return;
+    }
     QStringList typeResultList = m_pMatchListWidget->GetMatchList();
     QStringList typeResult;
 
-    AllelePairDlg align;
+    AllelePairDlg align(this);
     align.SetData(str_list.at(1));
     align.exec();
     QString allele1, allele2;
@@ -413,7 +416,8 @@ void MainWindow::slotAlignPair()
 
 void MainWindow::slotAlignLab()
 {
-
+    AlignmentDlg dlg(this);
+    dlg.exec();
 }
 
 void MainWindow::slotUpdateDatabase()
@@ -429,7 +433,7 @@ void MainWindow::slotControl()
 
 void MainWindow::slotSetExonTrim()
 {
-    ExonTimDlg exonTrimDlg;
+    ExonTimDlg exonTrimDlg(this);
     exonTrimDlg.exec();
 }
 
@@ -500,8 +504,10 @@ void MainWindow::slotanalyse()
 void MainWindow::slotAbout()
 {
     QMessageBox message(QMessageBox::NoIcon, "About SoapTyping Software",
-                        QString("SoapTyping V%1\nCopyright (C) 2012-2013 BGI").arg(VERSION));
-    message.setIconPixmap(QPixmap(":/images/about.png"));
+                        QString("SoapTyping V%1\nCopyright (C) 2012-2013 BGI").arg(VERSION),
+                        QMessageBox::Ok,this);
+    message.setIconPixmap(QPixmap(":/png/images/about.png"));
+
     message.exec();
 }
 

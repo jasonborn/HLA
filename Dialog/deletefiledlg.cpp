@@ -30,7 +30,6 @@ void DeleteFileDlg::InitUI()
     ui->tableWidget->setColumnWidth(1, 100);
     ui->tableWidget->setColumnWidth(2, 100);
     ui->tableWidget->setColumnWidth(3, 100);
-    ui->tableWidget->resize(500, 300);
     QStringList header;
     header<<"Sample Name"<<"Analysis Type"<<"Mark Type"<<"User";
     ui->tableWidget->setHorizontalHeaderLabels(header);

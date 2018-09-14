@@ -10,7 +10,7 @@ BaseAlignTableWidget::BaseAlignTableWidget()
     m_iRowNum = 9;
     m_iColNum = 1200;
     InitUI();
-    connect(horizontalScrollBar(),&QScrollBar::valueChanged,this,&BaseAlignTableWidget::onSliderMoved);
+    //connect(horizontalScrollBar(),&QScrollBar::valueChanged,this,&BaseAlignTableWidget::onSliderMoved);
 }
 
 
@@ -25,7 +25,7 @@ void BaseAlignTableWidget::InitUI()
     setSelectionBehavior(QAbstractItemView::SelectColumns);
     verticalHeader()->setVisible(false);
     setSelectionMode(QAbstractItemView::SingleSelection);
-    setContextMenuPolicy(Qt::CustomContextMenu);
+    setContextMenuPolicy(Qt::NoContextMenu);
     horizontalHeader()->setStretchLastSection(true);
     setStyleSheet("selection-background-color:rgb(255,255,0,127);QTableView::item:selected{color:black;}");
     setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);

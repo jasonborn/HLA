@@ -17,6 +17,11 @@ QTime g_time_peak;
 PeakLine::PeakLine(long size):m_lsize(size)
 {
     m_loffset = 0;
+    m_left_exclude = 0;
+    m_right_exclude = 0;
+    m_left_exclude_bak = 0;
+    m_right_exclude_bak = 0;
+
     m_vec_baseA.reserve(m_lsize);
     m_vec_baseT.reserve(m_lsize);
     m_vec_baseG.reserve(m_lsize);
@@ -93,12 +98,26 @@ void PeakLine::SetExcludePos(int left, int right)
 {
     m_left_exclude = left;
     m_right_exclude = right;
+    if(m_left_exclude_bak == 0)
+    {
+        m_left_exclude_bak = m_left_exclude;
+    }
+    if(m_right_exclude_bak == 0)
+    {
+        m_right_exclude_bak = m_right_exclude;
+    }
 }
 
 void PeakLine::GetExcludePos(int &left, int &right)
 {
     left = m_left_exclude;
     right  = m_right_exclude;
+}
+
+void PeakLine::GetExcludePos_bak(int &left, int &right)
+{
+    left = m_left_exclude_bak;
+    right  = m_right_exclude_bak;
 }
 
 void PeakLine::SetOffset(int offset)
@@ -128,6 +147,7 @@ MultiPeakWidget::MultiPeakWidget(QWidget *parent)
     m_bIsSelect = false;
     m_l_xSize = 0;
     m_iPeakHeight = PEAKLINEHIGHT; //峰图高度
+    m_index_PeakLine = -1;
     setFocusPolicy(Qt::StrongFocus);//如果不调用，keyPressEvent不响应
     CreateRightMenu();
     ConnectSignalandSolt();
@@ -338,6 +358,13 @@ void MultiPeakWidget::DrawHLines(QPainter *pter)
     {
         int i_height = i*m_iPeakHeight; //每个峰图的高度
 
+        if(m_index_PeakLine == i)
+        {
+            pter->setBrush(Qt::yellow);
+            pter->drawRect(0,i_height, i_width,20);
+        }
+        pter->setBrush(Qt::NoBrush);
+
         pter->drawLine(0,20+i_height, i_width,20+i_height);
 
         pter->drawLine(0,40+i_height, i_width,40+i_height);
@@ -423,7 +450,7 @@ void MultiPeakWidget::DrawExcludeArea(QPainter *pter)
         QVector<GeneLetter> &vec_geneLetter = m_vec_Peakline[i]->GetGeneLetter();
         int w_left =  vec_geneLetter[left_exclude].pos.x();
         pter->drawRect(0,60+i_height, w_left, m_iPeakHeight-60);
-        int w_right = vec_geneLetter[right_exclude-1].pos.x();
+        int w_right = vec_geneLetter[right_exclude].pos.x();
         pter->drawRect(w_right,60+i_height, i_width, m_iPeakHeight-60);
     }
 }
@@ -522,8 +549,6 @@ void MultiPeakWidget::SetSelectPos(int pos)
 
     QScrollArea *pParent = dynamic_cast<QScrollArea*>(parentWidget()->parentWidget());
     pParent->horizontalScrollBar()->setSliderPosition(m_select_pos.x()-230);
-
-    qDebug()<<"MultiPeakWidget::SetSelectPos"<<pos<<m_select_pos;
 }
 
 
@@ -537,8 +562,8 @@ void MultiPeakWidget::CreateRightMenu()
 //    m_pActRemoveAllBaseFilters = new QAction(tr("Remove All Base Filters"),this);
 //    m_pActRemoveLastNullAlleleFilter = new QAction(tr("Remove Last Null AlleleFilter"),this);
 
-//    m_pActInsertBaseN->setDisabled(true);
-//    m_pActHideTraceDisplay->setDisabled(true);
+    m_pActInsertBaseN->setDisabled(true);
+    m_pActHideTraceDisplay->setDisabled(true);
 //    m_pActFilterByCurrentBase->setDisabled(true);
 //    m_pActRemoveLastBaseFilter->setDisabled(true);
 //    m_pActRemoveAllBaseFilters->setDisabled(true);
@@ -607,6 +632,7 @@ void MultiPeakWidget::CreateRightMenu()
 
 void MultiPeakWidget::contextMenuEvent(QContextMenuEvent *event)
 {
+    m_Rightbtn_pos = event->pos();
     m_pRightMenu->exec(QCursor::pos());
     event->accept();
 }
@@ -686,19 +712,83 @@ void MultiPeakWidget::slotActanalyze()
     emit signalChangeDB();
 }
 
+void MultiPeakWidget::ExcludeArea(int type)
+{
+    int i_index_PeakLine = 0;
+    for(int i=0; i<m_vec_Peakline.size(); i++)
+    {
+        if(m_Rightbtn_pos.y() > i*m_iPeakHeight && m_Rightbtn_pos.y() < (i+1)*m_iPeakHeight)
+        {
+            i_index_PeakLine = i;
+            break;
+        }
+    }
+
+    QVector<GeneLetter> &vec_GeneLetter = m_vec_Peakline[i_index_PeakLine]->GetGeneLetter();
+    int left_exclude,right_exclude;
+    if (type == 3)//恢复排除区域
+    {
+        m_vec_Peakline[i_index_PeakLine]->GetExcludePos_bak(left_exclude, right_exclude);
+        m_vec_Peakline[i_index_PeakLine]->SetExcludePos(left_exclude, right_exclude);
+        update();
+        return;
+    }
+
+    m_vec_Peakline[i_index_PeakLine]->GetExcludePos(left_exclude, right_exclude);
+
+    int w_left = vec_GeneLetter[left_exclude].pos.x();
+    int w_right = vec_GeneLetter[right_exclude - 1].pos.x();
+
+    int i_adjust_exclude = 0;
+    if(m_Rightbtn_pos.x() > w_left && m_Rightbtn_pos.x() < w_right)
+    {
+        for(int i=left_exclude; i<right_exclude+1; i++)
+        {
+            int i_low = vec_GeneLetter[i-1].pos.x();
+            int i_high = vec_GeneLetter[i].pos.x();
+            int i_mid = (i_low+i_high)/2;
+            if(m_Rightbtn_pos.x() > i_low && m_Rightbtn_pos.x() < i_mid)
+            {
+                i_adjust_exclude = i-1;
+                break;
+            }
+            else if (m_Rightbtn_pos.x() > i_mid && m_Rightbtn_pos.x() < i_high)
+            {
+                i_adjust_exclude = i;
+                break;
+            }
+        }
+    }
+
+    if(i_adjust_exclude)
+    {
+        if (type == 1)//调整左排除
+        {
+            m_vec_Peakline[i_index_PeakLine]->SetExcludePos(i_adjust_exclude, right_exclude);
+        }
+        else if (type == 2)//调整右排除
+        {
+            m_vec_Peakline[i_index_PeakLine]->SetExcludePos(left_exclude, i_adjust_exclude);
+        }
+
+        update();
+    }
+
+}
+
 void MultiPeakWidget::slotHighLightLeftPart()
 {
-
+    ExcludeArea(1);
 }
 
 void MultiPeakWidget::slotHighLightRightPart()
 {
-
+    ExcludeArea(2);
 }
 
 void MultiPeakWidget::slotResetExclude()
 {
-
+    ExcludeArea(3);
 }
 
 void MultiPeakWidget::AdjustPeakHeight(int height)
