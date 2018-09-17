@@ -18,7 +18,7 @@ MatchListWidget::MatchListWidget(QWidget *parent)
 {
     InitUI();
     CreateRightMenu();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
 }
 
 MatchListWidget::~MatchListWidget()
@@ -151,7 +151,7 @@ void MatchListWidget::contextMenuEvent(QContextMenuEvent *event)
     }
 }
 
-void MatchListWidget::ConnectSignalandSolt()
+void MatchListWidget::ConnectSignalandSlot()
 {
     connect(this, &QTableWidget::itemDoubleClicked, this, &MatchListWidget::slotClickIndelItem);
     connect(this, &QTableWidget::itemClicked, this, &MatchListWidget::slotRowChanged);

@@ -15,7 +15,7 @@ public:
 private:
     void InitUI();
     void CreateRightMenu();
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
     void markSampleType(int markType);
     void markSampleTypeAndClear(int markType);
     void contextMenuEvent(QContextMenuEvent *event);

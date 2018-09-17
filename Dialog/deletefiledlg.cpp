@@ -10,7 +10,7 @@ DeleteFileDlg::DeleteFileDlg(QWidget *parent) :
 {
     ui->setupUi(this);
     InitUI();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
     setTableDefaultSample();
 }
 
@@ -36,7 +36,7 @@ void DeleteFileDlg::InitUI()
 
 }
 
-void DeleteFileDlg::ConnectSignalandSolt()
+void DeleteFileDlg::ConnectSignalandSlot()
 {
     connect(ui->checkBox, &QCheckBox::clicked, this, &DeleteFileDlg::slotClickCheckAllBox);
     connect(ui->btnDel, &QPushButton::clicked, this, &DeleteFileDlg::slotClickDeleteButton);

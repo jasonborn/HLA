@@ -16,7 +16,7 @@ SaveFileDlg::SaveFileDlg(QWidget *parent) :
     ui->setupUi(this);
     InitUI();
     setTableDefaultData();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
 }
 
 SaveFileDlg::~SaveFileDlg()
@@ -41,7 +41,7 @@ void SaveFileDlg::InitUI()
     ui->tableWidget->setHorizontalHeaderLabels(header);
 }
 
-void SaveFileDlg::ConnectSignalandSolt()
+void SaveFileDlg::ConnectSignalandSlot()
 {
     connect(ui->checkall, &QCheckBox::clicked, this, &SaveFileDlg::slotClickCheckAllBox);
     connect(ui->savebydate, &QCheckBox::clicked,this, &SaveFileDlg::slotClickCheckSaveByDateBox);

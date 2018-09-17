@@ -15,7 +15,7 @@ public:
     explicit SetDlg(QWidget *parent = nullptr);
     ~SetDlg();
 private:
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
 private slots:
     void slotClickResetButton();
     void slotClickSaveButton();

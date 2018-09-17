@@ -16,7 +16,7 @@ public:
     ~ReportDlg();
     void setVersion(const QString &strVer);
 private:
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
     void setDefaultPath();
     void printReport();
 private slots:

@@ -19,7 +19,7 @@ public:
     static void saveSampleT(bool isBydate, const SampleTreeInfo_t &sampleInfo);
 private:
     void InitUI();
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
     void setTableDefaultData();
     void saveFileT(QVector<SampleTreeInfo_t> &sampleInfos);
 

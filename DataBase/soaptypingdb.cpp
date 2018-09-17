@@ -320,6 +320,7 @@ void SoapTypingDB::insertOneGsspFileTable( Ab1FileTableBase &fileTable)
 int SoapTypingDB::getFileInfoFromRealTimeDatabase(const QString &sampleName, QVector<FileInfo> &fileInfos,
                                                   ExonInfo &exonInfo)
 {
+    QMutexLocker locker(&g_mutex);
     QSqlQuery query(m_SqlDB);
     query.prepare("SELECT isExtraFile,"
                   "geneName,"
@@ -365,6 +366,7 @@ int SoapTypingDB::getFileInfoFromRealTimeDatabase(const QString &sampleName, QVe
 int SoapTypingDB::getGsspFileInfoFromRealTimeDatabase(const QString &sampleName, QVector<FileInfo> &gsspFileInfos,
                                                       ExonInfo &exonInfo)
 {
+    QMutexLocker locker(&g_mutex);
     QSqlQuery query(m_SqlDB);
     query.prepare("SELECT gsspName,"
                   "geneName,"
@@ -383,12 +385,7 @@ int SoapTypingDB::getGsspFileInfoFromRealTimeDatabase(const QString &sampleName,
     query.bindValue(0, sampleName);
     bool isSuccess = query.exec();
     int flag = 0;
-    if(!isSuccess)
-    {
-         qDebug()<<"getGsspFileInfoFromRealTimeDatabase error:" << sampleName;
-        return -1;
-    }
-    else
+    if(isSuccess)
     {
         while(query.next())
         {
@@ -444,7 +441,7 @@ void SoapTypingDB::modifySequence(QByteArray &sequence, QSet<int> &editPostion, 
     if(excludeLeft >= 0)
     {
         int i = excludeLeft-exonStartPos+1;
-        while(sequence[i]=='.')
+        while(i>0 && sequence[i]=='.')
         {
             sequence[i]= '-';
             i++;
@@ -457,12 +454,12 @@ void SoapTypingDB::modifySequence(QByteArray &sequence, QSet<int> &editPostion, 
     if(excludeRight >= 0)
     {
         int i = excludeRight - exonStartPos -1;
-        while(sequence[i]=='.')
+        while(i>0 && sequence[i]=='.')
         {
             sequence[i] = '-';
             i--;
         }
-        for(int i=excludeRight-exonStartPos; i<sequence.size(); i++)
+        for(int i=excludeRight-exonStartPos; i>0 &&i<sequence.size(); i++)
         {
             sequence[i]='-';
         }
@@ -520,6 +517,7 @@ void SoapTypingDB::insertSampleInfoToRealTimeDatabase(const SampleInfo &sampleIn
 void SoapTypingDB::getConsensusSequenceFromStaticDatabase(const QString &geneName, QByteArray &geneSequence,
                                             int exonStartPos, int exonLength)
 {
+    QMutexLocker locker(&g_mutex);
     QSqlQuery query(m_SqlDB);
     query.prepare("SELECT geneSequence FROM geneTable WHERE geneName=?");
     query.bindValue(0, geneName);
@@ -535,6 +533,7 @@ void SoapTypingDB::getConsensusSequenceFromStaticDatabase(const QString &geneNam
 
 void SoapTypingDB::getShieldAllelesFromDatabase(const QString &sampleName, QSet<QString> &shieldAlleles)
 {
+    QMutexLocker locker(&g_mutex);
     QSqlQuery query(m_SqlDB);
     query.prepare("SELECT shieldAllele FROM sampleTable WHERE sampleName=?");
     query.bindValue(0, sampleName);
@@ -560,6 +559,7 @@ void SoapTypingDB::getAlleleInfosFromStaticDatabase(const QString &geneName, int
                                       int minExonIndex, int maxExonIndex, QVector<AlleleInfo> &alleleInfos,
                                       QSet<QString> &shieldAlleles)
 {
+    QMutexLocker locker(&g_mutex);
     QSqlQuery query(m_SqlDB);
     query.prepare("SELECT alleleName,alleleSequence,isRare,isIndel,noStar FROM alleleTable WHERE geneName=?");
     query.bindValue(0, geneName);
@@ -631,6 +631,7 @@ void SoapTypingDB::getGsspPosAndSeqFromGsspDatabase(const QString &gsspName, int
 void SoapTypingDB::getGsspAlleleInfosFromStaticDatabase(const QString &geneName, int exonStartPos, int gsspLength,
                                           QVector<GsspAlleleInfo> &gsspAlleleInfos, const QString &gsspName)
 {
+    QMutexLocker locker(&g_mutex);
     QSqlQuery query(m_SqlDB);
     query.prepare("SELECT alleleName,alleleSequence FROM alleleTable WHERE geneName=?");
     query.bindValue(0, geneName);
@@ -663,6 +664,7 @@ WHILE_LABLE:;
 void SoapTypingDB::updateGsspFileResultToRealTimeDatabase(const QString &fileName, int alignResult,
                                             const QString &typeResult, const QString &filterResult)
 {
+    QMutexLocker locker(&g_mutex);
     QSqlQuery query(m_SqlDB);
     query.prepare("UPDATE gsspFileTable set "
                   "alignResult=?,"
@@ -683,7 +685,7 @@ void SoapTypingDB::updateGsspFileResultToRealTimeDatabase(const QString &fileNam
 void SoapTypingDB::getSampleTreeDataFromSampleTable(QMap<QString,SampleTreeInfo_t> &map_sampleTreeInfo)
 {
     QSqlQuery query(m_SqlDB);
-    bool isSuccess = query.exec("SELECT sampleName,geneName,analysisType,markType FROM sampleTable ORDER BY sampleName DESC");
+    bool isSuccess = query.exec("SELECT sampleName,geneName,analysisType,markType FROM sampleTable ORDER BY sampleName");
     if(isSuccess)
     {
         while(query.next())
@@ -706,7 +708,7 @@ void SoapTypingDB::getFileTreeInfosFromRealTimeDatabase(const QString &sampleNam
 {
     QSqlQuery query(m_SqlDB);
     query.prepare("SELECT fileName,exonIndex,rOrF,isGood,alignResult FROM fileTable WHERE sampleName=? "
-                  "ORDER BY exonIndex DESC,rOrF DESC, fileName DESC");
+                  "ORDER BY fileName,exonIndex,rOrF");
     query.bindValue(0, sampleName);
     bool isSuccess = query.exec();
     if(isSuccess)
@@ -720,7 +722,7 @@ void SoapTypingDB::getFileTreeInfosFromRealTimeDatabase(const QString &sampleNam
             fileTreeInfo.rOrF = query.value(2).toString();
             fileTreeInfo.isGood = query.value(3).toInt();
             fileTreeInfo.analysisType = query.value(4).toInt();
-            fileTreeInfos.push_front(fileTreeInfo);
+            fileTreeInfos.push_back(fileTreeInfo);
         }
     }
 }
@@ -728,8 +730,7 @@ void SoapTypingDB::getFileTreeInfosFromRealTimeDatabase(const QString &sampleNam
 void SoapTypingDB::getGsspFileTreeInfosFromRealTimeDatabase(const QString &sampleName, QVector<FileTreeInfo_t> &gsspTreeInfos)
 {
     QSqlQuery query(m_SqlDB);
-    query.prepare("SELECT fileName,gsspName,exonIndex,rOrF,isGood,alignResult FROM gsspFileTable WHERE sampleName=? "
-                  "ORDER BY exonIndex DESC, rOrF DESC, fileName DESC");
+    query.prepare("SELECT fileName,gsspName,exonIndex,rOrF,isGood,alignResult FROM gsspFileTable WHERE sampleName=? ORDER BY fileName");
     query.bindValue(0, sampleName);
     bool isSuccess = query.exec();
     if(isSuccess)
@@ -744,7 +745,7 @@ void SoapTypingDB::getGsspFileTreeInfosFromRealTimeDatabase(const QString &sampl
             gsspTreeInfo.rOrF = query.value(3).toString();
             gsspTreeInfo.isGood = query.value(4).toInt();
             gsspTreeInfo.analysisType = query.value(5).toInt();
-            gsspTreeInfos.push_front(gsspTreeInfo);
+            gsspTreeInfos.push_back(gsspTreeInfo);
         }
     }
 }

@@ -69,7 +69,7 @@ public:
     void RestorePeak();
 private:
     void CreateRightMenu();
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
     void paintEvent(QPaintEvent *event);
     void DrawPeakLines(QPainter *pter);
     void DrawHLines(QPainter *pter);

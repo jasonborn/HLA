@@ -8,7 +8,7 @@ GsspInfoDlg::GsspInfoDlg(QWidget *parent) :
 {
     ui->setupUi(this);
     InitUI();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
 }
 
 GsspInfoDlg::~GsspInfoDlg()
@@ -55,7 +55,7 @@ void GsspInfoDlg::InitUI()
     ui->tableWidget_2->setColumnWidth(9, 100);
 }
 
-void GsspInfoDlg::ConnectSignalandSolt()
+void GsspInfoDlg::ConnectSignalandSlot()
 {
     connect(ui->tableWidget, &QTableWidget::itemSelectionChanged, this, &GsspInfoDlg::slotSetGsspInfoTable2);
     connect(ui->btnDefault , &QPushButton::clicked, this, &GsspInfoDlg::slotClickSaveDefaultBt);

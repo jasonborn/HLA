@@ -15,7 +15,7 @@ LoadFileDlg::LoadFileDlg(QWidget *parent) :
 {
     ui->setupUi(this);
     InitUI();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
 
     m_idaysNum = 0;
     getLoadInfo();
@@ -47,7 +47,7 @@ void LoadFileDlg::InitUI()
     ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
-void LoadFileDlg::ConnectSignalandSolt()
+void LoadFileDlg::ConnectSignalandSlot()
 {
     connect(ui->btnLoad, &QPushButton::clicked, this, &LoadFileDlg::slotClickLoadButton);
     connect(ui->btnExit, &QPushButton::clicked, this, &LoadFileDlg::close);

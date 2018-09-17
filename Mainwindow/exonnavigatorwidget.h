@@ -61,7 +61,8 @@ private:
     ExonNavigatorInfo m_Exoninfo;
     QString m_str_SampleName;
     QString m_str_GeneName;
-    std::set<int> m_set_mispos; //保存所有错配位置，自动排序
+    //std::set<int> m_set_mispos; //set存在问题,废弃
+    QMap<int,int> m_map_mispos; //保存所有错配位置，自动排序
 };
 
 #endif // EXONNAVIGATORWIDGET_H

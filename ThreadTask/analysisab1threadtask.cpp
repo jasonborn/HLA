@@ -13,7 +13,6 @@ AnalysisAB1ThreadTask::AnalysisAB1ThreadTask(Ab1FileTableBase *pfiletable):m_pFi
 
 AnalysisAB1ThreadTask::~AnalysisAB1ThreadTask()
 {
-    qDebug()<<QThread::currentThreadId()<<"xigou";
     if(m_pFiletable)
     {
         delete m_pFiletable;
@@ -23,7 +22,6 @@ AnalysisAB1ThreadTask::~AnalysisAB1ThreadTask()
 
 void AnalysisAB1ThreadTask::run()
 {
-    qDebug()<<QThread::currentThreadId()<<"running";
     Ab1 ab1(m_pFiletable->getFilePath());
     if(!ab1.IsAb1File())
     {

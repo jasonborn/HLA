@@ -8,7 +8,7 @@ ExonTimDlg::ExonTimDlg(QWidget *parent) :
 {
     ui->setupUi(this);
     InitUI();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
     setGeneBoxData();
 }
 
@@ -37,7 +37,7 @@ void ExonTimDlg::InitUI()
     ui->tableWidget->setColumnWidth(6, 100);
 }
 
-void ExonTimDlg::ConnectSignalandSolt()
+void ExonTimDlg::ConnectSignalandSlot()
 {
     connect(ui->btnReset, &QPushButton::clicked, this, &ExonTimDlg::slotClickResetButton);
     connect(ui->btnApply, &QPushButton::clicked, this, &ExonTimDlg::slotClickApplyButton);

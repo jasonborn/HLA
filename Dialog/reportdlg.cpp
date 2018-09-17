@@ -12,7 +12,7 @@ ReportDlg::ReportDlg(QWidget *parent) :
     ui(new Ui::ReportDlg)
 {
     ui->setupUi(this);
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
     setDefaultPath();
 }
 
@@ -22,7 +22,7 @@ ReportDlg::~ReportDlg()
 }
 
 
-void ReportDlg::ConnectSignalandSolt()
+void ReportDlg::ConnectSignalandSlot()
 {
     connect(ui->btnBrowse, &QPushButton::clicked, this, &ReportDlg::slotClickScanBt);
     connect(ui->btnSave, &QPushButton::clicked, this, &ReportDlg::slotClickSaveBt);

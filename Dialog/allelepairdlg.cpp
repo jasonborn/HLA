@@ -7,7 +7,7 @@ AllelePairDlg::AllelePairDlg(QWidget *parent) :
     ui(new Ui::AllelePairDlg)
 {
     ui->setupUi(this);
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
 }
 
 AllelePairDlg::~AllelePairDlg()
@@ -23,7 +23,7 @@ void AllelePairDlg::SetData(const QString &str_genename)
     ui->comboBox_2->addItems(alleleNames);
 }
 
-void AllelePairDlg::ConnectSignalandSolt()
+void AllelePairDlg::ConnectSignalandSlot()
 {
     connect(ui->btnOk, &QPushButton::clicked, this, &AllelePairDlg::slotClickOK);
 }

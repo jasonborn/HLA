@@ -150,7 +150,7 @@ MultiPeakWidget::MultiPeakWidget(QWidget *parent)
     m_index_PeakLine = -1;
     setFocusPolicy(Qt::StrongFocus);//如果不调用，keyPressEvent不响应
     CreateRightMenu();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
 }
 
 MultiPeakWidget::~MultiPeakWidget()
@@ -176,6 +176,10 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
 
     SoapTypingDB::GetInstance()->getAlldataFormRealTime(str_samplename, str_exon, m_vec_filetable);
     int i_count_peak = m_vec_filetable.size();
+    if(i_count_peak == 0)
+    {
+        return;
+    }
     std::set<int> set_left,set_right; //以AlignEndPos为界，计算左右两边的长度
     QVector<int> vec_left_copy;
     for(int i=0;i<i_count_peak;i++)
@@ -539,16 +543,19 @@ void MultiPeakWidget::keyPressEvent(QKeyEvent *event)
 
 void MultiPeakWidget::SetSelectPos(int pos)
 {
-    int left_exclude,right_exclude;
-    m_vec_Peakline[0]->GetExcludePos(left_exclude, right_exclude);
-    QVector<GeneLetter> &vec_GeneLetter = m_vec_Peakline[0]->GetGeneLetter();
+    if(!m_vec_Peakline.isEmpty())
+    {
+        int left_exclude,right_exclude;
+        m_vec_Peakline[0]->GetExcludePos(left_exclude, right_exclude);
+        QVector<GeneLetter> &vec_GeneLetter = m_vec_Peakline[0]->GetGeneLetter();
 
-    int i_tmp = left_exclude + pos;
-    m_select_pos = vec_GeneLetter[i_tmp].pos;
-    update();
+        int i_tmp = left_exclude + pos;
+        m_select_pos = vec_GeneLetter[i_tmp].pos;
+        update();
 
-    QScrollArea *pParent = dynamic_cast<QScrollArea*>(parentWidget()->parentWidget());
-    pParent->horizontalScrollBar()->setSliderPosition(m_select_pos.x()-230);
+        QScrollArea *pParent = dynamic_cast<QScrollArea*>(parentWidget()->parentWidget());
+        pParent->horizontalScrollBar()->setSliderPosition(m_select_pos.x()-230);
+    }
 }
 
 
@@ -637,7 +644,7 @@ void MultiPeakWidget::contextMenuEvent(QContextMenuEvent *event)
     event->accept();
 }
 
-void MultiPeakWidget::ConnectSignalandSolt()
+void MultiPeakWidget::ConnectSignalandSlot()
 {
     connect(m_pActDelete, &QAction::triggered, this, &MultiPeakWidget::slotDelteThisFile);
     connect(m_pActApplyOne, &QAction::triggered, this, &MultiPeakWidget::slotActApplyOne);

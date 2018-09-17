@@ -62,7 +62,7 @@ public:
 private:
     void InitUi();                          //初始化界面
     void InitData();                        //从数据库获取初始数据（Gene GSSP）
-    void ConnectSignalandSolt();            //连接信号与槽函数
+    void ConnectSignalandSlot();            //连接信号与槽函数
     void SlotOpenFile();                    //响应弹出文件对话框
     void SlotAnalysisFile();                //响应解析文件，使用线程池
     void SlotCheckAll(int state);           //响应全选勾选框

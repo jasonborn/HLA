@@ -17,7 +17,7 @@ public:
     ~DeleteFileDlg();
 private:
     void InitUI();
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
     void setTableDefaultSample();
     void deleteFile(QVector<SampleTreeInfo_t> &sampleInfos);
 private slots:

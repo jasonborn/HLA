@@ -17,7 +17,7 @@ public:
     void getSelectAllele(QString &str_allele1, QString &str_allele2);
     void SetData(const QString &str_genename);
 private:
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
 private slots:
     void slotClickOK();
 private:

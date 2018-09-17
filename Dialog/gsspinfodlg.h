@@ -19,7 +19,7 @@ public:
 
 private:
     void InitUI();
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
 
 private slots:
     void slotSetGsspInfoTable2();

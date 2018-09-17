@@ -23,7 +23,6 @@ bool Ab1::AnalysisFile()
     m_file.seek(26);
     QDataStream data(&m_file);
     data>>l_Offset;
-    qDebug() << "l_Offset:" << l_Offset;
     m_file.seek(l_Offset);
 
     AB1Tag tag_temp;

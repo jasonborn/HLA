@@ -38,9 +38,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     InitUI();
-
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
     SetStatusbar();
+    update();
+    m_pSampleTreeWidget->SetTreeData();
 }
 
 MainWindow::~MainWindow()
@@ -93,10 +94,9 @@ void MainWindow::InitUI()
     ui->statusbarright->setStyleSheet("QLabel{border:1px solid rgb(139,139,139);}");
 
     ui->actionAnalyze->setEnabled(false);
-    m_pSampleTreeWidget->SetTreeData();
 }
 
-void MainWindow::ConnectSignalandSolt()
+void MainWindow::ConnectSignalandSlot()
 {
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::slotShowOpenDlg);
     connect(ui->actionLoad, &QAction::triggered, this, &MainWindow::slotShowLoadFileDlg);
@@ -191,7 +191,13 @@ void MainWindow::SetStatusbar()
 
 void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 {
-    m_str_SelectFile = item->text(0);
+    QString strfile = item->text(0);
+    if(!strfile.contains(".ab1"))
+    {
+        return;
+    }
+
+    m_str_SelectFile = strfile;
     QString str_info = item->text(1);
 
     QStringList str_list = m_str_SelectFile.split('_');
@@ -208,7 +214,13 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
     int startpos;
     int selectpos;
     int exonstartpos;
-    m_pExonNavigatorWidget->setSelectFramePosition(str_info.left(1).toInt(), startpos, selectpos, exonstartpos);
+    int index = str_info.left(1).toInt();
+    if(item->text(1).contains("Filter"))//如果是gssp文件
+    {
+        index = item->data(0,Qt::UserRole).toInt();
+    }
+    m_pExonNavigatorWidget->setSelectFramePosition(index, startpos, selectpos, exonstartpos);
+
 
     int i_columnPos = selectpos - startpos;
     int sliderPos = i_columnPos*25-20;

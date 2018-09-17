@@ -18,7 +18,7 @@ public:
 
 private:
     void InitUI();
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
     void setGeneBoxData();
     void setTableData(QVector<ExonTrimTable> &etList);
 private slots:

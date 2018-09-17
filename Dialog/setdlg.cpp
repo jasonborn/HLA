@@ -6,7 +6,7 @@ SetDlg::SetDlg(QWidget *parent) :
     ui(new Ui::SetDlg)
 {
     ui->setupUi(this);
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
 }
 
 SetDlg::~SetDlg()
@@ -14,7 +14,7 @@ SetDlg::~SetDlg()
     delete ui;
 }
 
-void SetDlg::ConnectSignalandSolt()
+void SetDlg::ConnectSignalandSlot()
 {
     connect(ui->btnReset, &QPushButton::clicked, this, &SetDlg::slotClickResetButton);
     connect(ui->btnSave, &QPushButton::clicked, this, &SetDlg::slotClickSaveButton);

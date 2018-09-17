@@ -314,7 +314,7 @@ AlignmentDlg::AlignmentDlg(QWidget *parent) :
 {
     ui->setupUi(this);
     InitUI();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
     setGeneBoxData();
 }
 
@@ -346,7 +346,7 @@ void AlignmentDlg::InitUI()
     m_map_coden.insert("G", -24);
 }
 
-void AlignmentDlg::ConnectSignalandSolt()
+void AlignmentDlg::ConnectSignalandSlot()
 {
     connect(ui->comboBox, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
             this, &AlignmentDlg::slotGeneBoxItemChanged);

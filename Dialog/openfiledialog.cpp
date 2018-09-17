@@ -19,7 +19,7 @@ OpenFileDialog::OpenFileDialog(QWidget *parent) :
     ui->setupUi(this);
     InitUi();
     InitData();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
     m_iPrgvalue = 1;
 }
 
@@ -57,7 +57,7 @@ void OpenFileDialog::InitData()
     SoapTypingDB::GetInstance()->GetGsspMapToExonAndFR(m_map_ExonAndRF);
 }
 
-void OpenFileDialog::ConnectSignalandSolt()
+void OpenFileDialog::ConnectSignalandSlot()
 {
     connect(ui->btnOpen, &QPushButton::clicked, this, &OpenFileDialog::SlotOpenFile);
     connect(ui->btnAnalysis, &QPushButton::clicked, this, &OpenFileDialog::SlotAnalysisFile);

@@ -1,5 +1,6 @@
 #include "analysissamplethreadtask.h"
 #include <QDebug>
+#include <QThread>
 #include "Core/core.h"
 #include "DataBase/soaptypingdb.h"
 
@@ -12,60 +13,6 @@ AnalysisSampleThreadTask::~AnalysisSampleThreadTask()
 {
 }
 
-unsigned int formatMerge(char A)
-{
-    switch(A)
-    {
-    case 'A': return 0x1;
-    case 'G': return 0x2;
-    case 'T': return 0x4;
-    case 'C': return 0x8;
-    case 'R': return 0x3;
-    case 'Y': return 0xc;
-    case 'W': return 0x5;
-    case 'S': return 0xa;
-    case 'M': return 0x9;
-    case 'K': return 0x6;
-    case 'B': return 0xe;
-    case 'D': return 0x7;
-    case 'H': return 0xd;
-    case 'V': return 0xb;
-    case 'N': return 0xf;
-    case '-': return 0x0;
-    case '.': return 0x1f;
-    }
-    return 0xf;
-}
-
-char reFormatMerge(unsigned int a)
-{
-    switch(a)
-    {
-    case 0x0: return '-';
-    case 0x1: return 'A';
-    case 0x2: return 'G';
-    case 0x4: return 'T';
-    case 0x8: return 'C';
-    case 0x3: return 'R';
-    case 0xc: return 'Y';
-    case 0x5: return 'W';
-    case 0xa: return 'S';
-    case 0x9: return 'M';
-    case 0x6: return 'K';
-    case 0x1f: return '.';
-    default:
-        return 'n';
-    }
-    return 'n';
-}
-
-char mergeBases(char A, char B)
-{
-    unsigned int a = formatMerge(A);
-    unsigned int b = formatMerge(B);
-    return reFormatMerge(a|b);
-}
-
 void mergeFileSequenceToSampleSequence(char *fileSequence, char *sampleSequence)
 {
     int size = (strlen(sampleSequence)<strlen(fileSequence))?strlen(sampleSequence):strlen(fileSequence);
@@ -76,13 +23,14 @@ void mergeFileSequenceToSampleSequence(char *fileSequence, char *sampleSequence)
             sampleSequence[i] = fileSequence[i];
             continue;
         }
-        sampleSequence[i] = mergeBases(sampleSequence[i], fileSequence[i]);
+        sampleSequence[i] = Core::GetInstance()->mergeBases(sampleSequence[i], fileSequence[i]);
     }
 }
 
 void mergeForwardAndReverseToPattern(char *forwardSeq, char *reverseSeq, char *patternSeq,
                                      int exonStartPos, QStringList &frDifferenceList, QStringList &frUnequlList)
 {
+    qDebug()<<(long)QThread::currentThreadId<<__FUNCTION__;
     int size = strlen(patternSeq);
     for(int i=0; i<size; i++)
     {
@@ -116,7 +64,7 @@ void mergeForwardAndReverseToPattern(char *forwardSeq, char *reverseSeq, char *p
         }
         else
         {
-            patternSeq[i] = mergeBases(forwardSeq[i], reverseSeq[i]);
+            patternSeq[i] = Core::GetInstance()->mergeBases(forwardSeq[i], reverseSeq[i]);
         }
 
         if(patternSeq[i] == 'n' || (patternSeq[i] != forwardSeq[i] && patternSeq[i] != reverseSeq[i]))
@@ -132,13 +80,14 @@ void mergeForwardAndReverseToPattern(char *forwardSeq, char *reverseSeq, char *p
 
 bool isEqualPC(char consensus, char pattern)
 {
-    unsigned int a = formatMerge(consensus);
-    unsigned int b = formatMerge(pattern);
+    unsigned int a = Core::GetInstance()->formatMerge(consensus);
+    unsigned int b = Core::GetInstance()->formatMerge(pattern);
     return (a|b)==a;
 }
 
 void comparePatternWithConsensus(char *patternSeq, char *consensusSeq, int exonStartPos, QStringList &pcDifferenceList)
 {
+    qDebug()<<(long)QThread::currentThreadId<<__FUNCTION__;
     int size = strlen(patternSeq) < strlen(consensusSeq) ? strlen(patternSeq):strlen(consensusSeq);
     for(int i=0; i<size; i++)
     {
@@ -153,7 +102,8 @@ void comparePatternWithConsensus(char *patternSeq, char *consensusSeq, int exonS
     }
 }
 
-void removeAlleleInfoByPatternNew(char *patternSeq, QVector<AlleleInfo> &alleleInfos){
+void removeAlleleInfoByPatternNew(char *patternSeq, QVector<AlleleInfo> &alleleInfos)
+{
     int size = strlen(patternSeq), alleleSize = alleleInfos.size();
     QMap<int, int> tmpNomalPos;
     QMap<int, int> tmpStarPos;
@@ -327,7 +277,7 @@ int compareByAlleleInfoAndDiffPos(const char *patternSeq, const AlleleInfo &alle
         }
         else
         {
-            if(mergeBases(alleleSeqi[diffInfoi[i]], alleleSeqj[diffInfoj[j]]) != patternSeq[diffInfoi[i]])
+            if(Core::GetInstance()->mergeBases(alleleSeqi[diffInfoi[i]], alleleSeqj[diffInfoj[j]]) != patternSeq[diffInfoi[i]])
             {
                 mis++;
             }
@@ -452,6 +402,7 @@ int AnalysisSampleThreadTask::comparePatternWithAllele(char *patternSeq,  char *
                                                        int exonStartPos, int minExonIndex, int maxExonIndex,
                                                        QMap<int, QString> &typeResult, QSet<QString> &sheildAlleles)
 {
+    qDebug()<<(long)QThread::currentThreadId<<__FUNCTION__;
     int length = strlen(patternSeq);
     if(length<=0)
         return UNMATCH;
@@ -480,6 +431,7 @@ int AnalysisSampleThreadTask::comparePatternWithAllele(char *patternSeq,  char *
 
 void changeAlignMapToAlignString(QMap<int, QString> &typeResult, QString &result)
 {
+    qDebug()<<(long)QThread::currentThreadId<<__FUNCTION__;
     int limit = 500;
     int i=0;
     for(QMap<int, QString>::iterator it=typeResult.begin(); it!=typeResult.end(); it++)
@@ -493,6 +445,7 @@ void changeAlignMapToAlignString(QMap<int, QString> &typeResult, QString &result
 
 void getZeroResultFromTypeResult(QMap<int, QString> &typeResult, QMap<int, QString> &zeroResult)
 {
+    qDebug()<<(long)QThread::currentThreadId<<__FUNCTION__;
     QMap<int, QString> newMap;
     for(QMap<int ,QString>::iterator it = typeResult.begin(); it!= typeResult.end(); it++)
     {
@@ -515,6 +468,7 @@ int AnalysisSampleThreadTask::compareGsspWithAlleles(const QByteArray &gsspName,
                                                      const QString &geneName, int exonStartPos,
                                                      QString &typeResult, QSet<QString> &zeroResult)
 {
+    qDebug()<<(long)QThread::currentThreadId<<__FUNCTION__;
     int gsspL = (int)strlen(gsspSequence);
     QVector<GsspAlleleInfo> gsspAlleleInfos;
     SoapTypingDB::GetInstance()->getGsspAlleleInfosFromStaticDatabase(geneName, exonStartPos, gsspL,
@@ -598,6 +552,7 @@ void getCombinedResult(QMap<int, QString> &typeResult, QSet<QString> &zeroAllele
 void AnalysisSampleThreadTask::analysisSample(SampleInfo &sampleInfo, ExonInfo &exonInfo,
                     QVector<FileInfo>& fileInfos, QVector<FileInfo>& gsspFileInfos)
 {
+    qDebug()<<(long)QThread::currentThreadId<<__FUNCTION__;
     bool isGood;
     sampleInfo.minExonIndex = exonInfo.minExonIndex;
     sampleInfo.maxExonIndex = exonInfo.maxExonIndex;

@@ -15,7 +15,7 @@ public:
 private:
     void InitUI();
     void CreateRightMenu();
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
     void contextMenuEvent(QContextMenuEvent *event);
     void setGssp();
     bool processGssp(const QVector<AllelePair> &allelePairs, const QString &sampleName, QVector<QStringList> &result);

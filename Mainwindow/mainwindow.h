@@ -25,7 +25,7 @@ public:
 
 private:
     void SetStatusbar();                    //显示底部左侧状态栏信息
-    void ConnectSignalandSolt();            //连接信号与槽函数
+    void ConnectSignalandSlot();            //连接信号与槽函数
     void DisConnectSignalandSolt();         //断开信号与槽函数连接
 
     void InitUI();

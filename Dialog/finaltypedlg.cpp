@@ -8,7 +8,7 @@ FinalTypeDlg::FinalTypeDlg(QWidget *parent) :
 {
     ui->setupUi(this);
     InitUI();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
 }
 
 FinalTypeDlg::~FinalTypeDlg()
@@ -32,7 +32,7 @@ void FinalTypeDlg::InitUI()
     ui->tableWidget->setColumnWidth(2, 100);
 }
 
-void FinalTypeDlg::ConnectSignalandSolt()
+void FinalTypeDlg::ConnectSignalandSlot()
 {
     connect(ui->btnSet, &QPushButton::clicked, this, &FinalTypeDlg::slotClickSetButton);
     connect(ui->tableWidget, &QTableWidget::itemSelectionChanged, this, &FinalTypeDlg::slotRowChanged);

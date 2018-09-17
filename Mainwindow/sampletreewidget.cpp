@@ -17,7 +17,7 @@ SampleTreeWidget::SampleTreeWidget(QWidget *parent)
 {
     InitUI();
     CreateRightMenu();
-    ConnectSignalandSolt();
+    ConnectSignalandSlot();
 }
 
 SampleTreeWidget::~SampleTreeWidget()
@@ -25,7 +25,7 @@ SampleTreeWidget::~SampleTreeWidget()
 
 }
 
-void SampleTreeWidget::ConnectSignalandSolt()
+void SampleTreeWidget::ConnectSignalandSlot()
 {
     connect(m_pActSaveAndClear, &QAction::triggered, this, &SampleTreeWidget::slotQuickSaveAndClear);
     connect(m_pActQuickSave, &QAction::triggered, this, &SampleTreeWidget::slotQuickSave);
@@ -105,11 +105,14 @@ void SampleTreeWidget::CreateRightMenu()
 
 void SampleTreeWidget::SetTreeData()
 {
+    clear();
     m_map_SampleTreeInfo.clear();
     SoapTypingDB::GetInstance()->getSampleTreeDataFromSampleTable(m_map_SampleTreeInfo);
+    if(m_map_SampleTreeInfo.isEmpty())
+    {
+        return;
+    }
 
-    //QBrush brush;
-    //brush.setColor(Qt::blue);
     foreach(const SampleTreeInfo_t &sampleTreeInfo, m_map_SampleTreeInfo.values())
     {
         int gsspSize = 0;
@@ -141,6 +144,7 @@ void SampleTreeWidget::SetTreeData()
             }
             else
             {
+                child->setData(0,Qt::UserRole,fileTreeInfo.exonIndex);
                 if(fileTreeInfo.analysisType == 4) //UNMATCH
                 {
                     child->setText(1, QString("Filter:%1").arg(fileTreeInfo.gsspName));//2
@@ -166,18 +170,20 @@ void SampleTreeWidget::SetTreeData()
     }
     topLevelItem(0)->setSelected(true);
     expandItem(topLevelItem(0));
+    //topLevelItem(0)->child(0)->setSelected(true);
+    setCurrentItem(topLevelItem(0)->child(0));
+    emit itemClicked(topLevelItem(0)->child(0), 1);
 }
 
 void SampleTreeWidget::SetSelectItem(int index, QString &str_name)
 {
-    QString str_last_select = currentItem()->text(0);
-    QStringList str_list = str_last_select.split('_');
-
+    QTreeWidgetItem *pParent = currentItem()->parent();
     QString str = QString("%1F").arg(index);
-    QList<QTreeWidgetItem *> item_list = findItems(str,Qt::MatchRecursive,1);
-    foreach(QTreeWidgetItem *item, item_list)
+
+    for(int i = 0;i<pParent->childCount();i++)
     {
-        if(item->text(0).contains(str_list[0]))
+        QTreeWidgetItem *item = pParent->child(i);
+        if(item->text(0).contains(str))
         {
             setCurrentItem(item);
             str_name = item->text(0);
@@ -201,7 +207,7 @@ void SampleTreeWidget::markSampleType(int markType)
 
     m_map_SampleTreeInfo[str_sample].markType = markType;
 
-    if(item->parent()!=NULL)
+    if(item->parent()!=nullptr)
     {
         item = item->parent();
     }

@@ -28,7 +28,7 @@ public:
 
 private:
     void InitUI();
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
     void getLoadInfo();
     void getOkIndex();
     void SetTableData();

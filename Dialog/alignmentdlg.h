@@ -66,7 +66,7 @@ public:
     ~AlignmentDlg();
 private:
     void InitUI();
-    void ConnectSignalandSolt();
+    void ConnectSignalandSlot();
     void setGeneBoxData();
 private slots:
     void slotGeneBoxItemChanged(const QString &gene);
