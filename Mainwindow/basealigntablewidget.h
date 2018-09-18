@@ -10,18 +10,21 @@ class BaseAlignTableWidget:public QTableWidget
 public:
     BaseAlignTableWidget();
     ~BaseAlignTableWidget();
-    void SetAlignTableData(QString &str_samplename);
+    void SetAlignTableData(QString &str_samplename, QString &str_file, QString str_info, int col);
+    void SetAllelePairData(QString &allele1, QString &allele2);
 private:
     void InitUI();
     void clearBaseAlignTableSampleItem();
     void getTableHead(QStringList &head, int length, int start);
-
-private slots:
-    void onSliderMoved(int pos);
+    void getTypeAlignResult(char *result, char *pattern, char *alleleSeq1, char *alleleSeq2, QSet<int> &misMatch,
+                            int alignStart1, int alignStart2);
 private:
     int m_iRowNum;
     int m_iColNum;
 
+    QString m_str_file;
+    QString m_str_info;
+    int m_i_col;
     QString m_str_SampleName;
     QStringList m_sl_defaulthead;
     BaseAlignSampleInfo m_BaseAlignSampleInfo;

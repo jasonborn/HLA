@@ -40,8 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     InitUI();
     ConnectSignalandSlot();
     SetStatusbar();
-    update();
-    m_pSampleTreeWidget->SetTreeData();
+    //m_pSampleTreeWidget->SetTreeData();
 }
 
 MainWindow::~MainWindow()
@@ -142,12 +141,18 @@ void MainWindow::ConnectSignalandSlot()
 
     connect(m_pMultiPeakWidget, &MultiPeakWidget::signalPeakFocusPosition, this, &MainWindow::slotPeakFocusPosition);
 
+    connect(m_pMatchListWidget, &MatchListWidget::signalAllelePair, this, &MainWindow::slotAllelePairChanged);
 
 }
 
 void MainWindow::DisConnectSignalandSolt()
 {
 
+}
+
+void MainWindow::InitData()
+{
+    m_pSampleTreeWidget->SetTreeData();
 }
 
 void MainWindow::slotShowOpenDlg()
@@ -191,35 +196,42 @@ void MainWindow::SetStatusbar()
 
 void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 {
+    QTreeWidgetItem *pParent = item->parent();
+    if(pParent == nullptr)
+    {
+        return;
+    }
+    QString str_sample = pParent->text(0);
+    QString str_gene  = pParent->text(1);
+
     QString strfile = item->text(0);
+    QString str_info = item->text(1);
+    m_pMatchListWidget->SetTableData(str_sample,strfile, str_info, col);
+
     if(!strfile.contains(".ab1"))
     {
         return;
     }
 
     m_str_SelectFile = strfile;
-    QString str_info = item->text(1);
 
-    QStringList str_list = m_str_SelectFile.split('_');
-    m_pMatchListWidget->SetTableData(str_list[0],"");
+    m_pExonNavigatorWidget->SetExonData(str_sample, str_gene);
 
-    m_pExonNavigatorWidget->SetExonData(str_list[0],str_list[1]);
+    m_pBaseAlignTableWidget->SetAlignTableData(str_sample,strfile, str_info, col);
 
-    m_pBaseAlignTableWidget->SetAlignTableData(str_list[0]);
+    QString str_exon = str_info.left(1);
+    if(str_info.contains("Filter"))//如果是gssp文件
+    {
+        str_exon = item->data(0,Qt::UserRole).toString();
+    }
 
-    g_time_main.start();
-    m_pMultiPeakWidget->SetPeakData(str_list[0],str_info.left(1));
-    qDebug()<<"total time"<<g_time_main.elapsed();
+    m_pMultiPeakWidget->SetPeakData(str_sample,str_exon);
+
 
     int startpos;
     int selectpos;
     int exonstartpos;
-    int index = str_info.left(1).toInt();
-    if(item->text(1).contains("Filter"))//如果是gssp文件
-    {
-        index = item->data(0,Qt::UserRole).toInt();
-    }
-    m_pExonNavigatorWidget->setSelectFramePosition(index, startpos, selectpos, exonstartpos);
+    m_pExonNavigatorWidget->setSelectFramePosition(str_exon.toInt(), startpos, selectpos, exonstartpos);
 
 
     int i_columnPos = selectpos - startpos;
@@ -538,4 +550,9 @@ void MainWindow::slotHelp()
     {
         QMessageBox::warning(this, "SoapTyping", "Documents are missing!");
     }
+}
+
+void MainWindow::slotAllelePairChanged(QString &allele1, QString &allele2)
+{
+    m_pBaseAlignTableWidget->SetAllelePairData(allele1, allele2);
 }

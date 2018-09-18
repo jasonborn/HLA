@@ -22,7 +22,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-
+    void InitData();
 private:
     void SetStatusbar();                    //显示底部左侧状态栏信息
     void ConnectSignalandSlot();            //连接信号与槽函数
@@ -69,6 +69,8 @@ public slots:
 
     void slotAbout();
     void slotHelp();
+
+    void slotAllelePairChanged(QString &, QString &);
 private:
     Ui::MainWindow *ui;
     SampleTreeWidget *m_pSampleTreeWidget;

@@ -753,21 +753,22 @@ void SoapTypingDB::getGsspFileTreeInfosFromRealTimeDatabase(const QString &sampl
 void SoapTypingDB::getResultDataFromsampleTable(const QString &sampleName, bool isCombined, QStringList &typeResult)
 {
     QSqlQuery query(m_SqlDB);
-    query.prepare("SELECT typeResult FROM sampleTable WHERE sampleName=?");
+    if(isCombined)
+    {
+        query.prepare("SELECT combinedResult FROM sampleTable WHERE sampleName=?");
+    }
+    else
+    {
+        query.prepare("SELECT typeResult FROM sampleTable WHERE sampleName=?");
+    }
+
     query.bindValue(0, sampleName);
     bool isSuccess = query.exec();
     if(isSuccess)
     {
         while(query.next())
         {
-            if(isCombined)
-            {
-                //typeResult = query.value(1).toString().split(";", QString::SkipEmptyParts);
-            }
-            else
-            {
-                typeResult = query.value(0).toString().split(";", QString::SkipEmptyParts);
-            }
+            typeResult = query.value(0).toString().split(";", QString::SkipEmptyParts);
             break;
         }
     }
@@ -779,21 +780,22 @@ void SoapTypingDB::getResultDataFromGsspTable(const QString &fileName, bool isGs
     if(isGsspFilter || isGssp)
     {
         QSqlQuery query(m_SqlDB);
-        query.prepare("SELECT typeResult, filterResult FROM gsspFileTable WHERE fileName=?");
+        if(isGsspFilter)
+        {
+            query.prepare("SELECT filterResult FROM gsspFileTable WHERE fileName=?");
+        }
+        else if (isGssp)
+        {
+            query.prepare("SELECT typeResult FROM gsspFileTable WHERE fileName=?");
+        }
+
         query.bindValue(0, fileName);
         bool isSuccess = query.exec();
         if(isSuccess)
         {
             while(query.next())
             {
-                if(isGssp)
-                {
-                    typeResult = query.value(0).toString().split(";", QString::SkipEmptyParts);
-                }
-                else if (isGsspFilter)
-                {
-                    typeResult = query.value(1).toString().split(";", QString::SkipEmptyParts);
-                }
+                typeResult = query.value(0).toString().split(";", QString::SkipEmptyParts);
                 break;
             }
         }
@@ -1294,7 +1296,7 @@ void SoapTypingDB::getSetResultBySampleName(const QString &sampleName, QString &
     }
 }
 
-void SoapTypingDB::getAlleleSequence(const QString &alleleName, QByteArray &alleleSeq)
+void SoapTypingDB::getAlleleSequence(const QString &alleleName, QByteArray &alleleSeq, int alignStartPos, int alignLength)
 {
     QSqlQuery query(m_SqlDB);
     query.prepare("SELECT alleleSequence FROM alleleTable WHERE alleleName=?");
@@ -1304,7 +1306,14 @@ void SoapTypingDB::getAlleleSequence(const QString &alleleName, QByteArray &alle
     {
         while(query.next())
         {
-            alleleSeq = query.value(0).toByteArray();
+            if(alignStartPos != 0 && alignLength != 0)
+            {
+                alleleSeq = query.value(0).toByteArray().mid(alignStartPos, alignLength);
+            }
+            else
+            {
+                alleleSeq = query.value(0).toByteArray();
+            }
         }
     }
 }

@@ -172,7 +172,7 @@ void SampleTreeWidget::SetTreeData()
     expandItem(topLevelItem(0));
     //topLevelItem(0)->child(0)->setSelected(true);
     setCurrentItem(topLevelItem(0)->child(0));
-    emit itemClicked(topLevelItem(0)->child(0), 1);
+    emit itemClicked(topLevelItem(0)->child(0), 0);
 }
 
 void SampleTreeWidget::SetSelectItem(int index, QString &str_name)

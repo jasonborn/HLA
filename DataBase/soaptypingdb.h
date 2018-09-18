@@ -75,7 +75,7 @@ public:
     void updateSetGsspBySampleName(const QString& sampleName, const QString &gsspInfo);
     void updateSetResultBySampleName(const QString &sampleName, const QString &result);
     void getSetResultBySampleName(const QString &sampleName, QString & result);
-    void getAlleleSequence(const QString &alleleName, QByteArray &alleleSeq);
+    void getAlleleSequence(const QString &alleleName, QByteArray &alleleSeq,int alignStartPos = 0, int alignLength = 0);
     void getExonIndexAndGeneBySampleName(const QString &sampleName, int &exonStart, int &exonEnd, QByteArray &geneName);
     void getGsspTablesFromGsspDatabase(const QString &geneName, int exon, QVector<GsspTable> &gsspTables);
     void getExonPositionIndexFromStaticDatabase(const QString &geneName, QVector<int> &position);

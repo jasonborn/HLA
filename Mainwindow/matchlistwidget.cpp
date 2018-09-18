@@ -68,27 +68,64 @@ void MatchListWidget::InitUI()
     }
 }
 
-
-void MatchListWidget::SetTableData(const QString &str_sample, const QString &str_gssp)
+void MatchListWidget::ClearTable()
 {
-    m_str_SampleName = str_sample;
+    for(int i=0; i<m_iRowCount; i++)
+    {
+        for(int j=0;j<5;j++)
+        {
+            item(i,j)->setText("");
+        }
+    }
+}
+
+void MatchListWidget::SetTableData(const QString &str_sample, const QString &str_file, const QString &str_info, int col)
+{
+    if(m_str_SampleName != str_sample || m_str_file != str_file || m_iCol != col)
+    {
+        m_str_SampleName = str_sample;
+        m_str_file = str_file;
+        m_iCol = col;
+    }
+    else
+    {
+        return;
+    }
+
+    bool b_setgssp = false;
     m_strlist_result.clear();
-    SoapTypingDB::GetInstance()->getResultDataFromGsspTable(str_gssp,false,false,m_strlist_result);
-    SoapTypingDB::GetInstance()->getResultDataFromsampleTable(str_sample,false,m_strlist_result);
+    ClearTable();
+    if(str_file.contains("Combined"))
+    {
+        SoapTypingDB::GetInstance()->getResultDataFromsampleTable(str_sample,true,m_strlist_result);
+    }
+    else if(col == 1)//样品列表选中的是第1列
+    {
+        SoapTypingDB::GetInstance()->getResultDataFromGsspTable(m_str_file,true,false,m_strlist_result);
+    }
+    else if(str_info.contains("Filter"))//样品列表选中的是第0列，且文件是gssp
+    {
+        SoapTypingDB::GetInstance()->getResultDataFromGsspTable(m_str_file,false,true,m_strlist_result);
+    }
+    else
+    {
+        b_setgssp = true;
+        SoapTypingDB::GetInstance()->getResultDataFromsampleTable(str_sample,false,m_strlist_result);
+    }
 
     m_iRowCount = m_strlist_result.size();
     for(int i=0; i<m_iRowCount; i++)
     {
         QStringList line = m_strlist_result.at(i).split(",");
-        if(line.at(3).toInt()!=0)
+        if(line.size() > 3 && line.at(3).toInt()!=0)
         {
             line[0].append("*");
         }
-
-        this->item(i, 0)->setText("  "+line.at(0));
-        this->item(i, 1)->setText(line.at(1));
-        this->item(i, 2)->setText(line.at(2));
-        this->item(i, 3)->setText(line.at(4));
+        line.removeAt(3);
+        for(int j=0;j<line.size();j++)
+        {
+            this->item(i, j)->setText(line.at(j));
+        }
 
         if(i >= 500)
         {
@@ -96,7 +133,10 @@ void MatchListWidget::SetTableData(const QString &str_sample, const QString &str
             break;
         }
     }
-    setGssp();
+    if(m_iRowCount && b_setgssp)
+    {
+        setGssp();
+    }
 }
 
 QStringList & MatchListWidget::GetMatchList()

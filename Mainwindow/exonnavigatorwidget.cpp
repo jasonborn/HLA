@@ -15,7 +15,6 @@ ExonNavigatorWidget::ExonNavigatorWidget(QWidget *parent)
     m_ih1 = m_iheight*0.5;
     m_ih2 = m_iheight*0.4;
     m_ih3 = m_iheight*0.2;
-    //m_iSelectPos = 100;
     m_iMidgap = 40;
     m_igap = 20;
     m_isub_index = 0;
@@ -56,6 +55,7 @@ void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
 
     m_isub_index = m_Exoninfo.maxExonIndex - m_Exoninfo.minExonIndex;
     m_isub_pos = m_vecExonIndex[m_Exoninfo.maxExonIndex] - m_vecExonIndex[m_Exoninfo.minExonIndex-1];
+    m_iStartPeakpos = m_vecExonIndex[m_Exoninfo.minExonIndex-1];
     assert(m_isub_pos> 0);
 
     foreach(int pos,m_Exoninfo.vec_frUnEqual)
@@ -79,7 +79,6 @@ void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
     }
 
     CalcExonData();
-    //update();
 }
 
 void ExonNavigatorWidget::CalcExonData()
@@ -96,7 +95,7 @@ void ExonNavigatorWidget::CalcExonData()
             Exon exon;
             exon.i_exonstartpos = m_vecExonIndex[i-1]+1;
             exon.i_exonendpos= m_vecExonIndex[i];
-            exon.i_screenstartpos = m_igap+(m_vecExonIndex[i-1]-m_vecExonIndex[m_Exoninfo.minExonIndex-1])*m_dXscale
+            exon.i_screenstartpos = m_igap+(m_vecExonIndex[i-1]-m_iStartPeakpos)*m_dXscale
                     +(i-m_isub_index)*m_iMidgap;//碱基导航条起始坐标
             exon.i_screenwidth = (m_vecExonIndex[i] - m_vecExonIndex[i-1])*m_dXscale;//碱基导航条长度
             exon.i_exonindex = i;
@@ -153,13 +152,14 @@ void ExonNavigatorWidget::DrawExonArea(QPainter &exonPainter)
 
 void ExonNavigatorWidget::DrawSelectFrame(QPainter &exonPainter)
 {
+    int x_pos = PeakPosToScreenPos(m_iSelectPeakPos);
     exonPainter.setPen(QColor(136,136,136));
     exonPainter.setBrush(QBrush(QColor(255,255,0,127)));
-    exonPainter.drawRect(QRect(m_iSelectPos-15, m_itop1-15, 25, m_ih1+15));
+    exonPainter.drawRect(QRect(x_pos-15, m_itop1-15, 25, m_ih1+15));
     exonPainter.setBrush(Qt::NoBrush);
     exonPainter.setPen(Qt::black);
-    exonPainter.drawText(QRect(m_iSelectPos-15, 0, 25, m_ih1), Qt::AlignBottom|Qt::AlignCenter,
-                         QString::number(ScreenPosToPeakPos(m_iSelectPos)));
+    exonPainter.drawText(QRect(x_pos-15, 0, 25, m_ih1), Qt::AlignBottom|Qt::AlignCenter,
+                         QString::number(m_iSelectPeakPos));
 }
 
 void ExonNavigatorWidget::DrawExonPos(QPainter &exonPainter)
@@ -200,15 +200,16 @@ void ExonNavigatorWidget::mousePressEvent(QMouseEvent *event)
     if(event->button() == Qt::LeftButton)
     {
         QPoint pos = event->pos();
+        int x_pos = pos.x();
         foreach(const Exon &exon, m_vec_Exon)
         {
-            if(pos.x() >= exon.i_screenstartpos && pos.x() <= exon.i_screenstartpos+exon.i_screenwidth)
+            if(x_pos >= exon.i_screenstartpos && x_pos <= exon.i_screenstartpos+exon.i_screenwidth)
             {
-                m_iSelectPos = pos.x();
-                qDebug()<<__FUNCTION__<<m_iSelectPos;
+                m_iSelectPeakPos = ScreenPosToPeakPos(x_pos);
+                qDebug()<<__FUNCTION__<<x_pos<<m_iSelectPeakPos;
                 update();
-                emit signalExonFocusPosition(m_vecExonIndex[m_Exoninfo.minExonIndex-1]+1,
-                        ScreenPosToPeakPos(m_iSelectPos),
+                emit signalExonFocusPosition(m_iStartPeakpos+1,
+                        m_iSelectPeakPos,
                         exon.i_exonstartpos, exon.i_exonindex);
                 break;
             }
@@ -224,7 +225,7 @@ int ExonNavigatorWidget::PeakPosToScreenPos(int peakpos) //峰图坐标转换成
     {
         if(peakpos >= exon.i_exonstartpos && peakpos <= exon.i_exonendpos)
         {
-            screenpos = (peakpos - m_vecExonIndex[m_Exoninfo.minExonIndex - 1])*m_dXscale
+            screenpos = (peakpos - m_iStartPeakpos)*m_dXscale
                     + m_igap + (exon.i_exonindex-m_isub_index)*m_iMidgap;
             break;
         }
@@ -240,18 +241,8 @@ int ExonNavigatorWidget::ScreenPosToPeakPos(int screenpos) //显示坐标转换�
         if(screenpos > exon.i_screenstartpos && screenpos < exon.i_screenstartpos+exon.i_screenwidth)
         {
             peakpos = (screenpos - m_igap - (exon.i_exonindex-m_isub_index)*m_iMidgap)/m_dXscale
-                    + m_vecExonIndex[m_Exoninfo.minExonIndex - 1]+1;
-//            for(int i=exon.i_exonstartpos;i<exon.i_exonendpos;i++)
-//            {
-//                double pos = (i-m_vecExonIndex[m_Exoninfo.minExonIndex - 1])*m_dXscale
-//                        +m_igap + (exon.i_exonindex-m_isub_index)*m_iMidgap;
-//                if(screenpos < pos)
-//                {
-//                    peakpos = i;
-//                    break;
-//                }
-//            }
-//            break;
+                    + m_iStartPeakpos+1;
+            break;
         }
         else if (screenpos == exon.i_screenstartpos)
         {
@@ -270,13 +261,12 @@ int ExonNavigatorWidget::ScreenPosToPeakPos(int screenpos) //显示坐标转换�
 
 void ExonNavigatorWidget::SetSelectPos(int colnum, int &selectpos, int &exonstartpos, int &index)
 {
-    selectpos = colnum + m_vecExonIndex[m_Exoninfo.minExonIndex - 1];
+    selectpos = colnum + m_iStartPeakpos;
     foreach(const Exon &exon, m_vec_Exon)
     {
         if(selectpos >= exon.i_exonstartpos && selectpos <= exon.i_exonendpos)
         {
-            m_iSelectPos = (selectpos - m_vecExonIndex[m_Exoninfo.minExonIndex - 1])*m_dXscale
-                    + m_igap + (exon.i_exonindex-m_isub_index)*m_iMidgap;
+            m_iSelectPeakPos = selectpos;
             exonstartpos = exon.i_exonstartpos;
             index = exon.i_exonindex;
             break;
@@ -291,7 +281,7 @@ void ExonNavigatorWidget::setSelectFramePosition(int index, int &startpos, int &
     {
         if(exon.i_exonindex == index)
         {
-            startpos = m_vecExonIndex[m_Exoninfo.minExonIndex - 1];
+            startpos = m_iStartPeakpos;
             exonstartpos = exon.i_exonstartpos;
 
             foreach(int peakpos, m_map_mispos.keys())
@@ -299,9 +289,7 @@ void ExonNavigatorWidget::setSelectFramePosition(int index, int &startpos, int &
                 if(peakpos > exon.i_exonstartpos && peakpos < exon.i_exonendpos)
                 {
                     peakpos++;//从数据库获取的要加1？？？？
-                    m_iSelectPos = (peakpos - m_vecExonIndex[m_Exoninfo.minExonIndex - 1])*m_dXscale
-                            + m_igap + (exon.i_exonindex-m_isub_index)*m_iMidgap;
-
+                    m_iSelectPeakPos = peakpos;
                     selectpos = peakpos;
                     update();
                     return;
@@ -309,7 +297,7 @@ void ExonNavigatorWidget::setSelectFramePosition(int index, int &startpos, int &
             }
 
             //如果没有错配位点，默认为导航条起始位置
-            m_iSelectPos = exon.i_screenstartpos;
+            m_iSelectPeakPos = exon.i_exonstartpos;
             selectpos = exon.i_exonstartpos;
             update();
             break;
@@ -324,11 +312,10 @@ void ExonNavigatorWidget::SetSelectFramePos(int index, int colnum, int &test)
         if(exon.i_exonindex == index)
         {
             int selectpos = colnum + exon.i_exonstartpos;
-            test = selectpos  - m_vecExonIndex[m_Exoninfo.minExonIndex - 1] -1;
+            test = selectpos  - m_iStartPeakpos -1;
             if(selectpos >= exon.i_exonstartpos && selectpos <= exon.i_exonendpos)
             {
-                m_iSelectPos = (selectpos - m_vecExonIndex[m_Exoninfo.minExonIndex - 1])*m_dXscale
-                        + m_igap + (exon.i_exonindex-m_isub_index)*m_iMidgap;
+                m_iSelectPeakPos = selectpos;
                 break;
             }
         }
@@ -338,21 +325,20 @@ void ExonNavigatorWidget::SetSelectFramePos(int index, int colnum, int &test)
 
 void ExonNavigatorWidget::ActForward()
 {
-    int peakpos = ScreenPosToPeakPos(m_iSelectPos)+1;
     auto itor = m_map_mispos.keyBegin();
     auto end = m_map_mispos.keyEnd();
 
-    if(peakpos >= m_map_mispos.lastKey())
+    if(m_iSelectPeakPos >= m_map_mispos.lastKey())
     {
-        m_iSelectPos = PeakPosToScreenPos(m_map_mispos.firstKey());
+        m_iSelectPeakPos = m_map_mispos.firstKey()+1;
     }
     else
     {
         for(;itor != end; itor++)
         {
-            if(peakpos < *itor)
+            if(m_iSelectPeakPos < *itor)
             {
-                m_iSelectPos = PeakPosToScreenPos(*itor);
+                m_iSelectPeakPos = *itor+1;
                 break;
             }
         }
@@ -362,10 +348,10 @@ void ExonNavigatorWidget::ActForward()
 
     foreach(const Exon &exon, m_vec_Exon)
     {
-        if(m_iSelectPos >= exon.i_screenstartpos && m_iSelectPos <= exon.i_screenstartpos+exon.i_screenwidth)
+        if(m_iSelectPeakPos >= exon.i_exonstartpos && m_iSelectPeakPos <= exon.i_exonendpos)
         {
-            emit signalExonFocusPosition(m_vecExonIndex[m_Exoninfo.minExonIndex-1]+1,
-                    ScreenPosToPeakPos(m_iSelectPos),
+            emit signalExonFocusPosition(m_iStartPeakpos+1,
+                    m_iSelectPeakPos,
                     exon.i_exonstartpos, exon.i_exonindex);
             break;
         }
@@ -374,21 +360,20 @@ void ExonNavigatorWidget::ActForward()
 
 void ExonNavigatorWidget::ActBackward()
 {
-    int peakpos = ScreenPosToPeakPos(m_iSelectPos);
     auto end = m_map_mispos.keyEnd();
 
-    if(peakpos <= *m_map_mispos.keyBegin())
+    if(m_iSelectPeakPos <= *m_map_mispos.keyBegin()+1)
     {
-        m_iSelectPos = PeakPosToScreenPos(m_map_mispos.lastKey());
+        m_iSelectPeakPos = m_map_mispos.lastKey()+1;
     }
     else
     {
         auto itor =  end;
         for(itor--;; itor--)
         {
-            if(peakpos > *itor)
+            if(m_iSelectPeakPos > *itor+1)
             {
-                m_iSelectPos = PeakPosToScreenPos(*itor);
+                m_iSelectPeakPos = *itor+1;
                 break;
             }
         }
@@ -398,10 +383,10 @@ void ExonNavigatorWidget::ActBackward()
 
     foreach(const Exon &exon, m_vec_Exon)
     {
-        if(m_iSelectPos >= exon.i_screenstartpos && m_iSelectPos <= exon.i_screenstartpos+exon.i_screenwidth)
+        if(m_iSelectPeakPos >= exon.i_exonstartpos && m_iSelectPeakPos <= exon.i_exonendpos)
         {
-            emit signalExonFocusPosition(m_vecExonIndex[m_Exoninfo.minExonIndex-1]+1,
-                    ScreenPosToPeakPos(m_iSelectPos),
+            emit signalExonFocusPosition(m_iStartPeakpos+1,
+                    m_iSelectPeakPos,
                     exon.i_exonstartpos, exon.i_exonindex);
             break;
         }

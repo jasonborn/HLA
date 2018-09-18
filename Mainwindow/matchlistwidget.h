@@ -10,7 +10,7 @@ class MatchListWidget: public QTableWidget
 public:
     MatchListWidget(QWidget *parent=0);
     ~MatchListWidget();
-    void SetTableData(const QString &str_sample, const QString &str_gssp);
+    void SetTableData(const QString &str_sample, const QString &str_file, const QString &str_info, int col);
     QStringList & GetMatchList();
 private:
     void InitUI();
@@ -22,6 +22,7 @@ private:
     void findUsefulGssp(const char *seq11, const char *seq12, const char *seq21, const char *seq22,
                         int exonStart, int exonEnd, QVector<GsspTable> &gsspTables,
                         QStringList &gssps, QStringList &infos);
+    void ClearTable();
 private slots:
     void slotClickIndelItem(QTableWidgetItem* itemNow);
     void slotRowChanged(QTableWidgetItem* itemNow);
@@ -34,6 +35,8 @@ signals:
 private:
     int m_iOldRow; //上次选中的行数
     int m_iRowCount;//总行数
+    int m_iCol;
+    QString m_str_file;
     QString m_str_SampleName;
     QMenu *m_pRightMenu;
     QAction *m_pActShowGSSPZCode;

@@ -10,7 +10,6 @@ BaseAlignTableWidget::BaseAlignTableWidget()
     m_iRowNum = 9;
     m_iColNum = 1200;
     InitUI();
-    //connect(horizontalScrollBar(),&QScrollBar::valueChanged,this,&BaseAlignTableWidget::onSliderMoved);
 }
 
 
@@ -92,7 +91,7 @@ void BaseAlignTableWidget::InitUI()
             }
             else if (i == 6)
             {
-                itemArray->setBackgroundColor(QColor(237,30,121,51));
+                itemArray->setBackgroundColor(QColor(223, 223, 223));
                 itemArray->setTextColor(QColor(237,30,121));
             }
 
@@ -118,8 +117,12 @@ void BaseAlignTableWidget::InitUI()
 
 }
 
-void BaseAlignTableWidget::SetAlignTableData(QString &str_samplename)
+void BaseAlignTableWidget::SetAlignTableData(QString &str_samplename,  QString &str_file, QString str_info, int col)
 {
+    m_str_file = str_file;
+    m_str_info = str_info;
+    m_i_col = col;
+
     if(m_str_SampleName != str_samplename)
     {
         m_str_SampleName = str_samplename;
@@ -309,8 +312,114 @@ void BaseAlignTableWidget::getTableHead(QStringList &head, int length, int start
     }
 }
 
-
-void BaseAlignTableWidget::onSliderMoved(int pos)
+void BaseAlignTableWidget::SetAllelePairData(QString &allele1, QString &allele2)
 {
-    qDebug()<<"BaseAlignTableWidget::onSliderMoved"<<pos;
+    if(allele1.isEmpty() || allele2.isEmpty())
+    {
+        return;
+    }
+
+    for(int i=1; i<m_iColNum; i++)
+    {
+        this->item(6, i)->setText("");
+        this->item(7, i)->setText("");
+        this->item(8, i)->setText("");
+        this->item(6, i)->setBackgroundColor(QColor(223, 223, 223));
+    }
+
+    QByteArray allele1Seq, allele2Seq, result;
+    SoapTypingDB::GetInstance()->getAlleleSequence(allele1, allele1Seq, m_BaseAlignSampleInfo.alignStartPos,
+                      m_BaseAlignSampleInfo.alignEndPos-m_BaseAlignSampleInfo.alignStartPos);
+    if(allele1 == allele2)
+    {
+        allele2Seq = allele1Seq;
+    }
+    else
+    {
+        SoapTypingDB::GetInstance()->getAlleleSequence(allele2, allele2Seq, m_BaseAlignSampleInfo.alignStartPos,
+                                              m_BaseAlignSampleInfo.alignEndPos-m_BaseAlignSampleInfo.alignStartPos);
+    }
+    result.fill('-', allele1Seq.size());
+    QSet<int> misMatch;
+    if(m_str_info.contains("Filter") && m_i_col != 1)//文件是gssp文件，且选中的不是第1列
+    {
+        QMap<QString, BaseAlignGsspInfo>::iterator it = m_BaseAlignSampleInfo.gsspInfoMap.find(m_str_file);
+        if(it != m_BaseAlignSampleInfo.gsspInfoMap.end())
+        {
+            QByteArray gsspSeq = it.value().gsspFileSeq.toLatin1();
+            getTypeAlignResult(result.data(), gsspSeq.data(), allele1Seq.data(),
+                               allele2Seq.data(), misMatch, m_BaseAlignSampleInfo.alignStartPos,
+                               it.value().gsspFileAlignStartPos);
+        }
+    }
+    else
+    {
+        QByteArray patternSeq = m_BaseAlignSampleInfo.patternSeq.toLatin1();
+        getTypeAlignResult(result.data(), patternSeq.data(), allele1Seq.data(),
+                           allele2Seq.data(), misMatch, m_BaseAlignSampleInfo.alignStartPos,
+                           m_BaseAlignSampleInfo.alignStartPos);
+    }
+
+    QString results = QString(result);
+    QString allele1Seqs = QString(allele1Seq);
+    QString allele2Seqs = QString(allele2Seq);
+    for(int i=0; i<result.size(); i++)
+    {
+        this->item(6, i+1)->setText(results.at(i));
+        this->item(7, i+1)->setText(allele1Seqs.at(i));
+        this->item(8, i+1)->setText(allele2Seqs.at(i));
+    }
+    this->item(6, 0)->setText("  Type Result");
+    this->item(7, 0)->setText("  "+allele1);
+    this->item(8, 0)->setText("  "+allele2);
+
+    for(QSet<int>::iterator it=misMatch.begin(); it!=misMatch.end(); it++)
+    {
+        this->item(6, (*it)-m_BaseAlignSampleInfo.alignStartPos+1)->setTextColor(QColor(255,255,255));
+        this->item(6, (*it)-m_BaseAlignSampleInfo.alignStartPos+1)->setBackgroundColor(QColor(255,0,0));
+    }
+    //emit signalTypeMisMatchPosition(misMatch, type);
 }
+
+void BaseAlignTableWidget::getTypeAlignResult(char *result, char *pattern, char *alleleSeq1, char *alleleSeq2,
+                                              QSet<int> &misMatch, int alignStart1, int alignStart2)
+{
+    int size =strlen(pattern);
+    int num = alignStart2 - alignStart1;
+    for(int i=0; i<size; i++)
+    {
+        if(pattern[i]=='-')
+            continue;
+        if(alleleSeq1[i+num] == '*')
+        {
+            if(alleleSeq2[i+num]=='*')
+                continue;
+            else if (alleleSeq2[i+num] != pattern[i])
+            {
+                result[i+num]=alleleSeq2[i+num];
+                misMatch.insert(i+alignStart2);
+            }
+        }
+        else
+        {
+            if(alleleSeq2[i+num]=='*' || alleleSeq1[i+num]==alleleSeq2[i+num])
+            {
+                if(alleleSeq1[i+num] != pattern[i])
+                {
+                    result[i+num]=alleleSeq1[i+num];
+                    misMatch.insert(i+alignStart2);
+                }
+            }
+            else
+            {
+                char A = Core::GetInstance()->mergeBases(alleleSeq1[i+num],alleleSeq2[i+num]);
+                if(A != pattern[i])
+                {
+                    result[i+num]=A;
+                    misMatch.insert(i+alignStart2);
+                }
+            }
+        }
+    }
+}
+
