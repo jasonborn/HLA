@@ -180,7 +180,7 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
     {
         return;
     }
-    std::set<int> set_left,set_right; //以AlignEndPos为界，计算左右两边的长度
+    std::set<int> set_left,set_right; //以AlignStartPos为界，计算左右两边的长度
     QVector<int> vec_left_copy;
     for(int i=0;i<i_count_peak;i++)
     {
@@ -191,10 +191,10 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
         pPeakLine->SetExcludePos(table.getAlignStartPos(),table.getAlignEndPos());
         pPeakLine->SetGssp(table.getIsGssp());
 
-        int i_AlginEndPos = table.getAlignEndPos();
-        int i_right = table.getBaseNumber() - i_AlginEndPos;
-        vec_left_copy.push_back(i_AlginEndPos);
-        set_left.insert(i_AlginEndPos);
+        int i_AlginStartPos = table.getAlignStartPos();
+        int i_right = table.getBaseNumber() - i_AlginStartPos;
+        vec_left_copy.push_back(i_AlginStartPos);
+        set_left.insert(i_AlginStartPos);
         set_right.insert(i_right);
 
 
@@ -452,9 +452,9 @@ void MultiPeakWidget::DrawExcludeArea(QPainter *pter)
         m_vec_Peakline[i]->GetExcludePos(left_exclude, right_exclude);
 
         QVector<GeneLetter> &vec_geneLetter = m_vec_Peakline[i]->GetGeneLetter();
-        int w_left =  vec_geneLetter[left_exclude].pos.x();
+        int w_left =  vec_geneLetter[left_exclude].pos.x()-m_x_step/2;
         pter->drawRect(0,60+i_height, w_left, m_iPeakHeight-60);
-        int w_right = vec_geneLetter[right_exclude].pos.x();
+        int w_right = vec_geneLetter[right_exclude].pos.x()-m_x_step/2;
         pter->drawRect(w_right,60+i_height, i_width, m_iPeakHeight-60);
     }
 }

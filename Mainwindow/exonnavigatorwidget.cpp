@@ -2,6 +2,7 @@
 #include <QPainter>
 #include <QtDebug>
 #include <QMouseEvent>
+#include <QtAlgorithms>
 #include "DataBase/soaptypingdb.h"
 
 ExonNavigatorWidget::ExonNavigatorWidget(QWidget *parent)
@@ -48,6 +49,7 @@ void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
     m_Exoninfo.vec_frUnEqual.clear();
     m_Exoninfo.vec_pcMis.clear();
     m_map_mispos.clear();
+    m_map_TotalMisPos.clear();
 
     SoapTypingDB::GetInstance()->getExonPositionIndex(str_gene, m_vecExonIndex);
 
@@ -78,6 +80,7 @@ void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
         m_map_mispos.insert(pos,0);
     }
 
+    m_map_TotalMisPos = m_map_mispos;
     CalcExonData();
 }
 
@@ -189,10 +192,10 @@ void ExonNavigatorWidget::DrawExonPos(QPainter &exonPainter)
         exonPainter.drawRect(PeakPosToScreenPos(pos), m_itop2, 2, m_ih3);
     }
 
-    //for(QMap<int, int>::iterator it=typeMisPosition_.begin(); it!=typeMisPosition_.end(); it++)
-//    {
-//        exonPainter.drawRect(210, m_itop3, 2, m_ih3);
-//    }
+    foreach(int pos, m_map_typemispos.keys())
+    {
+        exonPainter.drawRect(PeakPosToScreenPos(pos), m_itop3, 2, m_ih3);
+    }
 }
 
 void ExonNavigatorWidget::mousePressEvent(QMouseEvent *event)
@@ -284,7 +287,7 @@ void ExonNavigatorWidget::setSelectFramePosition(int index, int &startpos, int &
             startpos = m_iStartPeakpos;
             exonstartpos = exon.i_exonstartpos;
 
-            foreach(int peakpos, m_map_mispos.keys())
+            foreach(int peakpos, m_map_TotalMisPos.keys())
             {
                 if(peakpos > exon.i_exonstartpos && peakpos < exon.i_exonendpos)
                 {
@@ -325,12 +328,12 @@ void ExonNavigatorWidget::SetSelectFramePos(int index, int colnum, int &test)
 
 void ExonNavigatorWidget::ActForward()
 {
-    auto itor = m_map_mispos.keyBegin();
-    auto end = m_map_mispos.keyEnd();
+    auto itor = m_map_TotalMisPos.keyBegin();
+    auto end = m_map_TotalMisPos.keyEnd();
 
-    if(m_iSelectPeakPos >= m_map_mispos.lastKey())
+    if(m_iSelectPeakPos >= m_map_TotalMisPos.lastKey())
     {
-        m_iSelectPeakPos = m_map_mispos.firstKey()+1;
+        m_iSelectPeakPos = m_map_TotalMisPos.firstKey()+1;
     }
     else
     {
@@ -360,11 +363,11 @@ void ExonNavigatorWidget::ActForward()
 
 void ExonNavigatorWidget::ActBackward()
 {
-    auto end = m_map_mispos.keyEnd();
+    auto end = m_map_TotalMisPos.keyEnd();
 
-    if(m_iSelectPeakPos <= *m_map_mispos.keyBegin()+1)
+    if(m_iSelectPeakPos <= *m_map_TotalMisPos.keyBegin()+1)
     {
-        m_iSelectPeakPos = m_map_mispos.lastKey()+1;
+        m_iSelectPeakPos = m_map_TotalMisPos.lastKey()+1;
     }
     else
     {
@@ -381,6 +384,31 @@ void ExonNavigatorWidget::ActBackward()
 
     update();
 
+    foreach(const Exon &exon, m_vec_Exon)
+    {
+        if(m_iSelectPeakPos >= exon.i_exonstartpos && m_iSelectPeakPos <= exon.i_exonendpos)
+        {
+            emit signalExonFocusPosition(m_iStartPeakpos+1,
+                    m_iSelectPeakPos,
+                    exon.i_exonstartpos, exon.i_exonindex);
+            break;
+        }
+    }
+}
+
+void ExonNavigatorWidget::SetTypeMisPos(QSet<int> &typeMismatchPos)
+{
+    m_map_typemispos.clear();
+    m_map_TotalMisPos.clear();
+    m_map_TotalMisPos = m_map_mispos;
+    for(QSet<int>::iterator it=typeMismatchPos.begin(); it!=typeMismatchPos.end(); it++)
+    {
+        m_map_typemispos.insert(*it, 0);
+        m_map_TotalMisPos.insert(*it, 0);
+    }
+
+    m_iSelectPeakPos = m_map_typemispos.firstKey()+1;
+    update();
     foreach(const Exon &exon, m_vec_Exon)
     {
         if(m_iSelectPeakPos >= exon.i_exonstartpos && m_iSelectPeakPos <= exon.i_exonendpos)

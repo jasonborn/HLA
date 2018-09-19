@@ -71,6 +71,7 @@ public slots:
     void slotHelp();
 
     void slotAllelePairChanged(QString &, QString &);
+    void slotTypeMisMatchPostion(QSet<int> &typeMismatchPos, int type);
 private:
     Ui::MainWindow *ui;
     SampleTreeWidget *m_pSampleTreeWidget;

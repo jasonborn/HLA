@@ -134,6 +134,7 @@ void MainWindow::ConnectSignalandSlot()
 
 
     connect(m_pSampleTreeWidget, &QTreeWidget::itemClicked, this, &MainWindow::slotSampleTreeItemChanged);
+
     connect(m_pExonNavigatorWidget, &ExonNavigatorWidget::signalExonFocusPosition,
             this, &MainWindow::slotExonFocusPosition);
 
@@ -141,8 +142,12 @@ void MainWindow::ConnectSignalandSlot()
 
     connect(m_pMultiPeakWidget, &MultiPeakWidget::signalPeakFocusPosition, this, &MainWindow::slotPeakFocusPosition);
 
+
+
     connect(m_pMatchListWidget, &MatchListWidget::signalAllelePair, this, &MainWindow::slotAllelePairChanged);
 
+    connect(m_pBaseAlignTableWidget, &BaseAlignTableWidget::signalTypeMisMatchPosition,
+            this, &MainWindow::slotTypeMisMatchPostion);
 }
 
 void MainWindow::DisConnectSignalandSolt()
@@ -555,4 +560,10 @@ void MainWindow::slotHelp()
 void MainWindow::slotAllelePairChanged(QString &allele1, QString &allele2)
 {
     m_pBaseAlignTableWidget->SetAllelePairData(allele1, allele2);
+}
+
+void MainWindow::slotTypeMisMatchPostion(QSet<int> &typeMismatchPos, int type)
+{
+    m_pExonNavigatorWidget->SetTypeMisPos(typeMismatchPos);
+
 }

@@ -18,6 +18,9 @@ private:
     void getTableHead(QStringList &head, int length, int start);
     void getTypeAlignResult(char *result, char *pattern, char *alleleSeq1, char *alleleSeq2, QSet<int> &misMatch,
                             int alignStart1, int alignStart2);
+
+signals:
+    void signalTypeMisMatchPosition(QSet<int> &typeMisMatchPositions, int type);
 private:
     int m_iRowNum;
     int m_iColNum;

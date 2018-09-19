@@ -378,7 +378,10 @@ void BaseAlignTableWidget::SetAllelePairData(QString &allele1, QString &allele2)
         this->item(6, (*it)-m_BaseAlignSampleInfo.alignStartPos+1)->setTextColor(QColor(255,255,255));
         this->item(6, (*it)-m_BaseAlignSampleInfo.alignStartPos+1)->setBackgroundColor(QColor(255,0,0));
     }
-    //emit signalTypeMisMatchPosition(misMatch, type);
+    if(misMatch.size()>0)
+    {
+        emit signalTypeMisMatchPosition(misMatch, 0);
+    }
 }
 
 void BaseAlignTableWidget::getTypeAlignResult(char *result, char *pattern, char *alleleSeq1, char *alleleSeq2,
