@@ -7,9 +7,14 @@
 
 typedef struct _tagGeneLetter
 {
-    QPoint pos;
     char type;
     char oldtype;
+    int qual;
+    int a_signal;
+    int t_signal;
+    int g_signal;
+    int c_signal;
+    QPoint pos;
 }GeneLetter;
 
 class PeakLine
@@ -35,6 +40,12 @@ public:
 
     void SetGssp(bool isGssp);
     bool GetGssp();
+
+    void setAvgWidth(float width);
+    float getAvgWidth();
+
+    void setAvgSignal(float signal);
+    float getAvgSignal();
 private:
     int m_left_exclude;
     int m_right_exclude;
@@ -43,6 +54,8 @@ private:
     long m_lsize;
     long m_loffset;
     bool m_bGssp;
+    float m_f_avgwidth;
+    float m_f_avgsignal;
     QPolygonF m_vec_baseA;
     QPolygonF m_vec_baseT;
     QPolygonF m_vec_baseG;
@@ -62,7 +75,7 @@ public:
     MultiPeakWidget(QWidget *parent = nullptr);
     ~MultiPeakWidget();
     void SetPeakData(const QString &str_samplename, const QString &str_exon);
-    void SetSelectPos(int pos);
+    void SetSelectPos(int subpos);
     void AdjustPeakHeight(int height);
     void AdjustPeakY(int y);
     void AdjustPeakX(int x);
@@ -97,10 +110,11 @@ private slots:
 signals:
     //index:当前导航条index colnum：选中的位置和left_exclude的差值
     void signalPeakFocusPosition(int index, int colnum);
-    void signalChangeDB();
+    void signalChangeDB(QString &str_samplename);
     void signalActApplyOne();
     void signalActApplyAll();
     void signalActanalyzeLater();
+    void signalSendStatusBarMsg(QString &msg);
 private:
     QVector<Ab1FileTableBase> m_vec_filetable;
     int m_x_step;            //x轴间距

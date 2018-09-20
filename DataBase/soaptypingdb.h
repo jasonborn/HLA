@@ -97,6 +97,9 @@ public:
     void getAlleleNamesAndSeqsByGeneName(const QString &geneName, QStringList &alleleNames,
                                          QStringList &alleleSeqs, QVector< QVector<int> > &misPositions);
     void getAlleleSequenceByAlleleName(const QString &alleleName, QString &alleleSeq);
+
+    bool upDatabyChangebp(const QString &filename, const QString &streditinfo,bool isgssp);
+    bool upDataExclude(bool isgssp, const QString &filename, int exclude_left, int exclude_right);
 private:
     bool InitDB();
 

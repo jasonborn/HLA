@@ -10,7 +10,8 @@ class MatchListWidget: public QTableWidget
 public:
     MatchListWidget(QWidget *parent=0);
     ~MatchListWidget();
-    void SetTableData(const QString &str_sample, const QString &str_file, const QString &str_info, int col);
+    void SetTableData(bool brefresh, const QString &str_sample, const QString &str_file,
+                      const QString &str_info, int col);
     QStringList & GetMatchList();
 private:
     void InitUI();

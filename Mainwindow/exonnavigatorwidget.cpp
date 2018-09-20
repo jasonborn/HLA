@@ -29,16 +29,19 @@ ExonNavigatorWidget::~ExonNavigatorWidget()
 
 }
 
-void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
+void ExonNavigatorWidget::SetExonData(bool brefresh, QString &str_sample, QString &str_gene)
 {
-    if(m_str_SampleName !=str_sample || m_str_GeneName != str_gene)
+    if(!brefresh)//如果不要求刷新，需要判断是否切换了样品
     {
-        m_str_SampleName = str_sample;
-        m_str_GeneName = str_gene;
-    }
-    else
-    {
-        return;
+        if(m_str_SampleName !=str_sample || m_str_GeneName != str_gene)
+        {
+            m_str_SampleName = str_sample;
+            m_str_GeneName = str_gene;
+        }
+        else
+        {
+            return;
+        }
     }
 
     m_vecExonIndex.clear();
@@ -308,14 +311,14 @@ void ExonNavigatorWidget::setSelectFramePosition(int index, int &startpos, int &
     }
 }
 
-void ExonNavigatorWidget::SetSelectFramePos(int index, int colnum, int &test)
+void ExonNavigatorWidget::SetSelectFramePos(int index, int colnum, int &columnPos)
 {
     foreach(const Exon &exon, m_vec_Exon)
     {
         if(exon.i_exonindex == index)
         {
             int selectpos = colnum + exon.i_exonstartpos;
-            test = selectpos  - m_iStartPeakpos -1;
+            columnPos = selectpos  - m_iStartPeakpos -1;
             if(selectpos >= exon.i_exonstartpos && selectpos <= exon.i_exonendpos)
             {
                 m_iSelectPeakPos = selectpos;

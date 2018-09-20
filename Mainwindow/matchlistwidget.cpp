@@ -79,17 +79,21 @@ void MatchListWidget::ClearTable()
     }
 }
 
-void MatchListWidget::SetTableData(const QString &str_sample, const QString &str_file, const QString &str_info, int col)
+void MatchListWidget::SetTableData(bool brefresh,const QString &str_sample, const QString &str_file,
+                                   const QString &str_info, int col)
 {
-    if(m_str_SampleName != str_sample || m_str_file != str_file || m_iCol != col)
+    if(!brefresh)//如果不要求刷新，需要判断是否切换了样品
     {
-        m_str_SampleName = str_sample;
-        m_str_file = str_file;
-        m_iCol = col;
-    }
-    else
-    {
-        return;
+        if(m_str_SampleName != str_sample || m_str_file != str_file || m_iCol != col)
+        {
+            m_str_SampleName = str_sample;
+            m_str_file = str_file;
+            m_iCol = col;
+        }
+        else
+        {
+            return;
+        }
     }
 
     bool b_setgssp = false;

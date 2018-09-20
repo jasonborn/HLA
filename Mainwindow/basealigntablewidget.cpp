@@ -117,19 +117,23 @@ void BaseAlignTableWidget::InitUI()
 
 }
 
-void BaseAlignTableWidget::SetAlignTableData(QString &str_samplename,  QString &str_file, QString str_info, int col)
+void BaseAlignTableWidget::SetAlignTableData(bool brefresh, QString &str_samplename,  QString &str_file,
+                                             QString str_info, int col)
 {
     m_str_file = str_file;
     m_str_info = str_info;
     m_i_col = col;
 
-    if(m_str_SampleName != str_samplename)
+    if(!brefresh)//如果不要求刷新，需要判断是否切换了样品
     {
-        m_str_SampleName = str_samplename;
-    }
-    else
-    {
-        return;
+        if(m_str_SampleName != str_samplename)
+        {
+            m_str_SampleName = str_samplename;
+        }
+        else
+        {
+            return;
+        }
     }
 
     if(!m_BaseAlignSampleInfo.consensusSeq.isEmpty())

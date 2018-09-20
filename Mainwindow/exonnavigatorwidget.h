@@ -20,10 +20,10 @@ class ExonNavigatorWidget:public QWidget
 public:
     ExonNavigatorWidget(QWidget *parent = nullptr);
     ~ExonNavigatorWidget();
-    void SetExonData(QString &str_sample, QString &str_gene);
+    void SetExonData(bool brefresh, QString &str_sample, QString &str_gene);
     void SetSelectPos(int colnum, int &selectpos,int &exonstartpos, int &index);
     void setSelectFramePosition(int index, int &startpos, int &selectpos, int &exonstartpos);
-    void SetSelectFramePos(int index, int colnum ,int &test);
+    void SetSelectFramePos(int index, int colnum ,int &columnPos);
     void ActForward();
     void ActBackward();
     void SetTypeMisPos(QSet<int> &typeMismatchPos);

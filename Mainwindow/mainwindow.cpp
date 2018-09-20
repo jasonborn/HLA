@@ -34,7 +34,8 @@ const QString VERSION("1.0.6.0");
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    m_bRefresh(false)
 {
     ui->setupUi(this);
     InitUI();
@@ -148,6 +149,10 @@ void MainWindow::ConnectSignalandSlot()
 
     connect(m_pBaseAlignTableWidget, &BaseAlignTableWidget::signalTypeMisMatchPosition,
             this, &MainWindow::slotTypeMisMatchPostion);
+
+    connect(m_pMultiPeakWidget, &MultiPeakWidget::signalSendStatusBarMsg, this , &MainWindow::slotShowStatusBarMsg);
+
+    connect(m_pMultiPeakWidget, &MultiPeakWidget::signalChangeDB, this, &MainWindow::slotChangeDB);
 }
 
 void MainWindow::DisConnectSignalandSolt()
@@ -211,18 +216,19 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 
     QString strfile = item->text(0);
     QString str_info = item->text(1);
-    m_pMatchListWidget->SetTableData(str_sample,strfile, str_info, col);
+    m_pMatchListWidget->SetTableData(m_bRefresh, str_sample,strfile, str_info, col);
 
-    if(!strfile.contains(".ab1"))
+    if(!strfile.contains(".ab1"))//如果不是ab1文件，左侧的模块不用刷新
     {
         return;
     }
 
+    m_pSelectItem = item;
     m_str_SelectFile = strfile;
 
-    m_pExonNavigatorWidget->SetExonData(str_sample, str_gene);
+    m_pExonNavigatorWidget->SetExonData(m_bRefresh, str_sample, str_gene);
 
-    m_pBaseAlignTableWidget->SetAlignTableData(str_sample,strfile, str_info, col);
+    m_pBaseAlignTableWidget->SetAlignTableData(m_bRefresh, str_sample,strfile, str_info, col);
 
     QString str_exon = str_info.left(1);
     if(str_info.contains("Filter"))//如果是gssp文件
@@ -246,6 +252,8 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 
     int i_sub = selectpos - exonstartpos;
     m_pMultiPeakWidget->SetSelectPos(i_sub);
+
+    m_bRefresh = false;
 }
 
 //导航条起始pos,选中的峰图pos，选中的导航条起始pos,选中的导航条index
@@ -284,10 +292,10 @@ void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
 
 void MainWindow::slotPeakFocusPosition(int index, int colnum)
 {
-    int test;
-    m_pExonNavigatorWidget->SetSelectFramePos(index, colnum,test);
-    m_pBaseAlignTableWidget->selectColumn(test+1);
-    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(test*25+8);
+    int i_columnPos;
+    m_pExonNavigatorWidget->SetSelectFramePos(index, colnum,i_columnPos);
+    m_pBaseAlignTableWidget->selectColumn(i_columnPos+1);
+    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(i_columnPos*25+8);
 }
 
 
@@ -565,5 +573,19 @@ void MainWindow::slotAllelePairChanged(QString &allele1, QString &allele2)
 void MainWindow::slotTypeMisMatchPostion(QSet<int> &typeMismatchPos, int type)
 {
     m_pExonNavigatorWidget->SetTypeMisPos(typeMismatchPos);
+}
 
+void MainWindow::slotShowStatusBarMsg(QString &msg)
+{
+    ui->statusbarright->setText(msg);
+}
+
+void MainWindow::slotChangeDB(QString &str_samplename)
+{
+    AnalysisSampleThreadTask *pTask = new AnalysisSampleThreadTask(str_samplename);
+    pTask->run();
+    delete pTask;
+
+    m_bRefresh = true;
+    slotSampleTreeItemChanged(m_pSelectItem, 0);
 }

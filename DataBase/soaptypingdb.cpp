@@ -817,6 +817,7 @@ void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, const QStri
         {
             Ab1FileTableBase table;
             table.setFileName(query.value(0).toString());
+            table.setExonStartPos(query.value(7).toInt());
             table.setBaseSequence(query.value(10).toByteArray());
             table.setBasePostion(query.value(11).toString());
             table.setBaseQuality(query.value(12).toString());
@@ -827,8 +828,11 @@ void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, const QStri
             table.setBaseCSignal(query.value(17).toString());
             table.setSignalNumber(query.value(18).toInt());
             table.setMaxSignal(query.value(19).toInt());
+            table.setAverageBaseWidth(query.value(21).toFloat());
             table.setAlignStartPos(query.value(24).toInt());
             table.setAlignEndPos(query.value(25).toInt());
+            table.setEditInfo(query.value(29).toString());
+            table.setAvgsignal(query.value(30).toInt());
 
             vec_filetable.push_back(table);
         }
@@ -845,6 +849,7 @@ void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, const QStri
         {
             Ab1FileTableBase table;
             table.setFileName(query_gssp.value(0).toString());
+            table.setExonStartPos(query.value(7).toInt());
             table.setBaseSequence(query_gssp.value(10).toByteArray());
             table.setBasePostion(query_gssp.value(11).toString());
             table.setBaseQuality(query_gssp.value(12).toString());
@@ -855,8 +860,10 @@ void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, const QStri
             table.setBaseCSignal(query_gssp.value(17).toString());
             table.setSignalNumber(query_gssp.value(18).toInt());
             table.setMaxSignal(query_gssp.value(19).toInt());
+            table.setAverageBaseWidth(query.value(21).toFloat());
             table.setAlignStartPos(query_gssp.value(24).toInt());
             table.setAlignEndPos(query_gssp.value(25).toInt());
+            table.setEditInfo(query_gssp.value(29).toString());
 
             vec_filetable.push_back(table);
         }
@@ -1720,4 +1727,45 @@ void SoapTypingDB::getAlleleSequenceByAlleleName(const QString &alleleName, QStr
         }
     }
 
+}
+
+bool SoapTypingDB::upDatabyChangebp(const QString &filename, const QString &streditinfo,bool isgssp)
+{
+    QSqlQuery query(m_SqlDB);
+    if(isgssp)
+    {
+        query.prepare("UPDATE gsspFileTable SET editInfo=? WHERE fileName=?");
+    }
+    else
+    {
+        query.prepare("UPDATE fileTable SET editInfo=? WHERE fileName=?");
+    }
+    query.bindValue(0, streditinfo);
+    query.bindValue(1, filename);
+    if(!query.exec())
+    {
+        return false;
+    }
+    return true;
+}
+
+bool SoapTypingDB::upDataExclude(bool isgssp, const QString &filename, int exclude_left, int exclude_right)
+{
+    QSqlQuery query(m_SqlDB);
+    if(isgssp)
+    {
+        query.prepare("UPDATE gsspFileTable SET excludeLeft=?,excludeRight=?  WHERE fileName=?");
+    }
+    else
+    {
+        query.prepare("UPDATE fileTable SET excludeLeft=?,excludeRight=?  WHERE fileName=?");
+    }
+    query.bindValue(0, exclude_left);
+    query.bindValue(1, exclude_right);
+    query.bindValue(2, filename);
+    if(!query.exec())
+    {
+        return false;
+    }
+    return true;
 }

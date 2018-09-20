@@ -10,7 +10,8 @@ class BaseAlignTableWidget:public QTableWidget
 public:
     BaseAlignTableWidget();
     ~BaseAlignTableWidget();
-    void SetAlignTableData(QString &str_samplename, QString &str_file, QString str_info, int col);
+    void SetAlignTableData(bool brefresh, QString &str_samplename, QString &str_file,
+                           QString str_info, int col);
     void SetAllelePairData(QString &allele1, QString &allele2);
 private:
     void InitUI();
