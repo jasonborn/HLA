@@ -9,6 +9,7 @@ BaseAlignTableWidget::BaseAlignTableWidget()
 {
     m_iRowNum = 9;
     m_iColNum = 1200;
+    m_bRefresh = false;
     InitUI();
 }
 
@@ -117,14 +118,14 @@ void BaseAlignTableWidget::InitUI()
 
 }
 
-void BaseAlignTableWidget::SetAlignTableData(bool brefresh, QString &str_samplename,  QString &str_file,
+void BaseAlignTableWidget::SetAlignTableData(QString &str_samplename,  QString &str_file,
                                              QString str_info, int col)
 {
     m_str_file = str_file;
     m_str_info = str_info;
     m_i_col = col;
 
-    if(!brefresh)//如果不要求刷新，需要判断是否切换了样品
+    if(!m_bRefresh)//如果不要求刷新，需要判断是否切换了样品
     {
         if(m_str_SampleName != str_samplename)
         {
@@ -134,6 +135,10 @@ void BaseAlignTableWidget::SetAlignTableData(bool brefresh, QString &str_samplen
         {
             return;
         }
+    }
+    else
+    {
+        m_bRefresh = false;
     }
 
     if(!m_BaseAlignSampleInfo.consensusSeq.isEmpty())
@@ -153,7 +158,6 @@ void BaseAlignTableWidget::SetAlignTableData(bool brefresh, QString &str_samplen
     header<<str_samplename;
     getTableHead(header, m_BaseAlignSampleInfo.alignEndPos - m_BaseAlignSampleInfo.alignStartPos, m_BaseAlignSampleInfo.alignStartPos);
     setHorizontalHeaderLabels(header);
-    //ui->m_MarkTableWidget->setHorizontalHeaderLabels(header);//hcj
     QString &line = m_BaseAlignSampleInfo.consensusSeq;
     for(int i=0; i<line.size(); i++)
     {

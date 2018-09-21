@@ -10,9 +10,10 @@ class BaseAlignTableWidget:public QTableWidget
 public:
     BaseAlignTableWidget();
     ~BaseAlignTableWidget();
-    void SetAlignTableData(bool brefresh, QString &str_samplename, QString &str_file,
+    void SetAlignTableData(QString &str_samplename, QString &str_file,
                            QString str_info, int col);
     void SetAllelePairData(QString &allele1, QString &allele2);
+    void SetRefresh(bool refresh){m_bRefresh = refresh;}
 private:
     void InitUI();
     void clearBaseAlignTableSampleItem();
@@ -25,7 +26,7 @@ signals:
 private:
     int m_iRowNum;
     int m_iColNum;
-
+    bool m_bRefresh; //是否要求重新刷新界面
     QString m_str_file;
     QString m_str_info;
     int m_i_col;

@@ -34,8 +34,7 @@ const QString VERSION("1.0.6.0");
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    m_bRefresh(false)
+    ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     InitUI();
@@ -153,6 +152,11 @@ void MainWindow::ConnectSignalandSlot()
     connect(m_pMultiPeakWidget, &MultiPeakWidget::signalSendStatusBarMsg, this , &MainWindow::slotShowStatusBarMsg);
 
     connect(m_pMultiPeakWidget, &MultiPeakWidget::signalChangeDB, this, &MainWindow::slotChangeDB);
+    connect(m_pMultiPeakWidget, &MultiPeakWidget::signalChangeDBByFile, this, &MainWindow::slotChangeDBByFile);
+
+    connect(m_pSampleTreeWidget, &SampleTreeWidget::signalChangeDBByFile, this, &MainWindow::slotChangeDBByFile);
+
+    connect(m_pMatchListWidget, &MatchListWidget::signalChangeDB, this, &MainWindow::slotChangeDB);
 }
 
 void MainWindow::DisConnectSignalandSolt()
@@ -216,7 +220,7 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 
     QString strfile = item->text(0);
     QString str_info = item->text(1);
-    m_pMatchListWidget->SetTableData(m_bRefresh, str_sample,strfile, str_info, col);
+    m_pMatchListWidget->SetTableData(str_sample,strfile, str_info, col);
 
     if(!strfile.contains(".ab1"))//如果不是ab1文件，左侧的模块不用刷新
     {
@@ -226,9 +230,9 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
     m_pSelectItem = item;
     m_str_SelectFile = strfile;
 
-    m_pExonNavigatorWidget->SetExonData(m_bRefresh, str_sample, str_gene);
+    m_pExonNavigatorWidget->SetExonData(str_sample, str_gene);
 
-    m_pBaseAlignTableWidget->SetAlignTableData(m_bRefresh, str_sample,strfile, str_info, col);
+    m_pBaseAlignTableWidget->SetAlignTableData(str_sample,strfile, str_info, col);
 
     QString str_exon = str_info.left(1);
     if(str_info.contains("Filter"))//如果是gssp文件
@@ -252,8 +256,6 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 
     int i_sub = selectpos - exonstartpos;
     m_pMultiPeakWidget->SetSelectPos(i_sub);
-
-    m_bRefresh = false;
 }
 
 //导航条起始pos,选中的峰图pos，选中的导航条起始pos,选中的导航条index
@@ -359,11 +361,7 @@ void MainWindow::slotReset()
     case QMessageBox::Yes:
     {
         SoapTypingDB::GetInstance()->resetFileByFileName(str_list.at(0), bIsGssp);
-
-        AnalysisSampleThreadTask *pTask = new AnalysisSampleThreadTask(str_list.at(0));
-        pTask->run();
-        delete pTask;
-        //emit signalFileChanged(signalInfo_, 1);
+        slotChangeDB(str_list.at(0));
         break;
     }
     case QMessageBox::No:
@@ -580,12 +578,30 @@ void MainWindow::slotShowStatusBarMsg(QString &msg)
     ui->statusbarright->setText(msg);
 }
 
-void MainWindow::slotChangeDB(QString &str_samplename)
+void MainWindow::slotChangeDB(const QString &str_samplename)
 {
     AnalysisSampleThreadTask *pTask = new AnalysisSampleThreadTask(str_samplename);
     pTask->run();
     delete pTask;
 
-    m_bRefresh = true;
+    m_pMatchListWidget->SetRefresh(true);
+    m_pExonNavigatorWidget->SetRefresh(true);
+    m_pBaseAlignTableWidget->SetRefresh(true);
     slotSampleTreeItemChanged(m_pSelectItem, 0);
+}
+
+void MainWindow::slotChangeDBByFile(QVector<QString> &vec_samplename)
+{
+    foreach(const QString &str,vec_samplename)
+    {
+        AnalysisSampleThreadTask *pTask = new AnalysisSampleThreadTask(str);
+        pTask->run();
+        delete pTask;
+    }
+
+    m_pMatchListWidget->SetRefresh(true);
+    m_pExonNavigatorWidget->SetRefresh(true);
+    m_pBaseAlignTableWidget->SetRefresh(true);
+    m_pMultiPeakWidget->SetRefresh(true);
+    m_pSampleTreeWidget->SetTreeData();
 }

@@ -10,9 +10,10 @@ class MatchListWidget: public QTableWidget
 public:
     MatchListWidget(QWidget *parent=0);
     ~MatchListWidget();
-    void SetTableData(bool brefresh, const QString &str_sample, const QString &str_file,
+    void SetTableData(const QString &str_sample, const QString &str_file,
                       const QString &str_info, int col);
     QStringList & GetMatchList();
+    void SetRefresh(bool refresh){m_bRefresh = refresh;}
 private:
     void InitUI();
     void CreateRightMenu();
@@ -33,7 +34,9 @@ private slots:
 signals:
     void signalIndelPostion(int pos);
     void signalAllelePair(QString &, QString &);
+    void signalChangeDB(const QString &str_samplename);
 private:
+    bool m_bRefresh;
     int m_iOldRow; //上次选中的行数
     int m_iRowCount;//总行数
     int m_iCol;

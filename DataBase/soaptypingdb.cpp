@@ -132,34 +132,37 @@ int SoapTypingDB::GetExcludePosition(const QString &key, int &lefpos, int &right
 {
     QMutexLocker locker(&g_mutex);
     QSqlQuery query(m_SqlDB);
-    query.prepare("SELECT exonStart,exonEnd,excludeLeft,excludeRight FROM exonTrimTable WHERE etKey=?");
+    //query.prepare("SELECT exonStart,exonEnd,excludeLeft,excludeRight FROM exonTrimTable WHERE etKey=?");
+    query.prepare("SELECT excludeLeft,excludeRight FROM exonTrimTable WHERE etKey=?");
     query.bindValue(0, key);
     bool isSuccess = query.exec();
     if(isSuccess)
     {
         if(query.next())
         {
-            int start = query.value(0).toInt();
-            int end = query.value(1).toInt();
-            int l_pos = query.value(2).toInt();
-            int r_pos = query.value(3).toInt();
-            if(l_pos <= 0 || l_pos > end-start)
-            {
-                lefpos = -1;
-            }
-            else
-            {
-                lefpos = start + l_pos - 1;
-            }
+            lefpos = query.value(0).toInt();
+            rightpos = query.value(1).toInt();
+//            int start = query.value(0).toInt();
+//            int end = query.value(1).toInt();
+//            int l_pos = query.value(2).toInt();
+//            int r_pos = query.value(3).toInt();
+//            if(l_pos <= 0 || l_pos > end-start)
+//            {
+//                lefpos = -1;
+//            }
+//            else
+//            {
+//                lefpos = start + l_pos - 1;
+//            }
 
-            if(r_pos <= 0 || r_pos > end-start)
-            {
-                rightpos = -1;
-            }
-            else
-            {
-                rightpos = end - r_pos;
-            }
+//            if(r_pos <= 0 || r_pos > end-start)
+//            {
+//                rightpos = -1;
+//            }
+//            else
+//            {
+//                rightpos = end - r_pos;
+//            }
         }
     }
     return -1;
@@ -438,31 +441,35 @@ void SoapTypingDB::modifySequence(QByteArray &sequence, QSet<int> &editPostion, 
             editPostion.insert(pos);
         }
     }
-    if(excludeLeft >= 0)
+    if(excludeLeft > 0)
     {
-        int i = excludeLeft-exonStartPos+1;
-        while(i>0 && sequence[i]=='.')
-        {
-            sequence[i]= '-';
-            i++;
-        }
-        for(int i=excludeLeft-exonStartPos; i>=0; i--)
-        {
-            sequence[i]='-';
-        }
+//        int i = excludeLeft-exonStartPos+1;
+//        while(i>0 && sequence[i]=='.')
+//        {
+//            sequence[i]= '-';
+//            i++;
+//        }
+//        for(int i=excludeLeft-exonStartPos; i>=0; i--)
+//        {
+//            sequence[i]='-';
+//        }
+        QByteArray temp(excludeLeft,'-');
+        sequence.replace(0,excludeLeft,temp);
     }
-    if(excludeRight >= 0)
+    if(excludeRight > 0)
     {
-        int i = excludeRight - exonStartPos -1;
-        while(i>0 && sequence[i]=='.')
-        {
-            sequence[i] = '-';
-            i--;
-        }
-        for(int i=excludeRight-exonStartPos; i>0 &&i<sequence.size(); i++)
-        {
-            sequence[i]='-';
-        }
+//        int i = excludeRight - exonStartPos -1;
+//        while(i>0 && sequence[i]=='.')
+//        {
+//            sequence[i] = '-';
+//            i--;
+//        }
+//        for(int i=excludeRight-exonStartPos; i>0 &&i<sequence.size(); i++)
+//        {
+//            sequence[i]='-';
+//        }
+        QByteArray temp(excludeRight,'-');
+        sequence.replace(sequence.size()-excludeRight-1, excludeRight, temp);
     }
 }
 
@@ -831,6 +838,8 @@ void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, const QStri
             table.setAverageBaseWidth(query.value(21).toFloat());
             table.setAlignStartPos(query.value(24).toInt());
             table.setAlignEndPos(query.value(25).toInt());
+            table.setExcludeLeft(query.value(27).toInt());
+            table.setExcludeRight(query.value(28).toInt());
             table.setEditInfo(query.value(29).toString());
             table.setAvgsignal(query.value(30).toInt());
 

@@ -8,7 +8,6 @@
 #include <QMessageBox>
 #include <QContextMenuEvent>
 #include "Dialog/usercommentdlg.h"
-#include "ThreadTask/analysissamplethreadtask.h"
 #include "Dialog/savefiledlg.h"
 #include "Core/core.h"
 
@@ -170,7 +169,6 @@ void SampleTreeWidget::SetTreeData()
     }
     topLevelItem(0)->setSelected(true);
     expandItem(topLevelItem(0));
-    //topLevelItem(0)->child(0)->setSelected(true);
     setCurrentItem(topLevelItem(0)->child(0));
     emit itemClicked(topLevelItem(0)->child(0), 0);
 }
@@ -294,6 +292,9 @@ void SampleTreeWidget::slotDelete()
         if(deleteSamples)
         {
             SoapTypingDB::GetInstance()->deleteSample(itemN->text(0));
+            QVector<QString> vec_sample;
+            vec_sample.push_back(itemN->text(0));
+            emit signalChangeDBByFile(vec_sample);
         }
         else
         {
@@ -308,12 +309,10 @@ void SampleTreeWidget::slotDelete()
             }
 
             QString str_sample = m_pSelByRightItem->text(0).split('_').at(0);
-            AnalysisSampleThreadTask *ptask = new AnalysisSampleThreadTask(str_sample);
-            ptask->run();
-            delete ptask;
+            QVector<QString> vec_sample;
+            vec_sample.push_back(str_sample);
+            emit signalChangeDBByFile(vec_sample);
         }
-
-        SetTreeData();
         break;
     case QMessageBox::No:
         break;
@@ -374,15 +373,7 @@ void SampleTreeWidget::slotDeleteSelectedItem()
         }
     }
 
-    for(int i=0; i<updateNames.size();i++)
-    {
-        QString str_sample = updateNames.at(i);
-        AnalysisSampleThreadTask *ptask = new AnalysisSampleThreadTask(str_sample);
-        ptask->run();
-        delete ptask;
-    }
-
-    SetTreeData();
+    emit signalChangeDBByFile(updateNames);
 }
 
 void SampleTreeWidget::slotCopyName()

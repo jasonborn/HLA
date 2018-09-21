@@ -7,6 +7,8 @@
 
 class SampleTreeWidget:public QTreeWidget
 {
+    Q_OBJECT
+
 public:
     SampleTreeWidget(QWidget *parent = 0);
     ~SampleTreeWidget();
@@ -20,6 +22,8 @@ private:
     void markSampleTypeAndClear(int markType);
     void contextMenuEvent(QContextMenuEvent *event);
 
+signals:
+    void signalChangeDBByFile(QVector<QString> &vec_samplename);
 
 private slots:
     void slotQuickSaveAndClear();

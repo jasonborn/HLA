@@ -74,7 +74,8 @@ public slots:
     void slotTypeMisMatchPostion(QSet<int> &typeMismatchPos, int type);
     void slotShowStatusBarMsg(QString &msg);
 
-    void slotChangeDB(QString &str_samplename);
+    void slotChangeDB(const QString &str_samplename);
+    void slotChangeDBByFile(QVector<QString> &vec_samplename);
 private:
     Ui::MainWindow *ui;
     SampleTreeWidget *m_pSampleTreeWidget;
@@ -85,7 +86,6 @@ private:
     QScrollArea *m_pPeak_area;
     QString m_str_SelectFile;           //保存样品列表选中的文件名称
     QTreeWidgetItem *m_pSelectItem;     //保存样品列表选中的item
-    bool m_bRefresh;                    //是否要求重新刷新界面
 };
 
 #endif // MAINWINDOW_H

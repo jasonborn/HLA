@@ -20,15 +20,16 @@ class ExonNavigatorWidget:public QWidget
 public:
     ExonNavigatorWidget(QWidget *parent = nullptr);
     ~ExonNavigatorWidget();
-    void SetExonData(bool brefresh, QString &str_sample, QString &str_gene);
+    void SetExonData(QString &str_sample, QString &str_gene);
     void SetSelectPos(int colnum, int &selectpos,int &exonstartpos, int &index);
     void setSelectFramePosition(int index, int &startpos, int &selectpos, int &exonstartpos);
     void SetSelectFramePos(int index, int colnum ,int &columnPos);
     void ActForward();
     void ActBackward();
     void SetTypeMisPos(QSet<int> &typeMismatchPos);
+    void SetRefresh(bool refresh){m_bRefresh = refresh;}
 private:
-    void CalcExonData();
+    void CalcExonData(bool brefresh);
     void paintEvent(QPaintEvent *event);
     void DrawExonArea(QPainter &paiter);
     void DrawSelectFrame(QPainter &paiter);
@@ -41,6 +42,7 @@ signals:
     //导航条起始pos,选中的峰图pos，选中的导航条起始pos,选中的导航条index
     void signalExonFocusPosition(int startpos,int selectpos,int exonstart, int index);
 private:
+    bool m_bRefresh;
     int m_iwidth;
     int m_iheight;
     int m_itop1;
@@ -53,7 +55,6 @@ private:
     int m_iSelectPeakPos;   //当前选中的峰图位置
     int m_iMidgap;          //碱基导航条中间间距
     int m_igap;             //碱基导航条两端间距
-    int m_isub_index;       //外显子index,最大最小值之差
     int m_isub_pos;         //外显子x坐标，最大最小之差
     int m_iSelectindex;     //当前选中的导航条index
     int m_iStartPeakpos;    //起始峰图位置

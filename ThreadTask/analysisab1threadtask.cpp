@@ -216,8 +216,8 @@ void AnalysisAB1ThreadTask::run()
                                                    .arg(m_pFiletable->getROrF());
             int leftpos = 0,rightpos = 0;
             SoapTypingDB::GetInstance()->GetExcludePosition(str_query, leftpos, rightpos);
-            m_pFiletable->setExcludeLeft(leftpos);
-            m_pFiletable->setExcludeRight(rightpos);
+            m_pFiletable->setExcludeLeft(leftpos); //存放的是左排除的个数
+            m_pFiletable->setExcludeRight(rightpos);//存放的是右排除的个数
         }
     }
 

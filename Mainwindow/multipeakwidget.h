@@ -31,9 +31,9 @@ public:
     void SetFileName(QString &str);
     QString& GetFileName();
 
+    void SetAlignPos(int start, int end);
     void SetExcludePos(int left, int right);
     void GetExcludePos(int &left, int &right);
-    void GetExcludePos_bak(int &left, int &right);//保存排除区域的备份，方便进行恢复
 
     void SetOffset(int offset);
     int GetOffset();
@@ -49,8 +49,8 @@ public:
 private:
     int m_left_exclude;
     int m_right_exclude;
-    int m_left_exclude_bak;
-    int m_right_exclude_bak;
+    int m_iAlignStart;
+    int m_iAlignEnd;
     long m_lsize;
     long m_loffset;
     bool m_bGssp;
@@ -80,6 +80,7 @@ public:
     void AdjustPeakY(int y);
     void AdjustPeakX(int x);
     void RestorePeak();
+    void SetRefresh(bool refresh){m_bRefresh = refresh;}
 private:
     void CreateRightMenu();
     void ConnectSignalandSlot();
@@ -110,13 +111,15 @@ private slots:
 signals:
     //index:当前导航条index colnum：选中的位置和left_exclude的差值
     void signalPeakFocusPosition(int index, int colnum);
-    void signalChangeDB(QString &str_samplename);
+    void signalChangeDB(const QString &str_samplename);
     void signalActApplyOne();
     void signalActApplyAll();
     void signalActanalyzeLater();
     void signalSendStatusBarMsg(QString &msg);
+    void signalChangeDBByFile(QVector<QString> &vec_samplename);
 private:
     QVector<Ab1FileTableBase> m_vec_filetable;
+    bool m_bRefresh;
     int m_x_step;            //x轴间距
     int m_y_step;            //y轴间距
     QPoint m_select_pos;    //选中碱基的位置

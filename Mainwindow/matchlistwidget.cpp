@@ -4,7 +4,6 @@
 #include <QMenu>
 #include <QAction>
 #include <QMessageBox>
-#include "ThreadTask/analysissamplethreadtask.h"
 #include "Dialog/gsspinfodlg.h"
 #include "Dialog/finaltypedlg.h"
 #include <QContextMenuEvent>
@@ -16,6 +15,7 @@ const int MIN_GAP = 50;
 MatchListWidget::MatchListWidget(QWidget *parent)
     :QTableWidget(parent)
 {
+    m_bRefresh = false;
     InitUI();
     CreateRightMenu();
     ConnectSignalandSlot();
@@ -79,10 +79,10 @@ void MatchListWidget::ClearTable()
     }
 }
 
-void MatchListWidget::SetTableData(bool brefresh,const QString &str_sample, const QString &str_file,
+void MatchListWidget::SetTableData(const QString &str_sample, const QString &str_file,
                                    const QString &str_info, int col)
 {
-    if(!brefresh)//如果不要求刷新，需要判断是否切换了样品
+    if(!m_bRefresh)//如果不要求刷新，需要判断是否切换了样品
     {
         if(m_str_SampleName != str_sample || m_str_file != str_file || m_iCol != col)
         {
@@ -94,6 +94,10 @@ void MatchListWidget::SetTableData(bool brefresh,const QString &str_sample, cons
         {
             return;
         }
+    }
+    else
+    {
+        m_bRefresh = false;
     }
 
     bool b_setgssp = false;
@@ -250,11 +254,7 @@ void MatchListWidget::slotClickIndelItem(QTableWidgetItem* itemNow)
                     SoapTypingDB::GetInstance()->updateShieldAllelesToSampleTable(m_str_SampleName, allele2);
                 }
 
-                AnalysisSampleThreadTask *ptask = new AnalysisSampleThreadTask(m_str_SampleName);
-                ptask->run();
-                delete ptask;
-
-                //emit signalFileChanged(signalInfo_, 1);
+                emit signalChangeDB(m_str_SampleName);
                 break;
             }
         case QMessageBox::No:
