@@ -27,7 +27,7 @@ private:
     void SetStatusbar();                    //显示底部左侧状态栏信息
     void ConnectSignalandSlot();            //连接信号与槽函数
     void DisConnectSignalandSolt();         //断开信号与槽函数连接
-
+    void closeEvent(QCloseEvent *e);
     void InitUI();
 
 public slots:

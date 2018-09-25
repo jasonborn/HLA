@@ -345,7 +345,7 @@ int SoapTypingDB::getFileInfoFromRealTimeDatabase(const QString &sampleName, QVe
     {
 
         while(query.next()){
-            if(query.value(7).toInt() != 0)
+            if(query.value(7).toInt() != 0)//alignResult
             {
                 flag = 1;
                 continue;
@@ -392,7 +392,7 @@ int SoapTypingDB::getGsspFileInfoFromRealTimeDatabase(const QString &sampleName,
     {
         while(query.next())
         {
-            if(query.value(7).toInt() == UNMATCH)
+            if(query.value(7).toInt() == UNMATCH)//alignResult
             {
                 flag = 1;
                 continue;

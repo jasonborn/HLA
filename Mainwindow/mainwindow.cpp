@@ -40,7 +40,6 @@ MainWindow::MainWindow(QWidget *parent) :
     InitUI();
     ConnectSignalandSlot();
     SetStatusbar();
-    //m_pSampleTreeWidget->SetTreeData();
 }
 
 MainWindow::~MainWindow()
@@ -56,6 +55,7 @@ void MainWindow::InitUI()
 
     m_pExonNavigatorWidget = new ExonNavigatorWidget;
     m_pExonNavigatorWidget->setMinimumHeight(100);
+    m_pExonNavigatorWidget->setMaximumHeight(100);
 
     m_pBaseAlignTableWidget = new BaseAlignTableWidget;
     m_pBaseAlignTableWidget->setMinimumHeight(220);
@@ -88,11 +88,9 @@ void MainWindow::InitUI()
     mainSplitter->setStretchFactor(1,25);
 
     ui->verticalLayout->addWidget(mainSplitter);
-
+    ui->actionAnalyze->setEnabled(false);
     ui->statusbarleft->setStyleSheet("QLabel{border:1px solid rgb(139,139,139);}");
     ui->statusbarright->setStyleSheet("QLabel{border:1px solid rgb(139,139,139);}");
-
-    ui->actionAnalyze->setEnabled(false);
 }
 
 void MainWindow::ConnectSignalandSlot()
@@ -281,6 +279,10 @@ void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
     int index;
 
     int i_colnum = item->column();
+    if(i_colnum < 1)
+    {
+        return;
+    }
 
     m_pExonNavigatorWidget->SetSelectPos(i_colnum, selectpos, exonstartpos ,index);
 
@@ -392,7 +394,7 @@ void MainWindow::slotMarkAllSampleApproved()
     {
     case QMessageBox::Yes:
         SoapTypingDB::GetInstance()->markAllSampleApproved();
-        //emit signalFileChanged(signalInfo_, 1);
+        m_pSampleTreeWidget->SetTreeData();
         break;
     case QMessageBox::No:
         break;
@@ -417,7 +419,7 @@ void MainWindow::slotMarkAllSampleReviewed()
         {
             QMessageBox::warning(this, tr("Soap Typing"),tr("Please unlock the sample witch were marked approved"));
         }
-        //emit signalFileChanged(signalInfo_, 1);
+        m_pSampleTreeWidget->SetTreeData();
         break;
     }
     case QMessageBox::No:
@@ -578,6 +580,7 @@ void MainWindow::slotShowStatusBarMsg(QString &msg)
     ui->statusbarright->setText(msg);
 }
 
+//由于峰图进行了编辑或变更，导致数据库发生变化，除峰图外，其他需要刷新
 void MainWindow::slotChangeDB(const QString &str_samplename)
 {
     AnalysisSampleThreadTask *pTask = new AnalysisSampleThreadTask(str_samplename);
@@ -590,6 +593,7 @@ void MainWindow::slotChangeDB(const QString &str_samplename)
     slotSampleTreeItemChanged(m_pSelectItem, 0);
 }
 
+//由于样品文件的删除，导致数据库发生变化，需要重新刷新界面
 void MainWindow::slotChangeDBByFile(QVector<QString> &vec_samplename)
 {
     foreach(const QString &str,vec_samplename)
@@ -604,4 +608,29 @@ void MainWindow::slotChangeDBByFile(QVector<QString> &vec_samplename)
     m_pBaseAlignTableWidget->SetRefresh(true);
     m_pMultiPeakWidget->SetRefresh(true);
     m_pSampleTreeWidget->SetTreeData();
+}
+
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    QMessageBox informationBox;
+    informationBox.setIcon(QMessageBox::Warning);
+    informationBox.setText("Would you really like to quit?");
+    informationBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+    bool cls = true;
+    switch(informationBox.exec())
+    {
+    case QMessageBox::Yes:
+        cls = true;
+        break;
+    case QMessageBox::No:
+        cls = false;
+        break;
+    default:
+        cls = false;
+        break;
+    }
+    if(!cls)
+    {
+        e->ignore();
+    }
 }

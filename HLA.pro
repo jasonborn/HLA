@@ -76,7 +76,8 @@ HEADERS += \
     Dialog/allelepairdlg.h \
     Dialog/setdlg.h \
     Dialog/exontimdlg.h \
-    Dialog/alignmentdlg.h
+    Dialog/alignmentdlg.h \
+
 
 FORMS += \
     Mainwindow/mainwindow.ui \
@@ -94,3 +95,6 @@ FORMS += \
     Dialog/alignmentdlg.ui
 RESOURCES += \
     hla.qrc
+RC_FILE += SoapTyping.rc
+
+DISTFILES += \

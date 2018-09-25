@@ -62,4 +62,7 @@
         <file>images/zoomyincrease.png</file>
         <file>images/zoomyreduce.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>qss/qss</file>
+    </qresource>
 </RCC>
