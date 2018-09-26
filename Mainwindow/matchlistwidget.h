@@ -14,6 +14,7 @@ public:
                       const QString &str_info, int col);
     QStringList & GetMatchList();
     void SetRefresh(bool refresh){m_bRefresh = refresh;}
+    void ClearTable();
 private:
     void InitUI();
     void CreateRightMenu();
@@ -24,7 +25,6 @@ private:
     void findUsefulGssp(const char *seq11, const char *seq12, const char *seq21, const char *seq22,
                         int exonStart, int exonEnd, QVector<GsspTable> &gsspTables,
                         QStringList &gssps, QStringList &infos);
-    void ClearTable();
 private slots:
     void slotClickIndelItem(QTableWidgetItem* itemNow);
     void slotRowChanged(QTableWidgetItem* itemNow);

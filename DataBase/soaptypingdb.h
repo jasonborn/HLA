@@ -48,7 +48,7 @@ public:
     void getResultDataFromGsspTable(const QString &fileName, bool isGsspFilter,
                                                   bool isGssp, QStringList &typeResult);
 
-    void getAlldataFormRealTime(const QString &sampleName, const QString &exonIndex,
+    void getAlldataFormRealTime(const QString &sampleName, int exonIndex,
                                  QVector<Ab1FileTableBase> &vec_filetable);
 
     void getExonPositionIndex(const QString &geneName, QVector<int> &position);

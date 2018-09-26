@@ -74,13 +74,14 @@ class MultiPeakWidget:public QWidget
 public:
     MultiPeakWidget(QWidget *parent = nullptr);
     ~MultiPeakWidget();
-    void SetPeakData(const QString &str_samplename, const QString &str_exon);
+    void SetPeakData(const QString &str_samplename, int index);
     void SetSelectPos(int subpos);
     void AdjustPeakHeight(int height);
     void AdjustPeakY(int y);
     void AdjustPeakX(int x);
     void RestorePeak();
     void SetRefresh(bool refresh){m_bRefresh = refresh;}
+    void ClearMultiPeak();
 private:
     void CreateRightMenu();
     void ConnectSignalandSlot();
@@ -130,8 +131,8 @@ private:
     long m_l_xSize;         //x轴的长度
     int m_iPeakHeight;      //峰图实际高度
     int m_iAdjustPeakHeight; //峰图调整度
-    QString m_str_SampleName;
-    QString m_str_Exon;
+    QString m_str_SampleName;//样品名称
+    int m_index_Exon;        //碱基index
     QVector<QSharedPointer<PeakLine>> m_vec_Peakline;
 
     QMenu *m_pRightMenu;

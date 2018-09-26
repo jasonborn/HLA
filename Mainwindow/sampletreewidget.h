@@ -24,7 +24,7 @@ private:
 
 signals:
     void signalChangeDBByFile(QVector<QString> &vec_samplename);
-
+    void signalClearAll();
 private slots:
     void slotQuickSaveAndClear();
     void slotQuickSave();

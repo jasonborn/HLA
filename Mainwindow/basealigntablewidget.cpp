@@ -118,6 +118,12 @@ void BaseAlignTableWidget::InitUI()
 
 }
 
+void BaseAlignTableWidget::ClearBaseAlignTable()
+{
+    clearBaseAlignTableSampleItem();
+    m_BaseAlignSampleInfo.clear();
+}
+
 void BaseAlignTableWidget::SetAlignTableData(QString &str_samplename,  QString &str_file,
                                              QString str_info, int col)
 {
@@ -141,11 +147,7 @@ void BaseAlignTableWidget::SetAlignTableData(QString &str_samplename,  QString &
         m_bRefresh = false;
     }
 
-    if(!m_BaseAlignSampleInfo.consensusSeq.isEmpty())
-    {
-        clearBaseAlignTableSampleItem();
-        m_BaseAlignSampleInfo.clear();
-    }
+    ClearBaseAlignTable();
 
     SoapTypingDB::GetInstance()->getBaseAlignSampleInfo(str_samplename, m_BaseAlignSampleInfo);
     int i_startColumn = 1;
@@ -236,6 +238,9 @@ void BaseAlignTableWidget::SetAlignTableData(QString &str_samplename,  QString &
 void BaseAlignTableWidget::clearBaseAlignTableSampleItem()
 {
     this->setHorizontalHeaderLabels(m_sl_defaulthead);
+    item(6, 0)->setText("");
+    item(7, 0)->setText("");
+    item(8, 0)->setText("");
     for(int i=1; i<m_iColNum; i++)
     {
         item(0, i)->setText("");
@@ -243,8 +248,12 @@ void BaseAlignTableWidget::clearBaseAlignTableSampleItem()
         item(2, i)->setText("");
         item(3, i)->setText("");
         item(4, i)->setText("");
+        item(4, i)->setBackgroundColor(QColor(102,45,145,51));
         item(5, i)->setText("");
-        item(4, i)->setBackgroundColor(QColor(223, 223, 223));
+        item(6, i)->setText("");
+        item(6, i)->setBackgroundColor(QColor(223, 223, 223));
+        item(7, i)->setText("");
+        item(8, i)->setText("");
     }
 }
 

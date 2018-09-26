@@ -29,6 +29,23 @@ ExonNavigatorWidget::~ExonNavigatorWidget()
 
 }
 
+void ExonNavigatorWidget::ClearExonNav()
+{
+    m_vecExonIndex.clear();
+    m_Exoninfo.maxExonIndex = 0;
+    m_Exoninfo.minExonIndex = 0;
+    m_Exoninfo.vec_editPos.clear();
+    m_Exoninfo.vec_frMis.clear();
+    m_Exoninfo.vec_frUnEqual.clear();
+    m_Exoninfo.vec_pcMis.clear();
+    m_map_mispos.clear();
+    m_map_typemispos.clear();
+    m_map_TotalMisPos.clear();
+    m_vec_Exon.clear();
+    m_isub_pos = 0;
+    m_iStartPeakpos = 0;
+}
+
 void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
 {
     if(!m_bRefresh)//如果不要求刷新，需要判断是否切换了样品
@@ -44,15 +61,7 @@ void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
         }
     }
 
-    m_vecExonIndex.clear();
-    m_Exoninfo.maxExonIndex = 0;
-    m_Exoninfo.minExonIndex = 0;
-    m_Exoninfo.vec_editPos.clear();
-    m_Exoninfo.vec_frMis.clear();
-    m_Exoninfo.vec_frUnEqual.clear();
-    m_Exoninfo.vec_pcMis.clear();
-    m_map_mispos.clear();
-    m_map_TotalMisPos.clear();
+    ClearExonNav();
 
     SoapTypingDB::GetInstance()->getExonPositionIndex(str_gene, m_vecExonIndex);
 

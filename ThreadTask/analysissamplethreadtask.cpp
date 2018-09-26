@@ -685,9 +685,8 @@ void AnalysisSampleThreadTask::run()
     else
     {
         analysisSample(sampleInfo, exonInfo, fileInfos, gsspFileInfos);
+        SoapTypingDB::GetInstance()->insertSampleInfoToRealTimeDatabase(sampleInfo);
     }
-
-    SoapTypingDB::GetInstance()->insertSampleInfoToRealTimeDatabase(sampleInfo);
 
     emit analysisfinished();
 }

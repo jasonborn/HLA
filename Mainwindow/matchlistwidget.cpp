@@ -269,7 +269,7 @@ void MatchListWidget::slotRowChanged(QTableWidgetItem* itemNow)
 {
     int row = itemNow->row();
 
-    if(row == m_iOldRow || row > m_iRowCount)
+    if(row == m_iOldRow || row > m_iRowCount || itemNow->text().isEmpty())
     {
         return;
     }

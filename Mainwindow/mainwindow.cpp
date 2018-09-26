@@ -155,6 +155,8 @@ void MainWindow::ConnectSignalandSlot()
     connect(m_pSampleTreeWidget, &SampleTreeWidget::signalChangeDBByFile, this, &MainWindow::slotChangeDBByFile);
 
     connect(m_pMatchListWidget, &MatchListWidget::signalChangeDB, this, &MainWindow::slotChangeDB);
+
+    connect(m_pSampleTreeWidget, &SampleTreeWidget::signalClearAll, this, &MainWindow::slotClearAll);
 }
 
 void MainWindow::DisConnectSignalandSolt()
@@ -171,6 +173,11 @@ void MainWindow::slotShowOpenDlg()
 {
     OpenFileDialog dlg(this);
     dlg.exec();
+
+    m_pMatchListWidget->SetRefresh(true);
+    m_pExonNavigatorWidget->SetRefresh(true);
+    m_pBaseAlignTableWidget->SetRefresh(true);
+    m_pMultiPeakWidget->SetRefresh(true);
     m_pSampleTreeWidget->SetTreeData();
 }
 
@@ -208,6 +215,11 @@ void MainWindow::SetStatusbar()
 
 void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 {
+    if(item == nullptr)
+    {
+        return;
+    }
+
     QTreeWidgetItem *pParent = item->parent();
     if(pParent == nullptr)
     {
@@ -232,19 +244,19 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 
     m_pBaseAlignTableWidget->SetAlignTableData(str_sample,strfile, str_info, col);
 
-    QString str_exon = str_info.left(1);
+    int index_exon = str_info.left(1).toInt();
     if(str_info.contains("Filter"))//如果是gssp文件
     {
-        str_exon = item->data(0,Qt::UserRole).toString();
+        index_exon = item->data(0,Qt::UserRole).toInt();
     }
 
-    m_pMultiPeakWidget->SetPeakData(str_sample,str_exon);
+    m_pMultiPeakWidget->SetPeakData(str_sample,index_exon);
 
 
     int startpos;
     int selectpos;
     int exonstartpos;
-    m_pExonNavigatorWidget->setSelectFramePosition(str_exon.toInt(), startpos, selectpos, exonstartpos);
+    m_pExonNavigatorWidget->setSelectFramePosition(index_exon, startpos, selectpos, exonstartpos);
 
 
     int i_columnPos = selectpos - startpos;
@@ -267,8 +279,9 @@ void MainWindow::slotExonFocusPosition(int startpos, int selectpos, int exonstar
     int i_sub = selectpos - exonstartpos;
     QString str_name;
     m_pSampleTreeWidget->SetSelectItem(index, str_name);
+    assert(!str_name.isEmpty());
     QStringList str_list = str_name.split('_');
-    m_pMultiPeakWidget->SetPeakData(str_list[0],str_list[2].left(1));
+    m_pMultiPeakWidget->SetPeakData(str_list[0], index);
     m_pMultiPeakWidget->SetSelectPos(i_sub);
 }
 
@@ -279,7 +292,8 @@ void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
     int index;
 
     int i_colnum = item->column();
-    if(i_colnum < 1)
+    QTableWidgetItem *item_first = item->tableWidget()->item(0,i_colnum);
+    if(i_colnum < 1 || item_first->text().isEmpty())
     {
         return;
     }
@@ -289,8 +303,9 @@ void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
     int i_sub = selectpos - exonstartpos;
     QString str_name;
     m_pSampleTreeWidget->SetSelectItem(index, str_name);
+    assert(!str_name.isEmpty());
     QStringList str_list = str_name.split('_');
-    m_pMultiPeakWidget->SetPeakData(str_list[0],str_list[2].left(1));
+    m_pMultiPeakWidget->SetPeakData(str_list[0], index);
     m_pMultiPeakWidget->SetSelectPos(i_sub);
 }
 
@@ -575,7 +590,7 @@ void MainWindow::slotTypeMisMatchPostion(QSet<int> &typeMismatchPos, int type)
     m_pExonNavigatorWidget->SetTypeMisPos(typeMismatchPos);
 }
 
-void MainWindow::slotShowStatusBarMsg(QString &msg)
+void MainWindow::slotShowStatusBarMsg(const QString &msg)
 {
     ui->statusbarright->setText(msg);
 }
@@ -633,4 +648,15 @@ void MainWindow::closeEvent(QCloseEvent *e)
     {
         e->ignore();
     }
+}
+
+void MainWindow::slotClearAll()
+{
+    m_pMatchListWidget->ClearTable();
+    m_pExonNavigatorWidget->ClearExonNav();
+    m_pExonNavigatorWidget->update();
+    m_pBaseAlignTableWidget->ClearBaseAlignTable();
+    m_pMultiPeakWidget->ClearMultiPeak();
+    m_pMultiPeakWidget->update();
+    slotShowStatusBarMsg(QString("Ready"));
 }

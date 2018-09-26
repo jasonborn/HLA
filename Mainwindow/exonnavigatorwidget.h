@@ -28,6 +28,7 @@ public:
     void ActBackward();
     void SetTypeMisPos(QSet<int> &typeMismatchPos);
     void SetRefresh(bool refresh){m_bRefresh = refresh;}
+    void ClearExonNav();
 private:
     void CalcExonData(bool brefresh);
     void paintEvent(QPaintEvent *event);

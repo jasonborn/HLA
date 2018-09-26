@@ -109,6 +109,7 @@ void SampleTreeWidget::SetTreeData()
     SoapTypingDB::GetInstance()->getSampleTreeDataFromSampleTable(m_map_SampleTreeInfo);
     if(m_map_SampleTreeInfo.isEmpty())
     {
+        emit signalClearAll();
         return;
     }
 
@@ -175,8 +176,18 @@ void SampleTreeWidget::SetTreeData()
 
 void SampleTreeWidget::SetSelectItem(int index, QString &str_name)
 {
+    if(currentItem() == nullptr)
+    {
+        qDebug()<<__FUNCTION__<<"error!";
+        return;
+    }
+
     QTreeWidgetItem *pParent = currentItem()->parent();
-    QString str = QString("%1F").arg(index);
+    if(pParent == nullptr)
+    {
+        pParent = currentItem();
+    }
+    QString str = QString("%1").arg(index);
 
     for(int i = 0;i<pParent->childCount();i++)
     {
@@ -308,6 +319,20 @@ void SampleTreeWidget::slotDelete()
                 SoapTypingDB::GetInstance()->deleteFile(false, itemN->text(0));
             }
 
+            QTreeWidgetItem *pParent = m_pSelByRightItem->parent();
+            int count = pParent->childCount() -1;
+            for(int i=0;i<pParent->childCount();i++)
+            {
+                QTreeWidgetItem *pitem = pParent->child(i);
+                if(pitem->text(0).contains("Combined"))
+                {
+                    count--;
+                }
+            }
+            if(count == 0)
+            {
+                SoapTypingDB::GetInstance()->deleteSample(itemN->text(0));
+            }
             QString str_sample = m_pSelByRightItem->text(0).split('_').at(0);
             QVector<QString> vec_sample;
             vec_sample.push_back(str_sample);
@@ -341,16 +366,31 @@ void SampleTreeWidget::slotDeleteSelectedItem()
             sampleNames.push_back(topLevelItem(i)->text(0));
             continue;
         }
-        bool flag = false;
-        for(int j=0; j<topLevelItem(i)->childCount(); j++)
+
+        int count = 0; //每个样品下选中的文件数
+        for(int j=0;j<topLevelItem(i)->childCount(); j++)
         {
-            if(topLevelItem(i)->child(j)->isSelected() && !topLevelItem(i)->child(j)->text(0).contains("Combined"))
+            if(!topLevelItem(i)->child(j)->text(0).contains("Combined"))
             {
-                fileNames.insert(topLevelItem(i)->child(j)->text(0),topLevelItem(i)->child(j)->text(1));
-                flag = true;
+                if(topLevelItem(i)->child(j)->isSelected())
+                {
+                    count++;
+                    fileNames.insert(topLevelItem(i)->child(j)->text(0),topLevelItem(i)->child(j)->text(1));
+                }
+            }
+            else
+            {
+                count++;
             }
         }
-        if(flag)
+
+        if(count == topLevelItem(i)->childCount())//当前样品选中了所有文件
+        {
+            sampleNames.push_back(topLevelItem(i)->text(0));
+            continue;
+        }
+
+        if(count)
         {
             updateNames.push_back(topLevelItem(i)->text(0));
         }

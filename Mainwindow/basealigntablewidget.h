@@ -14,6 +14,7 @@ public:
                            QString str_info, int col);
     void SetAllelePairData(QString &allele1, QString &allele2);
     void SetRefresh(bool refresh){m_bRefresh = refresh;}
+    void ClearBaseAlignTable();
 private:
     void InitUI();
     void clearBaseAlignTableSampleItem();

@@ -34,7 +34,7 @@ bool SoapTypingDB::InitDB()
     QString str = QTime::currentTime().toString("hh_mm_ss_zzz");
     QString str_connect = QString("connect-%1").arg(str);
     m_SqlDB = QSqlDatabase::addDatabase("QSQLITE",str_connect);
-    m_SqlDB.setDatabaseName("D:/workspace/build-HLA-Desktop_Qt_5_11_1_MinGW_32bit-Debug/SoapTypingDB.db");
+    m_SqlDB.setDatabaseName("./SoapTypingDB.db");
 
     bool bRet = m_SqlDB.open();
     if(!bRet)
@@ -810,7 +810,7 @@ void SoapTypingDB::getResultDataFromGsspTable(const QString &fileName, bool isGs
 }
 
 
-void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, const QString &exonIndex,
+void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, int exonIndex,
                                            QVector<Ab1FileTableBase> &vec_filetable)
 {
     QSqlQuery query(m_SqlDB);

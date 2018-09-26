@@ -172,14 +172,20 @@ MultiPeakWidget::~MultiPeakWidget()
 
 }
 
-void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &str_exon)
+void MultiPeakWidget::ClearMultiPeak()
+{
+    m_vec_filetable.clear();
+    m_vec_Peakline.clear();
+}
+
+void MultiPeakWidget::SetPeakData(const QString &str_samplename, int index)
 {
     if(!m_bRefresh)
     {
-        if(m_str_SampleName != str_samplename || m_str_Exon != str_exon)
+        if(m_str_SampleName != str_samplename || m_index_Exon != index)
         {
             m_str_SampleName = str_samplename;
-            m_str_Exon = str_exon;
+            m_index_Exon = index;
         }
         else
         {
@@ -193,10 +199,9 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, const QString &
 
 
     g_time_peak.start();
-    m_vec_filetable.clear();
-    m_vec_Peakline.clear();
+    ClearMultiPeak();
 
-    SoapTypingDB::GetInstance()->getAlldataFormRealTime(str_samplename, str_exon, m_vec_filetable);
+    SoapTypingDB::GetInstance()->getAlldataFormRealTime(str_samplename, index, m_vec_filetable);
     int i_count_peak = m_vec_filetable.size();
     if(i_count_peak == 0)
     {
@@ -507,7 +512,7 @@ void MultiPeakWidget::DrawExcludeArea(QPainter *pter)
 
 void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
 {
-    if(event->button() != Qt::LeftButton)
+    if(event->button() != Qt::LeftButton || m_vec_Peakline.empty())
     {
         return;
     }
@@ -547,7 +552,7 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
                 }
                 m_index_Select = i-1;
                 m_select_pos = vec_GeneLetter[i-1].pos;
-                emit signalPeakFocusPosition(m_str_Exon.toInt(), i-1-left_exclude);
+                emit signalPeakFocusPosition(m_index_Exon, i-1-left_exclude);
                 break;
             }
             else if (pos.x() > i_mid && pos.x() < i_high)
@@ -559,7 +564,7 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
                 }
                 m_index_Select = i;
                 m_select_pos = vec_GeneLetter[i].pos;
-                emit signalPeakFocusPosition(m_str_Exon.toInt(), i-left_exclude);
+                emit signalPeakFocusPosition(m_index_Exon, i-left_exclude);
                 break;
             }
         }
@@ -585,7 +590,7 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
             str_code.append(vec_GeneLetter[m_index_Select].type);
             str_code.append(vec_GeneLetter[m_index_Select+1].type);
 
-            str_msg = QString("Exon:%1 Codon:%2 Pos:%3 Code:%4 QV:%5").arg(m_str_Exon).arg(str_codon).
+            str_msg = QString("Exon:%1 Codon:%2 Pos:%3 Code:%4 QV:%5").arg(m_index_Exon).arg(str_codon).
                     arg(selectpos).arg(str_code).arg(vec_GeneLetter[m_index_Select].qual);
         }
         emit signalSendStatusBarMsg(str_msg);
@@ -652,7 +657,7 @@ void MultiPeakWidget::SetSelectPos(int subpos)
         str_code.append(vec_GeneLetter[i_tmp].type);
         str_code.append(vec_GeneLetter[i_tmp+1].type);
 
-        QString str_msg = QString("Exon:%1 Codon:%2 Pos:%3 Code:%4 QV:%5").arg(m_str_Exon).arg(str_codon).
+        QString str_msg = QString("Exon:%1 Codon:%2 Pos:%3 Code:%4 QV:%5").arg(m_index_Exon).arg(str_codon).
                 arg(selectpos).arg(str_code).arg(vec_GeneLetter[i_tmp].qual);
 
        emit signalSendStatusBarMsg(str_msg);

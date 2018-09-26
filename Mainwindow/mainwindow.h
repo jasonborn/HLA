@@ -72,10 +72,12 @@ public slots:
 
     void slotAllelePairChanged(QString &, QString &);
     void slotTypeMisMatchPostion(QSet<int> &typeMismatchPos, int type);
-    void slotShowStatusBarMsg(QString &msg);
+    void slotShowStatusBarMsg(const QString &msg);
 
     void slotChangeDB(const QString &str_samplename);
     void slotChangeDBByFile(QVector<QString> &vec_samplename);
+
+    void slotClearAll();//清空当前显示信息
 private:
     Ui::MainWindow *ui;
     SampleTreeWidget *m_pSampleTreeWidget;
