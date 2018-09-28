@@ -4,6 +4,7 @@
 #include "Core/core.h"
 #include <QDebug>
 #include <QScrollBar>
+#include "log/log.h"
 
 BaseAlignTableWidget::BaseAlignTableWidget()
 {
@@ -127,6 +128,7 @@ void BaseAlignTableWidget::ClearBaseAlignTable()
 void BaseAlignTableWidget::SetAlignTableData(QString &str_samplename,  QString &str_file,
                                              QString str_info, int col)
 {
+    LOG_DEBUG("%s",str_file.toStdString().c_str());
     m_str_file = str_file;
     m_str_info = str_info;
     m_i_col = col;

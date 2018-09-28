@@ -13,7 +13,7 @@ public:
     SampleTreeWidget(QWidget *parent = 0);
     ~SampleTreeWidget();
     void SetTreeData();
-    void SetSelectItem(int index, QString &str_name);
+    void SetSelectItem(int index, const QString &str_sample);
 private:
     void InitUI();
     void CreateRightMenu();

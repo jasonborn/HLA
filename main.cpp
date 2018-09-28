@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QFile>
 #include <QTextStream>
+#include "log/log.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,7 +16,7 @@ int main(int argc, char *argv[])
         a.setStyleSheet(sss);
     }
     qssF.close();
-
+    log_init(LL_DEBUG,"test","./log");
 
     MainWindow w;
     w.show();

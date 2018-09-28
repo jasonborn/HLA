@@ -98,11 +98,16 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void SetPeakLineData();
     void ExcludeArea(int type); //type:1代表左排除，2代表右排除,3代表恢复
+public slots:
+    void slotApplyOne();
+    void slotApplyAll();
+    void slotAnalyseLater();
+    void slotAnalyseNow();
 private slots:
     void slotDelteThisFile();
     void slotActApplyOne();
-    void slotActApplyAll();
-    void slotActanalyzeLater();
+    void slotActApplyAll();  
+    void slotActanalyzeLater();  
     void slotActanalyzeNow();
     void slotActanalyze();
     void slotHighLightLeftPart();
@@ -113,9 +118,10 @@ signals:
     //index:当前导航条index colnum：选中的位置和left_exclude的差值
     void signalPeakFocusPosition(int index, int colnum);
     void signalChangeDB(const QString &str_samplename);
-    void signalActApplyOne();
-    void signalActApplyAll();
-    void signalActanalyzeLater();
+//    void signalActApplyOne();
+//    void signalActApplyAll();
+//    void signalActanalyzeLater();
+    void signalPeakAct(int type);
     void signalSendStatusBarMsg(QString &msg);
     void signalChangeDBByFile(QVector<QString> &vec_samplename);
 private:
@@ -124,13 +130,11 @@ private:
     int m_x_step;            //x轴间距
     int m_y_step;            //y轴间距
     QPoint m_select_pos;    //选中碱基的位置
-    QPoint m_Rightbtn_pos;  //鼠标右键选中的位置
     bool m_bIsSelect;      //是否选中了一个碱基
     int m_index_Select;    //选中碱基的下标
     int m_index_PeakLine;   //当前选中的峰图下标
     long m_l_xSize;         //x轴的长度
     int m_iPeakHeight;      //峰图实际高度
-    int m_iAdjustPeakHeight; //峰图调整度
     QString m_str_SampleName;//样品名称
     int m_index_Exon;        //碱基index
     QVector<QSharedPointer<PeakLine>> m_vec_Peakline;
@@ -139,10 +143,6 @@ private:
     QAction *m_pActDelete;
     QAction *m_pActInsertBaseN;
     QAction *m_pActHideTraceDisplay;
-//    QAction *m_pActFilterByCurrentBase;
-//    QAction *m_pActRemoveLastBaseFilter;
-//    QAction *m_pActRemoveAllBaseFilters;
-//    QAction *m_pActRemoveLastNullAlleleFilter;
     QAction *m_pActApplyOne;
     QAction *m_pActApplyAll;
     QAction *m_pActanalyzeLater;
@@ -151,11 +151,6 @@ private:
     QAction *m_pActExcludeLeft;
     QAction *m_pActExcludeRight;
     QAction *m_pActResetExclude;
-    //QAction *m_pActIntelligent_Analysis;
-    //QAction *m_pActReset_Analysis;
-//    QAction *m_pActChangeToTrace;
-//    QAction *m_pActRemoveThisTrace;
-
 };
 
 #endif // MULTIPEAKWIDGET_H

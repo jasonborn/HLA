@@ -8,11 +8,11 @@
 #include <QScrollBar>
 #include <QTime>
 #include <set>
+#include "log/log.h"
 
 const int PEAKLINEHIGHT = 200;
 const int HLINEHIGHT = 20;
 
-QTime g_time_peak;
 PeakLine::PeakLine(long size):m_lsize(size)
 {
     m_loffset = 0;
@@ -30,7 +30,6 @@ PeakLine::PeakLine(long size):m_lsize(size)
 
 PeakLine::~PeakLine()
 {
-    qDebug()<<"~PeakLine";
     m_vec_baseA.clear();
     m_vec_baseT.clear();
     m_vec_baseG.clear();
@@ -101,14 +100,21 @@ void PeakLine::SetAlignPos(int start, int end)
 
 void PeakLine::SetExcludePos(int left, int right)
 {
-    m_left_exclude = left + m_iAlignStart;
-    m_right_exclude = m_iAlignEnd - right;
+    if(left >= 0)
+    {
+        m_left_exclude = m_iAlignStart + left;
+    }
+
+    if(right >= 0)
+    {
+        m_right_exclude = m_iAlignEnd - right;
+    }
 }
 
 void PeakLine::GetExcludePos(int &left, int &right)
 {
     left = m_left_exclude;
-    right  = m_right_exclude;
+    right = m_right_exclude;
 }
 
 void PeakLine::SetOffset(int offset)
@@ -176,10 +182,13 @@ void MultiPeakWidget::ClearMultiPeak()
 {
     m_vec_filetable.clear();
     m_vec_Peakline.clear();
+    m_index_Select = 0;
+    m_index_PeakLine = 0;
 }
 
 void MultiPeakWidget::SetPeakData(const QString &str_samplename, int index)
 {
+    LOG_DEBUG("%s",str_samplename.toStdString().c_str());
     if(!m_bRefresh)
     {
         if(m_str_SampleName != str_samplename || m_index_Exon != index)
@@ -197,8 +206,6 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, int index)
         m_bRefresh = false;
     }
 
-
-    g_time_peak.start();
     ClearMultiPeak();
 
     SoapTypingDB::GetInstance()->getAlldataFormRealTime(str_samplename, index, m_vec_filetable);
@@ -239,11 +246,7 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, int index)
 
     m_l_xSize = *(set_left.crbegin()) + *(set_right.crbegin());//取左右最大值，相加为总长度
 
-    qDebug()<<g_time_peak.restart();
     SetPeakLineData();
-    qDebug()<<g_time_peak.restart();
-
-
 }
 
 //这个地方要注意性能问题
@@ -512,7 +515,7 @@ void MultiPeakWidget::DrawExcludeArea(QPainter *pter)
 
 void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
 {
-    if(event->button() != Qt::LeftButton || m_vec_Peakline.empty())
+    if(m_vec_Peakline.empty())
     {
         return;
     }
@@ -536,6 +539,8 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
     int w_left = vec_GeneLetter[left_exclude].pos.x();
     int w_right = vec_GeneLetter[right_exclude - 1].pos.x();
 
+    qDebug()<<pos<<w_left<<w_right;
+
     if(pos.x() > w_left && pos.x() < w_right)
     {
         for(int i=left_exclude; i<right_exclude+1; i++)
@@ -545,29 +550,29 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
             int i_mid = (i_low+i_high)/2;
             if(pos.x() > i_low && pos.x() < i_mid)
             {
-                if(pos.y() > HLINEHIGHT + m_index_PeakLine*m_iPeakHeight &&
-                   pos.y() < 2*HLINEHIGHT + m_index_PeakLine*m_iPeakHeight)
-                {
-                    m_bIsSelect = true;
-                }
                 m_index_Select = i-1;
-                m_select_pos = vec_GeneLetter[i-1].pos;
-                emit signalPeakFocusPosition(m_index_Exon, i-1-left_exclude);
                 break;
             }
             else if (pos.x() > i_mid && pos.x() < i_high)
             {
-                if(pos.y() > HLINEHIGHT + m_index_PeakLine*m_iPeakHeight &&
-                   pos.y() < 2*HLINEHIGHT +m_index_PeakLine*m_iPeakHeight)
-                {
-                    m_bIsSelect = true;   
-                }
                 m_index_Select = i;
-                m_select_pos = vec_GeneLetter[i].pos;
-                emit signalPeakFocusPosition(m_index_Exon, i-left_exclude);
                 break;
             }
         }
+
+        qDebug()<<m_index_Select<<left_exclude<<right_exclude;
+        if(event->button() == Qt::LeftButton)
+        {
+            assert(m_index_Select>=left_exclude && m_index_Select<=right_exclude);
+            if(pos.y() > HLINEHIGHT + m_index_PeakLine*m_iPeakHeight &&
+               pos.y() < 2*HLINEHIGHT + m_index_PeakLine*m_iPeakHeight)
+            {
+                m_bIsSelect = true; //判断是否选中了碱基字符
+            }
+            m_select_pos = vec_GeneLetter[m_index_Select].pos;
+            emit signalPeakFocusPosition(m_index_Exon, m_index_Select-left_exclude);
+        }
+
 
         QString str_msg;
         if(m_bIsSelect)
@@ -602,6 +607,7 @@ void MultiPeakWidget::keyPressEvent(QKeyEvent *event)
 {
     if(m_bIsSelect)
     {
+        m_bIsSelect = false;
         char type = event->key();
         qDebug()<<"keyPressEvent"<<type;
 
@@ -636,6 +642,7 @@ void MultiPeakWidget::keyPressEvent(QKeyEvent *event)
 
 void MultiPeakWidget::SetSelectPos(int subpos)
 {
+    LOG_DEBUG("%d %d",subpos, m_index_PeakLine);
     if(!m_vec_Peakline.isEmpty())
     {
         int left_exclude,right_exclude;
@@ -660,8 +667,7 @@ void MultiPeakWidget::SetSelectPos(int subpos)
         QString str_msg = QString("Exon:%1 Codon:%2 Pos:%3 Code:%4 QV:%5").arg(m_index_Exon).arg(str_codon).
                 arg(selectpos).arg(str_code).arg(vec_GeneLetter[i_tmp].qual);
 
-       emit signalSendStatusBarMsg(str_msg);
-
+        emit signalSendStatusBarMsg(str_msg);
     }
 }
 
@@ -671,32 +677,23 @@ void MultiPeakWidget::CreateRightMenu()
     m_pActDelete = new QAction(tr("Delete Selected File"),this);
     m_pActInsertBaseN = new QAction(tr("Insert Base 'N'"),this);
     m_pActHideTraceDisplay = new QAction(tr("Hide Trace Display"),this);
-//    m_pActFilterByCurrentBase = new QAction(tr("Filter By Current Base"),this);
-//    m_pActRemoveLastBaseFilter = new QAction(tr("Remove Last Base Filter"),this);
-//    m_pActRemoveAllBaseFilters = new QAction(tr("Remove All Base Filters"),this);
-//    m_pActRemoveLastNullAlleleFilter = new QAction(tr("Remove Last Null AlleleFilter"),this);
 
     m_pActInsertBaseN->setDisabled(true);
     m_pActHideTraceDisplay->setDisabled(true);
-//    m_pActFilterByCurrentBase->setDisabled(true);
-//    m_pActRemoveLastBaseFilter->setDisabled(true);
-//    m_pActRemoveAllBaseFilters->setDisabled(true);
-//    m_pActRemoveLastNullAlleleFilter->setDisabled(true);
 
-
-    m_pActApplyOne = new QAction(QIcon(":/images/apply.png"),tr("Apply One"),this);
+    m_pActApplyOne = new QAction(QIcon(":/png/images/apply.png"),tr("Apply One"),this);
     m_pActApplyOne->setIconVisibleInMenu(false);
     m_pActApplyOne->setShortcut(QKeySequence(Qt::ALT+Qt::Key_E));
 
-    m_pActApplyAll = new QAction(QIcon(":/images/apply.png"),tr("Apply All"),this);
+    m_pActApplyAll = new QAction(QIcon(":/png/images/apply.png"),tr("Apply All"),this);
     m_pActApplyAll->setDisabled(true);
     m_pActApplyAll->setShortcut(QKeySequence(Qt::ALT+Qt::Key_R));
 
-    m_pActanalyzeNow = new QAction(QIcon(":/images/apply.png"),tr("Edit One"),this);
+    m_pActanalyzeNow = new QAction(QIcon(":/png/images/apply.png"),tr("Edit One"),this);
     m_pActanalyzeNow->setDisabled(true);
     m_pActanalyzeNow->setShortcut(QKeySequence(Qt::ALT+Qt::Key_O));
 
-    m_pActanalyzeLater = new QAction(QIcon(":/images/apply.png"),tr("Edit Multi"),this);
+    m_pActanalyzeLater = new QAction(QIcon(":/png/images/apply.png"),tr("Edit Multi"),this);
     m_pActanalyzeLater->setIconVisibleInMenu(false);
     m_pActanalyzeLater->setShortcut(QKeySequence(Qt::ALT+Qt::Key_M));
 
@@ -707,17 +704,6 @@ void MultiPeakWidget::CreateRightMenu()
     m_pActExcludeLeft = new QAction(tr("Exclude left"),this);
     m_pActExcludeRight = new QAction(tr("Exclude right"),this);
     m_pActResetExclude = new QAction(tr("Reset Exclude"),this);
-
-//    m_pActIntelligent_Analysis = new QAction(tr("Smart Analysis"),this);
-//    m_pActReset_Analysis = new QAction(tr("Reset Analysis"),this);
-//    m_pActChangeToTrace = new QAction(tr("Change Exon Or Direction To This Trace"),this);
-//    m_pActRemoveThisTrace = new QAction(tr("Remove This Trace"),this);
-
-//    m_pActChangeToTrace->setDisabled(true);
-//    m_pActRemoveThisTrace->setDisabled(true);
-
-//    m_pActIntelligent_Analysis->setVisible(false);
-//    m_pActReset_Analysis->setVisible(false);
 
     m_pRightMenu = new QMenu(this);
     m_pRightMenu->addAction(m_pActDelete);
@@ -738,15 +724,11 @@ void MultiPeakWidget::CreateRightMenu()
     m_pRightMenu->addAction(m_pActExcludeLeft);
     m_pRightMenu->addAction(m_pActExcludeRight);
     m_pRightMenu->addAction(m_pActResetExclude);
-    m_pRightMenu->addSeparator();
-
-//    m_pRightMenu->addAction(m_pActIntelligent_Analysis);
-//    m_pRightMenu->addAction(m_pActReset_Analysis);
+    //m_pRightMenu->addSeparator();
 }
 
 void MultiPeakWidget::contextMenuEvent(QContextMenuEvent *event)
 {
-    m_Rightbtn_pos = event->pos();
     m_pRightMenu->exec(QCursor::pos());
     event->accept();
 }
@@ -767,6 +749,7 @@ void MultiPeakWidget::ConnectSignalandSlot()
 void MultiPeakWidget::slotDelteThisFile()
 {
     QString &str_file = m_vec_Peakline[m_index_PeakLine]->GetFileName();
+    LOG_DEBUG("%s",str_file.toStdString().c_str());
     bool isgssp = m_vec_Peakline[m_index_PeakLine]->GetGssp();
     SoapTypingDB::GetInstance()->deleteFile(isgssp, str_file);
 
@@ -775,37 +758,49 @@ void MultiPeakWidget::slotDelteThisFile()
     emit signalChangeDBByFile(vec_samplename);
 }
 
-void MultiPeakWidget::slotActApplyOne()
+void MultiPeakWidget::slotApplyOne()
 {
     m_pActApplyOne->setDisabled(true);
     m_pActApplyAll->setDisabled(false);
     m_pActApplyOne->setIconVisibleInMenu(true);
     m_pActApplyAll->setIconVisibleInMenu(false);
-
-    emit signalActApplyOne();
 }
 
-void MultiPeakWidget::slotActApplyAll()
+void MultiPeakWidget::slotActApplyOne()
+{
+    slotApplyOne();
+    emit signalPeakAct(1);
+}
+
+void MultiPeakWidget::slotApplyAll()
 {
     m_pActApplyOne->setIconVisibleInMenu(false);
     m_pActApplyAll->setIconVisibleInMenu(true);
     m_pActApplyOne->setDisabled(false);
     m_pActApplyAll->setDisabled(true);
-
-    emit signalActApplyAll();
 }
 
-void MultiPeakWidget::slotActanalyzeLater()
+void MultiPeakWidget::slotActApplyAll()
+{
+    slotApplyAll();
+    emit signalPeakAct(2);
+}
+
+void MultiPeakWidget::slotAnalyseLater()
 {
     m_pActanalyzeNow->setIconVisibleInMenu(false);
     m_pActanalyzeLater->setIconVisibleInMenu(true);
     m_pActanalyzeLater->setDisabled(true);
     m_pActanalyzeNow->setDisabled(false);
-
-    emit signalActanalyzeLater();
 }
 
-void MultiPeakWidget::slotActanalyzeNow()
+void MultiPeakWidget::slotActanalyzeLater()
+{
+    slotAnalyseLater();
+    emit signalPeakAct(3);
+}
+
+void MultiPeakWidget::slotAnalyseNow()
 {
     m_pActanalyzeNow->setIconVisibleInMenu(true);
     m_pActanalyzeLater->setIconVisibleInMenu(false);
@@ -813,81 +808,48 @@ void MultiPeakWidget::slotActanalyzeNow()
     m_pActanalyzeNow->setDisabled(true);
 }
 
+void MultiPeakWidget::slotActanalyzeNow()
+{
+    slotAnalyseNow();
+    emit signalPeakAct(4);
+}
+
 void MultiPeakWidget::slotActanalyze()
 {
-    m_pActanalyze->setDisabled(true);
-
     emit signalChangeDB(m_str_SampleName);
 }
 
 void MultiPeakWidget::ExcludeArea(int type)
 {
-    int i_index_PeakLine = 0;
-    for(int i=0; i<m_vec_Peakline.size(); i++)
-    {
-        if(m_Rightbtn_pos.y() > i*m_iPeakHeight && m_Rightbtn_pos.y() < (i+1)*m_iPeakHeight)
-        {
-            i_index_PeakLine = i;
-            break;
-        }
-    }
-
     if (type == 3)//恢复排除区域
     {
-        m_vec_Peakline[i_index_PeakLine]->SetExcludePos(m_vec_filetable[m_index_PeakLine].getExcludeLeft(),
+        m_vec_Peakline[m_index_PeakLine]->SetExcludePos(m_vec_filetable[m_index_PeakLine].getExcludeLeft(),
                                                         m_vec_filetable[m_index_PeakLine].getExcludeRight());
-        SoapTypingDB::GetInstance()->upDataExclude(m_vec_Peakline[i_index_PeakLine]->GetGssp(),
-                                                   m_vec_Peakline[i_index_PeakLine]->GetFileName(),
+        SoapTypingDB::GetInstance()->upDataExclude(m_vec_Peakline[m_index_PeakLine]->GetGssp(),
+                                                   m_vec_Peakline[m_index_PeakLine]->GetFileName(),
                                                    m_vec_filetable[m_index_PeakLine].getExcludeLeft(),
                                                    m_vec_filetable[m_index_PeakLine].getExcludeRight());
         update();
         return;
     }
 
-    int left_exclude,right_exclude;
-    m_vec_Peakline[i_index_PeakLine]->GetExcludePos(left_exclude, right_exclude);
-    QVector<GeneLetter> &vec_GeneLetter = m_vec_Peakline[i_index_PeakLine]->GetGeneLetter();
-    int w_left = vec_GeneLetter[left_exclude].pos.x();
-    int w_right = vec_GeneLetter[right_exclude - 1].pos.x();
-
-    int i_adjust_exclude = 0;
-    if(m_Rightbtn_pos.x() > w_left && m_Rightbtn_pos.x() < w_right)
-    {
-        for(int i=left_exclude; i<right_exclude+1; i++)
-        {
-            int i_low = vec_GeneLetter[i-1].pos.x();
-            int i_high = vec_GeneLetter[i].pos.x();
-            int i_mid = (i_low+i_high)/2;
-            if(m_Rightbtn_pos.x() > i_low && m_Rightbtn_pos.x() < i_mid)
-            {
-                i_adjust_exclude = i-1;
-                break;
-            }
-            else if (m_Rightbtn_pos.x() > i_mid && m_Rightbtn_pos.x() < i_high)
-            {
-                i_adjust_exclude = i;
-                break;
-            }
-        }
-    }
-
-    if(i_adjust_exclude)
+    if(m_index_Select)
     {       
         if (type == 1)//调整左排除
         {
-            int selectpos = i_adjust_exclude-m_vec_filetable[m_index_PeakLine].getAlignStartPos();
-            m_vec_Peakline[i_index_PeakLine]->SetExcludePos(selectpos, 0);
-            SoapTypingDB::GetInstance()->upDataExclude(m_vec_Peakline[i_index_PeakLine]->GetGssp(),
-                                                       m_vec_Peakline[i_index_PeakLine]->GetFileName(),
+            int selectpos = m_index_Select-m_vec_filetable[m_index_PeakLine].getAlignStartPos();
+            m_vec_Peakline[m_index_PeakLine]->SetExcludePos(selectpos, -1);
+            SoapTypingDB::GetInstance()->upDataExclude(m_vec_Peakline[m_index_PeakLine]->GetGssp(),
+                                                       m_vec_Peakline[m_index_PeakLine]->GetFileName(),
                                                        selectpos,
                                                        m_vec_filetable[m_index_PeakLine].getExcludeRight());
         }
         else if (type == 2)//调整右排除
         {
-            int selectpos = m_vec_filetable[m_index_PeakLine].getAlignEndPos() - i_adjust_exclude;
-            m_vec_Peakline[i_index_PeakLine]->SetExcludePos(0, selectpos);
-            SoapTypingDB::GetInstance()->upDataExclude(m_vec_Peakline[i_index_PeakLine]->GetGssp(),
-                                                       m_vec_Peakline[i_index_PeakLine]->GetFileName(),
+            int selectpos = m_vec_filetable[m_index_PeakLine].getAlignEndPos() - m_index_Select;
+            m_vec_Peakline[m_index_PeakLine]->SetExcludePos(-1, selectpos);
+            SoapTypingDB::GetInstance()->upDataExclude(m_vec_Peakline[m_index_PeakLine]->GetGssp(),
+                                                       m_vec_Peakline[m_index_PeakLine]->GetFileName(),
                                                        m_vec_filetable[m_index_PeakLine].getExcludeLeft(),
                                                        selectpos);
         }

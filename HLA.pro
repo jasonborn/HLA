@@ -49,7 +49,8 @@ SOURCES += \
     Dialog/allelepairdlg.cpp \
     Dialog/setdlg.cpp \
     Dialog/exontimdlg.cpp \
-    Dialog/alignmentdlg.cpp
+    Dialog/alignmentdlg.cpp \
+    log/log.cpp
 
 HEADERS += \
     Mainwindow/mainwindow.h \
@@ -77,6 +78,8 @@ HEADERS += \
     Dialog/setdlg.h \
     Dialog/exontimdlg.h \
     Dialog/alignmentdlg.h \
+    log/log.h \
+    log/macro_define.h
 
 
 FORMS += \

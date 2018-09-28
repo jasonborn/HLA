@@ -78,6 +78,8 @@ public slots:
     void slotChangeDBByFile(QVector<QString> &vec_samplename);
 
     void slotClearAll();//清空当前显示信息
+
+    void slotPeakAct(int type);
 private:
     Ui::MainWindow *ui;
     SampleTreeWidget *m_pSampleTreeWidget;
@@ -87,6 +89,7 @@ private:
     BaseAlignTableWidget *m_pBaseAlignTableWidget;
     QScrollArea *m_pPeak_area;
     QString m_str_SelectFile;           //保存样品列表选中的文件名称
+    QString m_str_SelectSample;         //保存样品列表选中的样品名称
     QTreeWidgetItem *m_pSelectItem;     //保存样品列表选中的item
 };
 

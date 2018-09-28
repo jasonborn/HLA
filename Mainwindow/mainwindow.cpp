@@ -26,8 +26,8 @@
 #include "Dialog/alignmentdlg.h"
 #include <QFileInfo>
 #include <QDesktopServices>
+#include "log/log.h"
 
-QTime g_time_main;
 QT_CHARTS_USE_NAMESPACE
 
 const QString VERSION("1.0.6.0");
@@ -91,6 +91,11 @@ void MainWindow::InitUI()
     ui->actionAnalyze->setEnabled(false);
     ui->statusbarleft->setStyleSheet("QLabel{border:1px solid rgb(139,139,139);}");
     ui->statusbarright->setStyleSheet("QLabel{border:1px solid rgb(139,139,139);}");
+
+    ui->actionApply_All->setIconVisibleInMenu(false);
+    ui->actionApply_One->setIconVisibleInMenu(false);
+    ui->actionEdit_Multi->setIconVisibleInMenu(false);
+    ui->actionEdit_One->setIconVisibleInMenu(false);
 }
 
 void MainWindow::ConnectSignalandSlot()
@@ -122,10 +127,15 @@ void MainWindow::ConnectSignalandSlot()
 
 
     connect(ui->actionApply_All, &QAction::triggered, this, &MainWindow::slotApplyAll);
+    connect(ui->actionApply_All, &QAction::triggered, m_pMultiPeakWidget, &MultiPeakWidget::slotApplyAll);
     connect(ui->actionApply_One, &QAction::triggered, this, &MainWindow::slotApplyOne);
+    connect(ui->actionApply_One, &QAction::triggered, m_pMultiPeakWidget, &MultiPeakWidget::slotApplyOne);
     connect(ui->actionEdit_Multi, &QAction::triggered, this, &MainWindow::slotAnalyseLater);
+    connect(ui->actionEdit_Multi, &QAction::triggered, m_pMultiPeakWidget, &MultiPeakWidget::slotAnalyseLater);
     connect(ui->actionEdit_One, &QAction::triggered, this, &MainWindow::slotAnalyseNow);
+    connect(ui->actionEdit_One, &QAction::triggered, m_pMultiPeakWidget, &MultiPeakWidget::slotAnalyseNow);
     connect(ui->actionAnalyze, &QAction::triggered, this, &MainWindow::slotanalyse);
+    connect(m_pMultiPeakWidget, &MultiPeakWidget::signalPeakAct, this, &MainWindow::slotPeakAct);
 
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::slotAbout);
     connect(ui->actionHelp_Documents, &QAction::triggered, this, &MainWindow::slotHelp);
@@ -230,6 +240,7 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 
     QString strfile = item->text(0);
     QString str_info = item->text(1);
+    LOG_DEBUG("%s",strfile.toStdString().c_str());
     m_pMatchListWidget->SetTableData(str_sample,strfile, str_info, col);
 
     if(!strfile.contains(".ab1"))//如果不是ab1文件，左侧的模块不用刷新
@@ -239,6 +250,7 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 
     m_pSelectItem = item;
     m_str_SelectFile = strfile;
+    m_str_SelectSample = str_sample;
 
     m_pExonNavigatorWidget->SetExonData(str_sample, str_gene);
 
@@ -257,7 +269,7 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
     int selectpos;
     int exonstartpos;
     m_pExonNavigatorWidget->setSelectFramePosition(index_exon, startpos, selectpos, exonstartpos);
-
+    LOG_DEBUG("%d %d %d %d",index_exon, startpos, selectpos, exonstartpos);
 
     int i_columnPos = selectpos - startpos;
     int sliderPos = i_columnPos*25-20;
@@ -271,17 +283,15 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
 //导航条起始pos,选中的峰图pos，选中的导航条起始pos,选中的导航条index
 void MainWindow::slotExonFocusPosition(int startpos, int selectpos, int exonstartpos, int index)
 {
+    LOG_DEBUG("%d %d %d %d",startpos, selectpos, exonstartpos, index);
     int i_columnPos = selectpos - startpos; //二者之差为表格的第几列
     int sliderPos = i_columnPos*25+8;
     m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(sliderPos);
     m_pBaseAlignTableWidget->selectColumn(i_columnPos+1);
 
     int i_sub = selectpos - exonstartpos;
-    QString str_name;
-    m_pSampleTreeWidget->SetSelectItem(index, str_name);
-    assert(!str_name.isEmpty());
-    QStringList str_list = str_name.split('_');
-    m_pMultiPeakWidget->SetPeakData(str_list[0], index);
+    m_pSampleTreeWidget->SetSelectItem(index, m_str_SelectSample);
+    m_pMultiPeakWidget->SetPeakData(m_str_SelectSample, index);
     m_pMultiPeakWidget->SetSelectPos(i_sub);
 }
 
@@ -299,18 +309,17 @@ void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
     }
 
     m_pExonNavigatorWidget->SetSelectPos(i_colnum, selectpos, exonstartpos ,index);
+    LOG_DEBUG("%d %d %d %d",i_colnum, selectpos, exonstartpos ,index);
 
     int i_sub = selectpos - exonstartpos;
-    QString str_name;
-    m_pSampleTreeWidget->SetSelectItem(index, str_name);
-    assert(!str_name.isEmpty());
-    QStringList str_list = str_name.split('_');
-    m_pMultiPeakWidget->SetPeakData(str_list[0], index);
+    m_pSampleTreeWidget->SetSelectItem(index, m_str_SelectSample);
+    m_pMultiPeakWidget->SetPeakData(m_str_SelectSample, index);
     m_pMultiPeakWidget->SetSelectPos(i_sub);
 }
 
 void MainWindow::slotPeakFocusPosition(int index, int colnum)
 {
+    LOG_DEBUG("%d %d",index, colnum);
     int i_columnPos;
     m_pExonNavigatorWidget->SetSelectFramePos(index, colnum,i_columnPos);
     m_pBaseAlignTableWidget->selectColumn(i_columnPos+1);
@@ -659,4 +668,26 @@ void MainWindow::slotClearAll()
     m_pMultiPeakWidget->ClearMultiPeak();
     m_pMultiPeakWidget->update();
     slotShowStatusBarMsg(QString("Ready"));
+}
+
+void MainWindow::slotPeakAct(int type)
+{
+    switch (type)
+    {
+    case 1:
+        slotApplyOne();
+        break;
+    case 2:
+        slotApplyAll();
+        break;
+    case 3:
+        slotAnalyseLater();
+        break;
+    case 4:
+        slotAnalyseNow();
+        break;
+    default:
+        break;
+    }
+
 }

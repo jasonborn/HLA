@@ -4,6 +4,7 @@
 #include <QMouseEvent>
 #include <QtAlgorithms>
 #include "DataBase/soaptypingdb.h"
+#include "log/log.h"
 
 ExonNavigatorWidget::ExonNavigatorWidget(QWidget *parent)
     :QWidget(parent)
@@ -48,6 +49,7 @@ void ExonNavigatorWidget::ClearExonNav()
 
 void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
 {
+    LOG_DEBUG("%s",str_sample.toStdString().c_str());
     if(!m_bRefresh)//如果不要求刷新，需要判断是否切换了样品
     {
         if(m_str_SampleName !=str_sample || m_str_GeneName != str_gene)
@@ -59,6 +61,10 @@ void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
         {
             return;
         }
+    }
+    else
+    {
+        m_bRefresh = false;
     }
 
     ClearExonNav();
@@ -92,31 +98,34 @@ void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
     }
 
     m_map_TotalMisPos = m_map_mispos;
-    CalcExonData(m_bRefresh);
-    m_bRefresh = false;
+    CalcExonData();
 }
 
-void ExonNavigatorWidget::CalcExonData(bool brefresh)
+void ExonNavigatorWidget::CalcExonData()
 {
     int i_width = width();
-    if(m_iwidth != i_width || brefresh) //窗口大小发生变化或者需要刷新
-    {
-        m_iwidth = i_width;
-        m_vec_Exon.clear();
-        int sub_index = m_Exoninfo.maxExonIndex - m_Exoninfo.minExonIndex;
-        m_dXscale = (i_width - 2*m_igap - sub_index*m_iMidgap)*1.0/m_isub_pos;
+    m_vec_Exon.clear();
+    int sub_index = m_Exoninfo.maxExonIndex - m_Exoninfo.minExonIndex;
+    m_dXscale = (i_width - 2*m_igap - sub_index*m_iMidgap)*1.0/m_isub_pos;
 
-        for(int i=m_Exoninfo.minExonIndex; i<=m_Exoninfo.maxExonIndex; i++)
-        {
-            Exon exon;
-            exon.i_exonstartpos = m_vecExonIndex[i-1]+1;
-            exon.i_exonendpos= m_vecExonIndex[i];
-            exon.i_screenstartpos = m_igap+(m_vecExonIndex[i-1]-m_iStartPeakpos)*m_dXscale
-                    +(i-m_Exoninfo.minExonIndex)*m_iMidgap;//碱基导航条起始坐标
-            exon.i_screenwidth = (m_vecExonIndex[i] - m_vecExonIndex[i-1])*m_dXscale;//碱基导航条长度
-            exon.i_exonindex = i;
-            m_vec_Exon.push_back(exon);
-        }
+    for(int i=m_Exoninfo.minExonIndex; i<=m_Exoninfo.maxExonIndex; i++)
+    {
+        Exon exon;
+        exon.i_exonstartpos = m_vecExonIndex[i-1]+1;
+        exon.i_exonendpos= m_vecExonIndex[i];
+        exon.i_screenstartpos = m_igap+(m_vecExonIndex[i-1]-m_iStartPeakpos)*m_dXscale
+                +(i-m_Exoninfo.minExonIndex)*m_iMidgap;//碱基导航条起始坐标
+        exon.i_screenwidth = (m_vecExonIndex[i] - m_vecExonIndex[i-1])*m_dXscale;//碱基导航条长度
+        exon.i_exonindex = i;
+        m_vec_Exon.push_back(exon);
+    }
+}
+
+void ExonNavigatorWidget::resizeEvent(QResizeEvent *event)
+{
+    if(m_isub_pos)
+    {
+        CalcExonData();
     }
 }
 
@@ -144,8 +153,6 @@ void ExonNavigatorWidget::DrawExonArea(QPainter &exonPainter)
     fontRegion.setWeight(QFont::Black);
     fontRegion.setFamily(tr("微软雅黑"));
     fontPos.setPointSize(12);
-
-    CalcExonData(false);
 
     foreach(const Exon &exon, m_vec_Exon)
     {
@@ -222,7 +229,6 @@ void ExonNavigatorWidget::mousePressEvent(QMouseEvent *event)
             if(x_pos >= exon.i_screenstartpos && x_pos <= exon.i_screenstartpos+exon.i_screenwidth)
             {
                 m_iSelectPeakPos = ScreenPosToPeakPos(x_pos);
-                qDebug()<<__FUNCTION__<<x_pos<<m_iSelectPeakPos;
                 update();
                 emit signalExonFocusPosition(m_iStartPeakpos+1,
                         m_iSelectPeakPos,
@@ -271,7 +277,6 @@ int ExonNavigatorWidget::ScreenPosToPeakPos(int screenpos) //显示坐标转换�
              break;
         }
     }
-    qDebug()<<__FUNCTION__<<screenpos<<peakpos;
     return peakpos;
 }
 

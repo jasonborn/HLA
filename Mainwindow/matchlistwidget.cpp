@@ -7,6 +7,7 @@
 #include "Dialog/gsspinfodlg.h"
 #include "Dialog/finaltypedlg.h"
 #include <QContextMenuEvent>
+#include "log/log.h"
 
 const int I_COLNUM = 5;
 const int I_ROWNUM = 500;
@@ -82,6 +83,7 @@ void MatchListWidget::ClearTable()
 void MatchListWidget::SetTableData(const QString &str_sample, const QString &str_file,
                                    const QString &str_info, int col)
 {
+    LOG_DEBUG("%s",str_file.toStdString().c_str());
     if(!m_bRefresh)//如果不要求刷新，需要判断是否切换了样品
     {
         if(m_str_SampleName != str_sample || m_str_file != str_file || m_iCol != col)

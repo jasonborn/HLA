@@ -10,6 +10,7 @@
 #include "Dialog/usercommentdlg.h"
 #include "Dialog/savefiledlg.h"
 #include "Core/core.h"
+#include "log/log.h"
 
 SampleTreeWidget::SampleTreeWidget(QWidget *parent)
     :QTreeWidget(parent)
@@ -109,10 +110,12 @@ void SampleTreeWidget::SetTreeData()
     SoapTypingDB::GetInstance()->getSampleTreeDataFromSampleTable(m_map_SampleTreeInfo);
     if(m_map_SampleTreeInfo.isEmpty())
     {
+        LOG_DEBUG("%s","no tree data");
         emit signalClearAll();
         return;
     }
 
+    LOG_DEBUG("%d",m_map_SampleTreeInfo.size());
     foreach(const SampleTreeInfo_t &sampleTreeInfo, m_map_SampleTreeInfo.values())
     {
         int gsspSize = 0;
@@ -174,28 +177,22 @@ void SampleTreeWidget::SetTreeData()
     emit itemClicked(topLevelItem(0)->child(0), 0);
 }
 
-void SampleTreeWidget::SetSelectItem(int index, QString &str_name)
+void SampleTreeWidget::SetSelectItem(int index, const QString &str_sample)
 {
-    if(currentItem() == nullptr)
+    for(int i=0;i<topLevelItemCount();i++)
     {
-        qDebug()<<__FUNCTION__<<"error!";
-        return;
-    }
-
-    QTreeWidgetItem *pParent = currentItem()->parent();
-    if(pParent == nullptr)
-    {
-        pParent = currentItem();
-    }
-    QString str = QString("%1").arg(index);
-
-    for(int i = 0;i<pParent->childCount();i++)
-    {
-        QTreeWidgetItem *item = pParent->child(i);
-        if(item->text(0).contains(str))
+        QString str_name = topLevelItem(i)->text(0);
+        if(str_name == str_sample)
         {
-            setCurrentItem(item);
-            str_name = item->text(0);
+            for(int j = 0;j<topLevelItem(i)->childCount();j++)
+            {
+                QTreeWidgetItem *item = topLevelItem(i)->child(j);
+                if(item->text(1).contains(QString::number(index)))
+                {
+                    setCurrentItem(item);
+                    break;
+                }
+            }
             break;
         }
     }

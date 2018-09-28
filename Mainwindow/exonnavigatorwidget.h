@@ -30,7 +30,7 @@ public:
     void SetRefresh(bool refresh){m_bRefresh = refresh;}
     void ClearExonNav();
 private:
-    void CalcExonData(bool brefresh);
+    void CalcExonData();
     void paintEvent(QPaintEvent *event);
     void DrawExonArea(QPainter &paiter);
     void DrawSelectFrame(QPainter &paiter);
@@ -38,7 +38,7 @@ private:
     void mousePressEvent(QMouseEvent *event);
     int PeakPosToScreenPos(int oldpos);
     int ScreenPosToPeakPos(int newpos);
-
+    void resizeEvent(QResizeEvent *event);
 signals:
     //导航条起始pos,选中的峰图pos，选中的导航条起始pos,选中的导航条index
     void signalExonFocusPosition(int startpos,int selectpos,int exonstart, int index);

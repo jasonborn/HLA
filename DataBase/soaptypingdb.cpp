@@ -10,6 +10,7 @@
 #include <QFile>
 #include <QDir>
 #include "all_base_struct.h"
+#include "log/log.h"
 
 QMutex g_mutex;
 QSqlDatabase SoapTypingDB::m_SqlDB;
@@ -823,6 +824,7 @@ void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, int exonInd
         while(query.next())
         {
             Ab1FileTableBase table;
+            table.setIsGssp(false);
             table.setFileName(query.value(0).toString());
             table.setExonStartPos(query.value(7).toInt());
             table.setBaseSequence(query.value(10).toByteArray());
@@ -857,6 +859,7 @@ void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, int exonInd
         while(query_gssp.next())
         {
             Ab1FileTableBase table;
+            table.setIsGssp(true);
             table.setFileName(query_gssp.value(0).toString());
             table.setExonStartPos(query.value(7).toInt());
             table.setBaseSequence(query_gssp.value(10).toByteArray());
@@ -1094,7 +1097,14 @@ void SoapTypingDB::deleteFile(bool isgssp, const QString &str_filename)
     bool isSuccess = query.exec();
     if(!isSuccess)
     {
-        qDebug()<<"delete file from fileTable error:"<<str_filename;
+        QSqlError sql_err  = m_SqlDB.lastError();
+        QString str = QString("delete file %1 error:%2").arg(str_filename).arg(sql_err.text());
+        LOG_DEBUG("%s",str.toStdString().c_str());
+    }
+    else
+    {
+        QString str = QString("delete file %1 success").arg(str_filename);
+        LOG_DEBUG("%s",str.toStdString().c_str());
     }
 }
 
