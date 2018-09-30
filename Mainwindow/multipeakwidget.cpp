@@ -539,8 +539,6 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
     int w_left = vec_GeneLetter[left_exclude].pos.x();
     int w_right = vec_GeneLetter[right_exclude - 1].pos.x();
 
-    qDebug()<<pos<<w_left<<w_right;
-
     if(pos.x() > w_left && pos.x() < w_right)
     {
         for(int i=left_exclude; i<right_exclude+1; i++)
@@ -548,31 +546,36 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
             int i_low = vec_GeneLetter[i-1].pos.x();
             int i_high = vec_GeneLetter[i].pos.x();
             int i_mid = (i_low+i_high)/2;
-            if(pos.x() > i_low && pos.x() < i_mid)
+            if(pos.x() >= i_low && pos.x() < i_mid)
             {
                 m_index_Select = i-1;
                 break;
             }
-            else if (pos.x() > i_mid && pos.x() < i_high)
+            else if (pos.x() >= i_mid && pos.x() < i_high)
             {
                 m_index_Select = i;
                 break;
             }
         }
 
-        qDebug()<<m_index_Select<<left_exclude<<right_exclude;
         if(event->button() == Qt::LeftButton)
         {
-            assert(m_index_Select>=left_exclude && m_index_Select<=right_exclude);
-            if(pos.y() > HLINEHIGHT + m_index_PeakLine*m_iPeakHeight &&
-               pos.y() < 2*HLINEHIGHT + m_index_PeakLine*m_iPeakHeight)
+            if(m_index_Select>=left_exclude && m_index_Select<=right_exclude)
             {
-                m_bIsSelect = true; //判断是否选中了碱基字符
+                if(pos.y() > HLINEHIGHT + m_index_PeakLine*m_iPeakHeight &&
+                   pos.y() < 2*HLINEHIGHT + m_index_PeakLine*m_iPeakHeight)
+                {
+                    m_bIsSelect = true; //判断是否选中了碱基字符
+                }
+                m_select_pos = vec_GeneLetter[m_index_Select].pos;
+                emit signalPeakFocusPosition(m_index_Exon, m_index_Select-left_exclude);
             }
-            m_select_pos = vec_GeneLetter[m_index_Select].pos;
-            emit signalPeakFocusPosition(m_index_Exon, m_index_Select-left_exclude);
+            else
+            {
+                LOG_DEBUG("error:%d %d %d %d",m_index_Select,pos.x(),w_left,w_right);
+                return;
+            }
         }
-
 
         QString str_msg;
         if(m_bIsSelect)

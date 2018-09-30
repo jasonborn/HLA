@@ -59,7 +59,7 @@ public slots:
     void slotyRoomDown();
     void slotxRoomUp();
     void slotxRoomDown();
-    void resetRoomSetting();
+    void slotResetRoom();
 
     void slotApplyOne();
     void slotApplyAll();

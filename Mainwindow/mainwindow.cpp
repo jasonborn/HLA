@@ -123,7 +123,7 @@ void MainWindow::ConnectSignalandSlot()
     connect(ui->actionY_Zoom_Reduce, &QAction::triggered, this, &MainWindow::slotyRoomDown);
     connect(ui->actionX_Zoom_Increase, &QAction::triggered, this, &MainWindow::slotxRoomUp);
     connect(ui->actionX_Zoom_Reduce, &QAction::triggered, this, &MainWindow::slotxRoomDown);
-    connect(ui->actionReset_Zoom_Setting, &QAction::triggered, this, &MainWindow::resetRoomSetting);
+    connect(ui->actionReset_Zoom_Setting, &QAction::triggered, this, &MainWindow::slotResetRoom);
 
 
     connect(ui->actionApply_All, &QAction::triggered, this, &MainWindow::slotApplyAll);
@@ -471,7 +471,7 @@ void MainWindow::slotAlignPair()
     align.getSelectAllele(allele1,allele2);
     if(!allele1.isEmpty()&&!allele2.isEmpty())
     {
-        //emit signalAllelePair(allele1, allele2);
+        slotAllelePairChanged(allele1, allele2);
     }
 }
 
@@ -528,7 +528,7 @@ void MainWindow::slotxRoomDown()
     m_pMultiPeakWidget->AdjustPeakX(-14);
 }
 
-void MainWindow::resetRoomSetting()
+void MainWindow::slotResetRoom()
 {
     m_pMultiPeakWidget->RestorePeak();
 }
