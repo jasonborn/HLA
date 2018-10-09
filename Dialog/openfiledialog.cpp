@@ -112,13 +112,11 @@ bool SetAb1FileTable(QTableWidget *tablewidget,int i, Ab1FileTableBase &filetabl
 
 void OpenFileDialog::SlotAnalysisFile()
 {
-//    ui->btnAnalysis->setEnabled(false);
-//    ui->checkBox->setEnabled(false);
-//    ui->btnDel->setEnabled(false);
-//    ui->btnOpen->setEnabled(false);
-//    ui->btnCancel->setEnabled(false);
-
-
+    ui->btnAnalysis->setEnabled(false);
+    ui->checkBox->setEnabled(false);
+    ui->btnDel->setEnabled(false);
+    ui->btnOpen->setEnabled(false);
+    ui->btnCancel->setEnabled(false);
 
     int i_Row = ui->tableWidget->rowCount();
     int i_samplesize = m_set_sample.size();
@@ -127,8 +125,15 @@ void OpenFileDialog::SlotAnalysisFile()
     ui->progressBar->setRange(0,i_Row+i_samplesize);
     for(int i=0; i<i_Row; i++)
     {
-        QComboBoxNew *box = static_cast<QComboBoxNew*>(ui->tableWidget->cellWidget(i, 2));
-        QString str_gsspname = box->currentText();
+        QComboBoxNew *pbox = static_cast<QComboBoxNew*>(ui->tableWidget->cellWidget(i, 4));
+        QString str_RF = pbox->currentText();
+        if(str_RF.isEmpty()) //无法分析的文件，跳过
+        {
+            SetProcessbarValue();
+            continue;
+        }
+        pbox = static_cast<QComboBoxNew*>(ui->tableWidget->cellWidget(i, 2));
+        QString str_gsspname = pbox->currentText();
         if(str_gsspname.isEmpty()) //普通的ab1文件
         {
             Ab1FileTableBase *pAb1filetable = new Ab1NormalFileTable;

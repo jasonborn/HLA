@@ -507,7 +507,7 @@ void MultiPeakWidget::DrawExcludeArea(QPainter *pter)
         QVector<GeneLetter> &vec_geneLetter = m_vec_Peakline[i]->GetGeneLetter();
         int w_left =  vec_geneLetter[left_exclude].pos.x()-m_x_step/2;
         pter->drawRect(0,60+i_height, w_left, m_iPeakHeight-60);
-        int w_right = vec_geneLetter[right_exclude].pos.x()-m_x_step/2;
+        int w_right = vec_geneLetter[right_exclude-1].pos.x()-m_x_step/2;
         pter->drawRect(w_right,60+i_height, i_width, m_iPeakHeight-60);
     }
 }
@@ -541,7 +541,7 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
 
     if(pos.x() > w_left && pos.x() < w_right)
     {
-        for(int i=left_exclude; i<right_exclude+1; i++)
+        for(int i=left_exclude; i<right_exclude; i++)
         {
             int i_low = vec_GeneLetter[i-1].pos.x();
             int i_high = vec_GeneLetter[i].pos.x();
