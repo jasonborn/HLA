@@ -70,6 +70,10 @@ void ExonNavigatorWidget::SetExonData(QString &str_sample, QString &str_gene)
     ClearExonNav();
 
     SoapTypingDB::GetInstance()->getExonPositionIndex(str_gene, m_vecExonIndex);
+    if(m_vecExonIndex.empty())
+    {
+        return;
+    }
 
     SoapTypingDB::GetInstance()->getExonNavigatorInfo(str_sample, m_Exoninfo);
 
@@ -437,4 +441,10 @@ void ExonNavigatorWidget::SetTypeMisPos(QSet<int> &typeMismatchPos)
             break;
         }
     }
+}
+
+void ExonNavigatorWidget::keyPressEvent(QKeyEvent *event)
+{
+    qDebug()<<__FUNCTION__<<event->key();
+    QWidget::keyPressEvent(event);
 }

@@ -50,7 +50,8 @@ SOURCES += \
     Dialog/setdlg.cpp \
     Dialog/exontimdlg.cpp \
     Dialog/alignmentdlg.cpp \
-    log/log.cpp
+    log/log.cpp \
+    Dialog/updatedatadlg.cpp
 
 HEADERS += \
     Mainwindow/mainwindow.h \
@@ -79,7 +80,8 @@ HEADERS += \
     Dialog/exontimdlg.h \
     Dialog/alignmentdlg.h \
     log/log.h \
-    log/macro_define.h
+    log/macro_define.h \
+    Dialog/updatedatadlg.h
 
 
 FORMS += \
@@ -95,7 +97,8 @@ FORMS += \
     Dialog/allelepairdlg.ui \
     Dialog/setdlg.ui \
     Dialog/exontimdlg.ui \
-    Dialog/alignmentdlg.ui
+    Dialog/alignmentdlg.ui \
+    Dialog/updatedatadlg.ui
 RESOURCES += \
     hla.qrc
 RC_FILE += SoapTyping.rc

@@ -328,8 +328,8 @@ void MultiPeakWidget::SetPeakLineData()
             for(int i=0;i<i_basenum;i++)
             {
                 GeneLetter geneletter;
-                geneletter.pos.setX((i+1)*m_x_step + i_offset);
-                geneletter.pos.setY(35 + k*m_iPeakHeight);
+                geneletter.pos.setX((i+1)*m_x_step + i_offset-4);
+                geneletter.pos.setY(38 + k*m_iPeakHeight);
                 geneletter.type = baseseq[i];
                 geneletter.oldtype = ' ';
                 geneletter.qual = basequal[i].toInt();
@@ -359,8 +359,8 @@ void MultiPeakWidget::SetPeakLineData()
             for(int i=0;i<pPeakLine->GetGeneLetter().size();i++)
             {
                 GeneLetter &geneletter = pPeakLine->GetGeneLetter()[i];
-                geneletter.pos.setX((i+1)*m_x_step + i_offset);
-                geneletter.pos.setY(35 + k*m_iPeakHeight);
+                geneletter.pos.setX((i+1)*m_x_step + i_offset-4);
+                geneletter.pos.setY(38 + k*m_iPeakHeight);
             }
         }
     }
@@ -388,7 +388,7 @@ void MultiPeakWidget::DrawPeakLines(QPainter *pter)
 {
     foreach(const QSharedPointer<PeakLine> & peakline, m_vec_Peakline)
     {
-        pter->setPen(Qt::green);
+        pter->setPen(QColor(57,181,74));
         pter->drawPolyline(peakline->GetBasePoint('A'));
 
         pter->setPen(Qt::red);
@@ -437,7 +437,7 @@ void MultiPeakWidget::GetBaseColor(QPainter *pter, const QChar &base)
     switch(base.toLatin1())
     {
     case 'A':
-        pter->setPen(Qt::green);
+        pter->setPen(QColor(57,181,74));
         break;
     case 'T':
         pter->setPen(Qt::red);
@@ -455,12 +455,22 @@ void MultiPeakWidget::GetBaseColor(QPainter *pter, const QChar &base)
 
 void MultiPeakWidget::DrawPeakHead(QPainter *pter)
 {
+    QFont font_letter;
+    font_letter.setPointSize(15);
+    font_letter.setBold(true);
+
+    QFont font_other;
+    font_letter.setPointSize(13);
+    //pter->setFont(font);
+
     for(int i=0;i<m_vec_Peakline.size();i++)
     {
+        pter->setFont(font_other);
         pter->drawText(3,15+i*m_iPeakHeight, m_vec_Peakline[i]->GetFileName());
         int i_index = 0;
         foreach(const GeneLetter &letter, m_vec_Peakline[i]->GetGeneLetter())
         {
+            pter->setFont(font_letter);
             GetBaseColor(pter, letter.type);
             pter->drawText(letter.pos, QString(letter.type));
             if(letter.oldtype != ' ')
@@ -471,6 +481,7 @@ void MultiPeakWidget::DrawPeakHead(QPainter *pter)
 
             if(i_index%10 == 0)
             {
+                pter->setFont(font_other);
                 pter->drawText(letter.pos.x()-3,letter.pos.y()-HLINEHIGHT, QString::number(i_index));
             }
             i_index++;//从0开始计数？
@@ -480,7 +491,7 @@ void MultiPeakWidget::DrawPeakHead(QPainter *pter)
 
 void MultiPeakWidget::DrawSelectFrame(QPainter *pter)
 {
-    pter->setBrush(Qt::yellow);
+    pter->setBrush(QColor(255,255,105));
     pter->setPen(Qt::NoPen);
     pter->drawRect(m_select_pos.x()-5,0,14,m_vec_Peakline.size()*m_iPeakHeight); //绘制比对框
 

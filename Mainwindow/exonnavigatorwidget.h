@@ -39,6 +39,7 @@ private:
     int PeakPosToScreenPos(int oldpos);
     int ScreenPosToPeakPos(int newpos);
     void resizeEvent(QResizeEvent *event);
+    virtual void keyPressEvent(QKeyEvent *event);
 signals:
     //导航条起始pos,选中的峰图pos，选中的导航条起始pos,选中的导航条index
     void signalExonFocusPosition(int startpos,int selectpos,int exonstart, int index);

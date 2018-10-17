@@ -24,6 +24,7 @@
 #include "Dialog/setdlg.h"
 #include "Dialog/exontimdlg.h"
 #include "Dialog/alignmentdlg.h"
+#include "Dialog/updatedatadlg.h"
 #include <QFileInfo>
 #include <QDesktopServices>
 #include "log/log.h"
@@ -176,7 +177,11 @@ void MainWindow::DisConnectSignalandSolt()
 
 void MainWindow::InitData()
 {
-    m_pSampleTreeWidget->SetTreeData();
+    SoapTypingDB::GetInstance()->getGeneVersion(m_str_GeneVer);
+    if(!m_str_GeneVer.isEmpty()) //如果m_str_GeneVer不为空,则认为getetable不为空
+    {
+        m_pSampleTreeWidget->SetTreeData();
+    }
 }
 
 void MainWindow::slotShowOpenDlg()
@@ -477,13 +482,14 @@ void MainWindow::slotAlignPair()
 
 void MainWindow::slotAlignLab()
 {
-    AlignmentDlg dlg(this);
+    AlignmentDlg dlg(this, m_str_GeneVer);
     dlg.exec();
 }
 
 void MainWindow::slotUpdateDatabase()
 {
-
+    UpdateDataDlg dlg(this);
+    dlg.exec();
 }
 
 void MainWindow::slotControl()
@@ -690,4 +696,21 @@ void MainWindow::slotPeakAct(int type)
         break;
     }
 
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    qDebug()<<__FUNCTION__<<event->key();
+    if(event->key() == Qt::Key_Left)
+    {
+        m_pExonNavigatorWidget->ActBackward();
+        return;
+    }
+    else if (event->key() == Qt::Key_Right)
+    {
+        m_pExonNavigatorWidget->ActForward();
+        return;
+    }
+
+    QWidget::keyPressEvent(event);
 }
