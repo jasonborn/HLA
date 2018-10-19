@@ -29,7 +29,6 @@ private:
     void DisConnectSignalandSolt();         //断开信号与槽函数连接
     virtual void closeEvent(QCloseEvent *e);
     void InitUI();
-    virtual void keyPressEvent(QKeyEvent *event);
 
 public slots:
     void slotSampleTreeItemChanged(QTreeWidgetItem *item, int col);

@@ -443,8 +443,3 @@ void ExonNavigatorWidget::SetTypeMisPos(QSet<int> &typeMismatchPos)
     }
 }
 
-void ExonNavigatorWidget::keyPressEvent(QKeyEvent *event)
-{
-    qDebug()<<__FUNCTION__<<event->key();
-    QWidget::keyPressEvent(event);
-}

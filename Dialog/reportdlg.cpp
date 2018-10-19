@@ -34,7 +34,7 @@ void ReportDlg::setDefaultPath()
 {
     QString strDir;
     Core::GetInstance()->GetConfig("path/ReportDir",strDir);
-    QString strfile = QString("%1%2.xls").arg(QDate::currentDate().toString("yyyy_MM_dd"))
+    QString strfile = QString("%1_%2.xls").arg(QDate::currentDate().toString("yyyy_MM_dd"))
                                         .arg(QTime::currentTime().toString("hh_mm_ss_zzz"));
     if(strDir.isEmpty())
     {
@@ -61,7 +61,7 @@ void ReportDlg::slotClickScanBt()
     {
         Core::GetInstance()->SetConfig("path/ReportDir",strSelectDir);
 
-        QString strPath = QString("%1%2%3%4.xls").arg(strSelectDir).arg(QDir::separator())
+        QString strPath = QString("%1%2%3_%4.xls").arg(strSelectDir).arg(QDir::separator())
                 .arg(QDate::currentDate().toString("yyyy_MM_dd"))
                 .arg(QTime::currentTime().toString("hh_mm_ss_zzz"));
 

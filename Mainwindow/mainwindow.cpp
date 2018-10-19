@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QtCharts/QChartView>
-#include <QtCharts/QSplineSeries>
+//#include <QtCharts/QChartView>
+//#include <QtCharts/QSplineSeries>
 #include "Dialog/openfiledialog.h"
 #include <QSplitter>
 #include "sampletreewidget.h"
@@ -28,8 +28,9 @@
 #include <QFileInfo>
 #include <QDesktopServices>
 #include "log/log.h"
+#include <QCloseEvent>
 
-QT_CHARTS_USE_NAMESPACE
+//QT_CHARTS_USE_NAMESPACE
 
 const QString VERSION("1.0.6.0");
 
@@ -93,10 +94,10 @@ void MainWindow::InitUI()
     ui->statusbarleft->setStyleSheet("QLabel{border:1px solid rgb(139,139,139);}");
     ui->statusbarright->setStyleSheet("QLabel{border:1px solid rgb(139,139,139);}");
 
-    ui->actionApply_All->setIconVisibleInMenu(false);
+    ui->actionApply_All->setIconVisibleInMenu(true);
     ui->actionApply_One->setIconVisibleInMenu(false);
     ui->actionEdit_Multi->setIconVisibleInMenu(false);
-    ui->actionEdit_One->setIconVisibleInMenu(false);
+    ui->actionEdit_One->setIconVisibleInMenu(true);
 }
 
 void MainWindow::ConnectSignalandSlot()
@@ -555,17 +556,20 @@ void MainWindow::slotAnalyseLater()
 {
     ui->actionEdit_Multi->setIconVisibleInMenu(true);
     ui->actionEdit_One->setIconVisibleInMenu(false);
+    ui->actionAnalyze->setEnabled(true);
 }
 
 void MainWindow::slotAnalyseNow()
 {
     ui->actionEdit_Multi->setIconVisibleInMenu(false);
     ui->actionEdit_One->setIconVisibleInMenu(true);
+    ui->actionAnalyze->setEnabled(false);
 }
 
 void MainWindow::slotanalyse()
 {
-    ui->actionAnalyze->setEnabled(false);
+    //ui->actionAnalyze->setEnabled(false);
+    m_pMultiPeakWidget->slotActanalyze();
 }
 
 void MainWindow::slotAbout()
@@ -610,7 +614,7 @@ void MainWindow::slotShowStatusBarMsg(const QString &msg)
     ui->statusbarright->setText(msg);
 }
 
-//由于峰图进行了编辑或变更，导致数据库发生变化，除峰图外，其他需要刷新
+//由于峰图进行了编辑或变更，导致数据库发生变化，除峰图和样品树外，其他需要刷新
 void MainWindow::slotChangeDB(const QString &str_samplename)
 {
     AnalysisSampleThreadTask *pTask = new AnalysisSampleThreadTask(str_samplename);
@@ -620,7 +624,13 @@ void MainWindow::slotChangeDB(const QString &str_samplename)
     m_pMatchListWidget->SetRefresh(true);
     m_pExonNavigatorWidget->SetRefresh(true);
     m_pBaseAlignTableWidget->SetRefresh(true);
-    slotSampleTreeItemChanged(m_pSelectItem, 0);
+    //slotSampleTreeItemChanged(m_pSelectItem, 0);
+
+    QString str_info = m_pSelectItem->text(1);
+    QString str_gene = m_str_SelectFile.split('_').at(1);
+    m_pMatchListWidget->SetTableData(m_str_SelectSample, m_str_SelectFile, str_info, 0);
+    m_pExonNavigatorWidget->SetExonData(m_str_SelectSample, str_gene);
+    m_pBaseAlignTableWidget->SetAlignTableData(m_str_SelectSample,m_str_SelectFile, str_info, 0);
 }
 
 //由于样品文件的删除，导致数据库发生变化，需要重新刷新界面
@@ -696,21 +706,4 @@ void MainWindow::slotPeakAct(int type)
         break;
     }
 
-}
-
-void MainWindow::keyPressEvent(QKeyEvent *event)
-{
-    qDebug()<<__FUNCTION__<<event->key();
-    if(event->key() == Qt::Key_Left)
-    {
-        m_pExonNavigatorWidget->ActBackward();
-        return;
-    }
-    else if (event->key() == Qt::Key_Right)
-    {
-        m_pExonNavigatorWidget->ActForward();
-        return;
-    }
-
-    QWidget::keyPressEvent(event);
 }

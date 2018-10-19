@@ -322,6 +322,11 @@ AlignmentDlg::AlignmentDlg(QWidget *parent,const QString &strver) :
 AlignmentDlg::~AlignmentDlg()
 {
     delete ui;
+    if(m_pAlignPaintWgt)
+    {
+        delete m_pAlignPaintWgt;
+        m_pAlignPaintWgt = nullptr;
+    }
 }
 
 void AlignmentDlg::InitUI()
@@ -330,6 +335,8 @@ void AlignmentDlg::InitUI()
     setWindowTitle(windowTitle);
 
     m_pAlignPaintWgt = new AlignPaintWgt(ui->scrollArea);
+
+    ui->listWidget->setSelectionMode(QAbstractItemView::MultiSelection);
 
     m_map_coden.insert("A", -24);
     m_map_coden.insert("B", -24);
