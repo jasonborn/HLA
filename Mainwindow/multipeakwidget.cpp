@@ -193,7 +193,7 @@ MultiPeakWidget::MultiPeakWidget(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus);//如果不调用，keyPressEvent不响应
     CreateRightMenu();
     ConnectSignalandSlot();
-    loadFontFromFile();
+    //loadFontFromFile();
 }
 
 MultiPeakWidget::~MultiPeakWidget()
@@ -497,7 +497,7 @@ void MultiPeakWidget::GetBaseColor(QPainter *pter, const QChar &base)
 
 void MultiPeakWidget::DrawPeakHead(QPainter *pter)
 {
-    QFont font_letter(m_str_fontName);
+    QFont font_letter("微软雅黑");
     font_letter.setPointSize(15);
     font_letter.setBold(true);
 

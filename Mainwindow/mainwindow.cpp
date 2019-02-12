@@ -271,9 +271,9 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
     m_pMultiPeakWidget->SetPeakData(str_sample,index_exon);
 
 
-    int startpos;
-    int selectpos;
-    int exonstartpos;
+    int startpos=0;
+    int selectpos=0;
+    int exonstartpos=0;
     m_pExonNavigatorWidget->setSelectFramePosition(index_exon, startpos, selectpos, exonstartpos);
     LOG_DEBUG("%d %d %d %d",index_exon, startpos, selectpos, exonstartpos);
 
