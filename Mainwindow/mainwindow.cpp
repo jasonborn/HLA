@@ -29,6 +29,8 @@
 #include <QDesktopServices>
 #include "log/log.h"
 #include <QCloseEvent>
+#include <QThreadPool>
+#include <QPushButton>
 
 //QT_CHARTS_USE_NAMESPACE
 
@@ -152,7 +154,7 @@ void MainWindow::ConnectSignalandSlot()
 
     connect(m_pMultiPeakWidget, &MultiPeakWidget::signalPeakFocusPosition, this, &MainWindow::slotPeakFocusPosition);
 
-
+    connect(m_pMultiPeakWidget, &MultiPeakWidget::SignalChangePeak, this, &MainWindow::slotChangePeak);
 
     connect(m_pMatchListWidget, &MatchListWidget::signalAllelePair, this, &MainWindow::slotAllelePairChanged);
 
@@ -183,6 +185,9 @@ void MainWindow::InitData()
     {
         m_pSampleTreeWidget->SetTreeData();
     }
+//    SoapTypingDB::GetInstance()->deleteTable("fileTable");
+//    SoapTypingDB::GetInstance()->deleteTable("gsspFileTable");
+//    SoapTypingDB::GetInstance()->deleteTable("sampleTable");
 }
 
 void MainWindow::slotShowOpenDlg()
@@ -267,8 +272,7 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
     {
         index_exon = item->data(0,Qt::UserRole).toInt();
     }
-
-    m_pMultiPeakWidget->SetPeakData(str_sample,index_exon);
+    m_pMultiPeakWidget->SetPeakData(str_sample,index_exon, m_str_SelectFile);
 
 
     int startpos=0;
@@ -278,7 +282,7 @@ void MainWindow::slotSampleTreeItemChanged(QTreeWidgetItem *item, int col)
     LOG_DEBUG("%d %d %d %d",index_exon, startpos, selectpos, exonstartpos);
 
     int i_columnPos = selectpos - startpos;
-    int sliderPos = i_columnPos*25-20;
+    int sliderPos = i_columnPos*25-30;
     m_pBaseAlignTableWidget->selectColumn(i_columnPos);
     m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(sliderPos);
 
@@ -291,13 +295,13 @@ void MainWindow::slotExonFocusPosition(int startpos, int selectpos, int exonstar
 {
     LOG_DEBUG("%d %d %d %d",startpos, selectpos, exonstartpos, index);
     int i_columnPos = selectpos - startpos; //二者之差为表格的第几列
-    int sliderPos = i_columnPos*25+8;
+    int sliderPos = i_columnPos*25-8;
     m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(sliderPos);
     m_pBaseAlignTableWidget->selectColumn(i_columnPos+1);
 
     int i_sub = selectpos - exonstartpos;
     m_pSampleTreeWidget->SetSelectItem(index, m_str_SelectSample);
-    m_pMultiPeakWidget->SetPeakData(m_str_SelectSample, index);
+    m_pMultiPeakWidget->SetPeakData(m_str_SelectSample, index, m_str_SelectFile);
     m_pMultiPeakWidget->SetSelectPos(i_sub);
 }
 
@@ -307,6 +311,7 @@ void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
     int exonstartpos;
     int index;
 
+
     int i_colnum = item->column();
     QTableWidgetItem *item_first = item->tableWidget()->item(0,i_colnum);
     if(i_colnum < 1 || item_first->text().isEmpty())
@@ -314,24 +319,32 @@ void MainWindow::slotAlignTableFocusPosition(QTableWidgetItem *item)
         return;
     }
 
+    QPoint pp = QCursor::pos();
+    qDebug()<<__func__<<pp<<m_pBaseAlignTableWidget->mapToGlobal(pp);
+
     m_pExonNavigatorWidget->SetSelectPos(i_colnum, selectpos, exonstartpos ,index);
     LOG_DEBUG("%d %d %d %d",i_colnum, selectpos, exonstartpos ,index);
 
     int i_sub = selectpos - exonstartpos;
     m_pSampleTreeWidget->SetSelectItem(index, m_str_SelectSample);
-    m_pMultiPeakWidget->SetPeakData(m_str_SelectSample, index);
-    m_pMultiPeakWidget->SetSelectPos(i_sub);
+    m_pMultiPeakWidget->SetPeakData(m_str_SelectSample, index, m_str_SelectFile);
+    m_pMultiPeakWidget->SetSelectPos(i_sub, pp.x());
 }
 
 void MainWindow::slotPeakFocusPosition(int index, int colnum)
 {
-    LOG_DEBUG("%d %d",index, colnum);
+    //LOG_DEBUG("%d %d",index, colnum);
     int i_columnPos;
     m_pExonNavigatorWidget->SetSelectFramePos(index, colnum,i_columnPos);
     m_pBaseAlignTableWidget->selectColumn(i_columnPos+1);
-    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(i_columnPos*25+8);
+    m_pBaseAlignTableWidget->horizontalScrollBar()->setSliderPosition(i_columnPos*25-230);
+    //m_pBaseAlignTableWidget->scrollToItem(m_pBaseAlignTableWidget->item(0,i_columnPos+1));
 }
 
+void MainWindow::slotChangePeak(QString &str_file)
+{
+    m_pSampleTreeWidget->SetSelectItemByName( m_str_SelectSample, str_file);
+}
 
 void MainWindow::slotShowSaveDlg()
 {
@@ -617,9 +630,13 @@ void MainWindow::slotShowStatusBarMsg(const QString &msg)
 //由于峰图进行了编辑或变更，导致数据库发生变化，除峰图和样品树外，其他需要刷新
 void MainWindow::slotChangeDB(const QString &str_samplename)
 {
-    AnalysisSampleThreadTask *pTask = new AnalysisSampleThreadTask(str_samplename);
-    pTask->run();
-    delete pTask;
+    Tipbox msg(this);
+    //msg.setWindowFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    msg.setText("Please wait for editing ...");
+    QPushButton *btn = msg.addButton(QMessageBox::Ok);
+    btn->setVisible(false);
+    msg.doTask(str_samplename);
+    msg.exec();
 
     m_pMatchListWidget->SetRefresh(true);
     m_pExonNavigatorWidget->SetRefresh(true);
@@ -707,3 +724,22 @@ void MainWindow::slotPeakAct(int type)
     }
 
 }
+
+
+Tipbox::Tipbox(QWidget *parent):
+QMessageBox(parent)
+{
+}
+
+Tipbox::~Tipbox()
+{
+
+}
+
+void Tipbox::doTask(const QString &str_samplename)
+{
+    AnalysisSampleThreadTask *task = new AnalysisSampleThreadTask(str_samplename);
+    connect(task, &AnalysisSampleThreadTask::analysisfinished, this, &Tipbox::close);
+    QThreadPool::globalInstance()->start(task);
+}
+

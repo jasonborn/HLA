@@ -79,8 +79,8 @@ bool UpdateDataDlg::isFileExists(const QString &file)
 
 void UpdateDataDlg::slotApply()
 {
-    UpdateDatabase();
-    return;
+//    UpdateDatabase();
+//    return;
 
     ui->tab->setEnabled(false);
     QString geneFile = ui->lineEdit_Gene->text();
