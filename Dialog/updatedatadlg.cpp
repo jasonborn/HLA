@@ -79,8 +79,8 @@ bool UpdateDataDlg::isFileExists(const QString &file)
 
 void UpdateDataDlg::slotApply()
 {
-//    UpdateDatabase();
-//    return;
+    UpdateDatabase();
+    return;
 
     ui->tab->setEnabled(false);
     QString geneFile = ui->lineEdit_Gene->text();
@@ -208,6 +208,53 @@ void ParseRareList(QSet<QString> &set_rare)
         {
             QString line = in.readLine();
             set_rare.insert(line);
+        }
+        file.close();
+    }
+}
+
+void ParseNucFile(const QString &strgene, QString &strver, QVector<QMap<QString,QString>> &vec_map_info)
+{
+    QString str_path;
+    if(strgene.contains("DRB"))
+    {
+        str_path = QString("E:/alignments/%1_nuc.txt").arg("DRB");
+    }
+    else
+    {
+        str_path = QString("E:/alignments/%1_nuc.txt").arg(strgene);
+    }
+    QString str_start = QString("%1*").arg(strgene);
+    QFile file(str_path);
+    int split_pos = 0;
+    if(file.open(QIODevice::ReadOnly))
+    {
+        QTextStream in(&file);
+        while (!in.atEnd())
+        {
+            QString line = in.readLine().trimmed();
+            if(line.startsWith(str_start))
+            {
+                QString strkey = line.left(split_pos).trimmed();
+                QString strvalue = line.mid(split_pos).remove(' ');
+                if(map_info.find(strkey)!=map_info.end())
+                {
+                    QString &str_seq = map_info[strkey];
+                    str_seq.append(strvalue);
+                }
+                else
+                {
+                    map_info.insert(strkey, strvalue);
+                }
+            }
+            else if(line.contains("version"))
+            {
+                QStringList strlist = line.split(' ');
+                strver = strlist[strlist.size()-1];
+            }
+            else if (split_pos==0 && line.contains("cDNA")) {
+                split_pos = line.length()-1;
+            }
         }
         file.close();
     }
@@ -643,26 +690,61 @@ void UpdateDataDlg::UpdateDatabase()
     QSet<QString> set_rare;
     ParseRareList(set_rare);
 
-QFile file_out("E:/test/A_test.txt");
-file_out.open(QIODevice::WriteOnly);
-QTextStream out(&file_out);
-
     auto itor = map_class.begin();
     for(;itor != map_class.end();itor++)
     {
-        QMap<QString,QString> map_info;
+        QVector<QMap<QString,QString>> vec_map_info;
         QString str_version;
-        ParseNucFile(itor.key(), str_version, map_info);
+        ParseNucFile(itor.key(), str_version, vec_map_info);
 
-        if(map_info.empty())
+//        QMap<QString,QString> map_info;
+
+//        ParseNucFile(itor.key(), str_version, map_info);
+
+//        if(map_info.empty())
+//        {
+//            continue;
+//        }
+
+        for(int i=0;i<vec_map_info.size();i++)
         {
-            continue;
+    QFile file_out(QString("E:/test/%1_test.txt").arg(itor.key()));
+    file_out.open(QIODevice::WriteOnly);
+    QTextStream out(&file_out);
+
+
+            QMap<QString,QString> &map_info = vec_map_info[i];
+
+
+            QVector<int> vec_pos;
+            GetExonPos(map_info.first(), vec_pos);
+
+            QMap<int,int> map_dotpos;//位置，长度
+            GetDotPos(map_info.first(), map_dotpos);
+
+            QVector<SeqLine *> vec_seqline;
+            vec_seqline.reserve(map_info.size());
+
+            QVector<QSet<char>> vec_set;
+
+            QMap<int,int> map_len;
+
+            CreateSeqLine(map_info, vec_pos, map_dotpos, set_rare, vec_seqline, vec_set, map_len);
+
+            map_info.clear();
+            map_dotpos.clear();
+            set_rare.clear();
+
+            SetSeqLineClassNum(map_len, itor.value(), vec_seqline);
+
+            QByteArray conseq;
+            GetConsensusSeq(vec_set, conseq);
+
+            InsertDataToGeneTable(itor.key(), conseq, vec_pos, itor.value(), map_availble[itor.key()], str_version, out);
+    file_out.close();
         }
 
-        QVector<QMap<QString,QString>> vec_drb_map_info;
-        SplitNucFileForDRB(map_info, vec_drb_map_info);
-
-        QVector<int> vec_pos;
+        /*QVector<int> vec_pos;
         GetExonPos(map_info.first(), vec_pos);
 
         QMap<int,int> map_dotpos;//位置，长度
@@ -695,12 +777,13 @@ QTextStream out(&file_out);
         for(int i=0;i<vec_seqline.size();i++)
         {
             delete vec_seqline[i];
-        }
+        }*/
         qDebug()<<itor.key()<<"finish";
+
     }
 
-file_out.close();
-    close();
+
+    //close();
 }
 
 SeqLine::SeqLine(const QString &name):
