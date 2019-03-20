@@ -458,33 +458,39 @@ void SoapTypingDB::modifySequence(QByteArray &sequence, QSet<int> &editPostion, 
     }
     if(excludeLeft > 0)
     {
-//        int i = excludeLeft-exonStartPos+1;
-//        while(i>0 && sequence[i]=='.')
-//        {
-//            sequence[i]= '-';
-//            i++;
-//        }
-//        for(int i=excludeLeft-exonStartPos; i>=0; i--)
-//        {
-//            sequence[i]='-';
-//        }
-        QByteArray temp(excludeLeft,'-');
-        sequence.replace(0,excludeLeft,temp);
+        for(int i=0;i<sequence.size();i++)
+        {
+            if(excludeLeft)
+            {
+                if(sequence[i]!='-')
+                {
+                    sequence[i] = '-';
+                    excludeLeft--;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
     }
     if(excludeRight > 0)
     {
-//        int i = excludeRight - exonStartPos -1;
-//        while(i>0 && sequence[i]=='.')
-//        {
-//            sequence[i] = '-';
-//            i--;
-//        }
-//        for(int i=excludeRight-exonStartPos; i>0 &&i<sequence.size(); i++)
-//        {
-//            sequence[i]='-';
-//        }
-        QByteArray temp(excludeRight,'-');
-        sequence.replace(sequence.size()-excludeRight-1, excludeRight, temp);
+        for(int i=sequence.size();i>0;i--)
+        {
+            if(excludeRight)
+            {
+                if(sequence[i]!='-')
+                {
+                    sequence[i] = '-';
+                    excludeRight--;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
     }
 }
 
@@ -856,6 +862,7 @@ void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, int exonInd
             table.setAverageBaseWidth(query.value(21).toFloat());
             table.setAlignStartPos(query.value(24).toInt());
             table.setAlignEndPos(query.value(25).toInt());
+            table.setAlignInfo(query.value(26).toString());
             table.setExcludeLeft(query.value(27).toInt());
             table.setExcludeRight(query.value(28).toInt());
             table.setEditInfo(query.value(29).toString());
@@ -893,6 +900,7 @@ void SoapTypingDB::getAlldataFormRealTime(const QString &sampleName, int exonInd
             table.setAverageBaseWidth(query_gssp.value(21).toFloat());
             table.setAlignStartPos(query_gssp.value(24).toInt());
             table.setAlignEndPos(query_gssp.value(25).toInt());
+            table.setAlignInfo(query_gssp.value(26).toString());
             table.setExcludeLeft(query_gssp.value(27).toInt());
             table.setExcludeRight(query_gssp.value(28).toInt());
             table.setEditInfo(query_gssp.value(29).toString());
@@ -2105,4 +2113,27 @@ void SoapTypingDB::StartTransaction()
 void SoapTypingDB::EndTransaction()
 {
     m_SqlDB.commit();
+}
+
+void SoapTypingDB::getTypeResultFromSampleTable(const QString &sampleName, QMap<int, QString> &zeroResult)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT typeResult FROM sampleTable WHERE sampleName=?");
+    query.bindValue(0, sampleName);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        while(query.next())
+        {
+            QVector<QStringRef> vec_res = query.value(0).toString().splitRef(";", QString::SkipEmptyParts);
+            foreach (QStringRef str_ref, vec_res) {
+                QVector<QStringRef> vec_item = str_ref.split(',');
+                if(vec_item.at(0) == '0')
+                {
+                    zeroResult.insertMulti(vec_item.at(0).toInt(), vec_item.at(1).toString());
+                }
+            }
+            break;
+        }
+    }
 }

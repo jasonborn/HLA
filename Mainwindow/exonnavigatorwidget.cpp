@@ -11,13 +11,13 @@ ExonNavigatorWidget::ExonNavigatorWidget(QWidget *parent)
 {
     m_bRefresh = false;
     m_iheight = 100;
-    m_itop1 = m_iheight*0.45;
-    m_itop2 = m_iheight*0.5;
-    m_itop3 = m_iheight*0.7+1;
-    m_ih0 = m_iheight*0.3;
-    m_ih1 = m_iheight*0.5;
-    m_ih2 = m_iheight*0.4;
-    m_ih3 = m_iheight*0.2;
+//    m_itop1 = m_iheight*0.45;
+//    m_itop2 = m_iheight*0.5;
+//    m_itop3 = m_iheight*0.7+1;
+//    m_ih0 = m_iheight*0.3;
+//    m_ih1 = m_iheight*0.5;
+//    m_ih2 = m_iheight*0.4;
+//    m_ih3 = m_iheight*0.2;
     m_iMidgap = 40;
     m_igap = 20;
     m_isub_pos = 0;
@@ -137,9 +137,18 @@ void ExonNavigatorWidget::paintEvent(QPaintEvent *event)
 {
     QPainter exonPainter(this);
     int i_width = width();
+    m_iheight = height();
     exonPainter.setPen(QColor(139,139,139));
     exonPainter.setBrush(Qt::white);
     exonPainter.drawRect(QRect(0,0,i_width-1,m_iheight -1));
+
+    m_itop1 = m_iheight*0.45;
+    m_itop2 = m_iheight*0.5;
+    m_itop3 = m_iheight*0.7+1;
+    m_ih0 = m_iheight*0.3;
+    m_ih1 = m_iheight*0.5;
+    m_ih2 = m_iheight*0.4;
+    m_ih3 = m_iheight*0.2;
 
     if(m_isub_pos)
     {
@@ -336,7 +345,7 @@ void ExonNavigatorWidget::SetSelectFramePos(int index, int colnum, int &columnPo
     {
         if(exon.i_exonindex == index)
         {
-            int selectpos = colnum + exon.i_exonstartpos;
+            int selectpos = colnum;// + exon.i_exonstartpos;
             columnPos = selectpos  - m_iStartPeakpos -1;
             if(selectpos >= exon.i_exonstartpos && selectpos <= exon.i_exonendpos)
             {

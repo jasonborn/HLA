@@ -213,86 +213,83 @@ void ParseRareList(QSet<QString> &set_rare)
     }
 }
 
-void ParseNucFile(const QString &strgene, QString &strver, QVector<QMap<QString,QString>> &vec_map_info)
+void InsertMapInfo(int split_pos, QString &line, QHash<QString, QString> &hash_info)
 {
-    QString str_path;
-    if(strgene.contains("DRB"))
+    QString strname = line.left(split_pos).trimmed();
+    QString strseq = line.mid(split_pos).remove(' ');
+    if(hash_info.find(strname)!=hash_info.end())
     {
-        str_path = QString("E:/alignments/%1_nuc.txt").arg("DRB");
+        QString &str_seq = hash_info[strname];
+        str_seq.append(strseq);
     }
     else
     {
-        str_path = QString("E:/alignments/%1_nuc.txt").arg(strgene);
-    }
-    QString str_start = QString("%1*").arg(strgene);
-    QFile file(str_path);
-    int split_pos = 0;
-    if(file.open(QIODevice::ReadOnly))
-    {
-        QTextStream in(&file);
-        while (!in.atEnd())
-        {
-            QString line = in.readLine().trimmed();
-            if(line.startsWith(str_start))
-            {
-                QString strkey = line.left(split_pos).trimmed();
-                QString strvalue = line.mid(split_pos).remove(' ');
-                if(map_info.find(strkey)!=map_info.end())
-                {
-                    QString &str_seq = map_info[strkey];
-                    str_seq.append(strvalue);
-                }
-                else
-                {
-                    map_info.insert(strkey, strvalue);
-                }
-            }
-            else if(line.contains("version"))
-            {
-                QStringList strlist = line.split(' ');
-                strver = strlist[strlist.size()-1];
-            }
-            else if (split_pos==0 && line.contains("cDNA")) {
-                split_pos = line.length()-1;
-            }
-        }
-        file.close();
+        hash_info.insert(strname, strseq);
     }
 }
 
-void ParseNucFile(const QString &strgene, QString &strver, QMap<QString,QString> &map_info)
+void ParseNucFile_DRB(QString &strver,
+                      QMap<QString, QHash<QString,QString>> &map_hash_info)
 {
-    QString str_path;
-    if(strgene.contains("DRB"))
-    {
-        str_path = QString("E:/alignments/%1_nuc.txt").arg("DRB");
-    }
-    else
-    {
-        str_path = QString("E:/alignments/%1_nuc.txt").arg(strgene);
-    }
-    QString str_start = QString("%1*").arg(strgene);
-    QFile file(str_path);
+    QString str_path = QString("E:/alignments/%1_nuc.txt").arg("DRB");
+    QString str_start1("DRB1*");
+    QString str_start3("DRB3*");
+    QString str_start4("DRB4*");
+    QString str_start5("DRB5*");
+
+    QHash<QString, QString> hash_DRB1;
+    QHash<QString, QString> hash_DRB3;
+    QHash<QString, QString> hash_DRB4;
+    QHash<QString, QString> hash_DRB5;
     int split_pos = 0;
+    bool isfirst_DRB1 = true;
+    bool isfirst_DRB3 = true;
+    bool isfirst_DRB4 = true;
+    bool isfirst_DRB5 = true;
+    QString str_firstname_DRB1;
+    QString str_firstname_DRB3;
+    QString str_firstname_DRB4;
+    QString str_firstname_DRB5;
+
+    QFile file(str_path);
     if(file.open(QIODevice::ReadOnly))
     {
         QTextStream in(&file);
         while (!in.atEnd())
         {
             QString line = in.readLine().trimmed();
-            if(line.startsWith(str_start))
+            if(line.startsWith(str_start1))
             {
-                QString strkey = line.left(split_pos).trimmed();
-                QString strvalue = line.mid(split_pos).remove(' ');
-                if(map_info.find(strkey)!=map_info.end())
+                if(isfirst_DRB1)
                 {
-                    QString &str_seq = map_info[strkey];
-                    str_seq.append(strvalue);
+                    isfirst_DRB1 = false;
+                    str_firstname_DRB1 = line.left(split_pos).trimmed();
                 }
-                else
+                InsertMapInfo(split_pos, line, hash_DRB1);
+            }
+            else if (line.startsWith(str_start3)) {
+                if(isfirst_DRB3)
                 {
-                    map_info.insert(strkey, strvalue);
+                    isfirst_DRB3 = false;
+                    str_firstname_DRB3 = line.left(split_pos).trimmed();
                 }
+                InsertMapInfo(split_pos, line, hash_DRB3);
+            }
+            else if (line.startsWith(str_start4)) {
+                if(isfirst_DRB4)
+                {
+                    isfirst_DRB4 = false;
+                    str_firstname_DRB4 = line.left(split_pos).trimmed();
+                }
+                InsertMapInfo(split_pos, line, hash_DRB4);
+            }
+            else if (line.startsWith(str_start5)) {
+                if(isfirst_DRB5)
+                {
+                    isfirst_DRB5 = false;
+                    str_firstname_DRB5 = line.left(split_pos).trimmed();
+                }
+                InsertMapInfo(split_pos, line, hash_DRB5);
             }
             else if(line.contains("version"))
             {
@@ -304,6 +301,78 @@ void ParseNucFile(const QString &strgene, QString &strver, QMap<QString,QString>
             }
         }
         file.close();
+    }
+
+
+    QString &str_DRB1 = hash_DRB1[str_firstname_DRB1];
+    QString bty_DRB3 = hash_DRB3[str_firstname_DRB3].toLatin1();
+    QString bty_DRB4 = hash_DRB4[str_firstname_DRB4].toLatin1();
+    QString bty_DRB5 = hash_DRB5[str_firstname_DRB5].toLatin1();
+
+    for(int i=0;i<str_DRB1.length();i++)
+    {
+        if(bty_DRB3[i]=='-')
+        {
+            bty_DRB3[i] = str_DRB1[i];
+        }
+        if(bty_DRB4[i]=='-')
+        {
+            bty_DRB4[i] = str_DRB1[i];
+        }
+        if(bty_DRB5[i]=='-')
+        {
+            bty_DRB5[i] = str_DRB1[i];
+        }
+    }
+
+    hash_DRB3[str_firstname_DRB3] = bty_DRB3;
+    hash_DRB4[str_firstname_DRB4] = bty_DRB4;
+    hash_DRB5[str_firstname_DRB5] = bty_DRB5;
+
+    map_hash_info.insert(str_firstname_DRB1, hash_DRB1);
+    map_hash_info.insert(str_firstname_DRB3, hash_DRB3);
+    map_hash_info.insert(str_firstname_DRB4, hash_DRB4);
+    map_hash_info.insert(str_firstname_DRB5, hash_DRB5);
+}
+
+void ParseNucFile(const QString &strgene, QString &strver,
+                  QMap<QString, QHash<QString,QString>> &map_hash_info)
+{
+    QString str_path = QString("E:/alignments/%1_nuc.txt").arg(strgene);
+    QString str_start = QString("%1*").arg(strgene);
+    int split_pos = 0;
+    bool isfirstline = true;
+    QString strname;
+    QHash<QString, QString> hash_info;
+
+    QFile file(str_path);
+    if(file.open(QIODevice::ReadOnly))
+    {
+        QTextStream in(&file);
+        while (!in.atEnd())
+        {
+            QString line = in.readLine().trimmed();
+            if(line.startsWith(str_start))
+            {
+                if(isfirstline)
+                {
+                    isfirstline = false;
+                    strname = line.left(split_pos).trimmed();
+                }
+                InsertMapInfo(split_pos, line, hash_info);
+            }
+            else if(line.contains("version"))
+            {
+                QStringList strlist = line.split(' ');
+                strver = strlist[strlist.size()-1];
+            }
+            else if (split_pos==0 && line.contains("cDNA")) {
+                split_pos = line.length()-1;
+            }
+        }
+        file.close();
+
+        map_hash_info.insert(strname, hash_info);
     }
 }
 
@@ -368,31 +437,48 @@ int GetRealPos(QMap<int,int> &map_dotpos,int pos) //去除'.'后，获取变化�
     return pos - total+1;
 }
 
-//map_info，入参，传入解析文件获取的信息
+//hash_info，入参，传入解析文件获取的信息
+//str_firstname,第一行的名称
 //vec_exonpos，入参，传入exon的pos
 //map_dotpos，入参，传入dot的pos
 //set_rare，入参，用以判断是否是稀有类型
 //vec_seqline，入\出参，获取每一行allel信息
 //vec_set，入\出参，获取每一列的碱基（自动去重）
 //map_len，入\出参，获取相同长度(自动去重)
-void CreateSeqLine(QMap<QString,QString> &map_info, QVector<int> &vec_exonpos, QMap<int,int> &map_dotpos,
-                   QSet<QString> &set_rare, QVector<SeqLine *> &vec_seqline, QVector<QSet<char>> &vec_set,
+//void CreateSeqLine(QHash<QString,QString> &hash_info, const QString &str_firstname, QVector<int> &vec_exonpos, QMap<int,int> &map_dotpos,
+//                   QSet<QString> &set_rare, QVector<SeqLine *> &vec_seqline, QVector<QSet<char>> &vec_set,
+//                   QMap<int,int> &map_len)
+void CreateSeqLine(QHash<QString,QString> &hash_info, const QString &str_firstname, QVector<int> &vec_exonpos, QMap<int,int> &map_dotpos,
+                   QSet<QString> &set_rare, QMap<QString, QSharedPointer<SeqLine>> &map_seqline, QVector<QSet<char>> &vec_set,
                    QMap<int,int> &map_len)
 {
-    QString firstline = map_info.first();
+    QString firstline = hash_info[str_firstname];
     firstline.remove('|');
     int f_size = firstline.size();
     vec_set.reserve(f_size);
+    for(int i=0;i<f_size;i++)
+    {
+        QSet<char> set;
+        vec_set.push_back(set);
+    }
+
+//    QString str = str_firstname.split('*').at(0);
+//    QFile file(QString("F:/test/%1.txt").arg(str));
+//    file.open(QIODevice::WriteOnly);
+//    QTextStream out(&file);
 
     QByteArray temp("ATGC");
-    auto itor = map_info.begin();
-    for(;itor!=map_info.end();itor++)
+    auto itor = hash_info.begin();
+    for(;itor!=hash_info.end();itor++)
     {
         QString &arry = itor.value().remove('|');
+        //out<<arry<<"\r\n";
         int pos_change = 0,pos_del = 0, pos_inl = 0;
 
-        SeqLine *pseqline = new SeqLine(itor.key());
-        vec_seqline.push_back(pseqline);
+        //SeqLine *pseqline = new SeqLine(itor.key());
+        //vec_seqline.push_back(pseqline);
+        QSharedPointer<SeqLine> pseqline = QSharedPointer<SeqLine>(new SeqLine(itor.key()));
+        map_seqline.insert(itor.key(), pseqline);
 
         if(set_rare.find(itor.key())!=set_rare.end())
         {
@@ -403,7 +489,7 @@ void CreateSeqLine(QMap<QString,QString> &map_info, QVector<int> &vec_exonpos, Q
             pseqline->SetIsRare(false);
         }
 
-        if(itor == map_info.begin())
+        if(itor.key() == str_firstname)//nuc文件第一行
         {
             for(int i=0;i<arry.size();i++)
             {
@@ -411,9 +497,7 @@ void CreateSeqLine(QMap<QString,QString> &map_info, QVector<int> &vec_exonpos, Q
                 {
                    pseqline->AppendSeqArry(arry[i].toLatin1());
                 }
-                QSet<char> set;
-                set.insert(arry[i].toLatin1());
-                vec_set.push_back(set);
+                vec_set[i].insert(arry[i].toLatin1());
             }
         }
         else
@@ -470,7 +554,8 @@ void CreateSeqLine(QMap<QString,QString> &map_info, QVector<int> &vec_exonpos, Q
 //map_len，入参
 //vec_class，入参
 //vec_seqline，出参
-void SetSeqLineClassNum(QMap<int,int> &map_len, QVector<int> &vec_class, QVector<SeqLine *> &vec_seqline)
+void SetSeqLineClassNum(QMap<int,int> &map_len, QVector<int> &vec_class,
+                        QList<QSharedPointer<SeqLine>> &list_seqline)
 {
     int i_a = map_len.count()/(vec_class.count()-1);
 
@@ -483,10 +568,11 @@ void SetSeqLineClassNum(QMap<int,int> &map_len, QVector<int> &vec_class, QVector
         }
     }
 
-    for(int i=0;i<vec_seqline.size();i++)
+
+    for(int i=0;i<list_seqline.size();i++)
     {
-        int number = map_len[vec_seqline[i]->GetSeqLineLenth()];
-        vec_seqline[i]->SetClassNumber(number);
+        int number = map_len[list_seqline[i]->GetSeqLineLenth()];
+        list_seqline[i]->SetClassNumber(number);
     }
 }
 
@@ -566,8 +652,8 @@ void InsertDataToGeneTable(const QString &genename, const QByteArray &seqarry, c
     geneTable.availableExon = availble;
     geneTable.version = version;
 
-    out<<geneTable.geneName<<'\t'<<geneTable.geneSequence<<'\t'<<geneTable.exonCount<<'\t'<<geneTable.exonPostionIndex;
-    //SoapTypingDB::GetInstance()->insertGeneTable(geneTable);
+    //out<<geneTable.geneName<<'\t'<<geneTable.geneSequence<<'\t'<<geneTable.exonCount<<'\t'<<geneTable.exonPostionIndex<<'\r\n';
+    SoapTypingDB::GetInstance()->insertGeneTable(geneTable);
 }
 
 int GetIndelInfo(QMap<int,char> &map_info, QString &str_seq)
@@ -585,10 +671,10 @@ int GetIndelInfo(QMap<int,char> &map_info, QString &str_seq)
     return pos;
 }
 
-void InsertDataToAlleleTable(QVector<SeqLine *> &vec_seqline, const QByteArray &seqarry, const QString &strgene)
+void InsertDataToAlleleTable(QList<QSharedPointer<SeqLine>> &list_seqline, const QByteArray &seqarry, const QString &strgene)
 {
-    //SoapTypingDB::GetInstance()->StartTransaction();
-    foreach(SeqLine *pseq, vec_seqline)
+    SoapTypingDB::GetInstance()->StartTransaction();
+    foreach(QSharedPointer<SeqLine> pseq, list_seqline)
     {
         AlleleTable alleleTable;
         alleleTable.alleleName = pseq->GetSeqLineName();
@@ -627,16 +713,16 @@ void InsertDataToAlleleTable(QVector<SeqLine *> &vec_seqline, const QByteArray &
         alleleTable.classesNumber = pseq->GetClassNumber();
         alleleTable.noStar = QString("%1%2").arg(pseq->GetStartindex()).arg(pseq->GetEndindex());
 
-        //SoapTypingDB::GetInstance()->insertAlleleTable(alleleTable);
+        SoapTypingDB::GetInstance()->insertAlleleTable(alleleTable);
     }
-    //SoapTypingDB::GetInstance()->EndTransaction();
+    SoapTypingDB::GetInstance()->EndTransaction();
 }
 
-void InsertDataToLabAlignTable(QVector<SeqLine *> &vec_seqline, const QString &strgene)
+void InsertDataToLabAlignTable(QList<QSharedPointer<SeqLine>> &list_seqline, const QString &strgene)
 {
-    //SoapTypingDB::GetInstance()->StartTransaction();
+    SoapTypingDB::GetInstance()->StartTransaction();
     QByteArray temp("ATGC");
-    foreach(SeqLine *pseq, vec_seqline)
+    foreach(QSharedPointer<SeqLine> pseq, list_seqline)
     {
         LabAlignTable labAlignTable;
         labAlignTable.alleleName = pseq->GetSeqLineName();
@@ -662,24 +748,15 @@ void InsertDataToLabAlignTable(QVector<SeqLine *> &vec_seqline, const QString &s
         labAlignTable.alleleSequence = arry;
         labAlignTable.misPosition = list_temp.join(':');
 
-        //SoapTypingDB::GetInstance()->insertLabAlignTable(labAlignTable);
+        SoapTypingDB::GetInstance()->insertLabAlignTable(labAlignTable);
     }
-    //SoapTypingDB::GetInstance()->EndTransaction();
+    SoapTypingDB::GetInstance()->EndTransaction();
 }
 
-void SplitNucFileForDRB(QMap<QString,QString> &map_info, QVector<QMap<QString,QString>> &vec_rdb_map)
-{
-    QString line(map_info.begin().value());
-
-    for(auto itor=map_info.begin();itor!=map_info.end();itor++)
-    {
-
-    }
-}
 
 void UpdateDataDlg::UpdateDatabase()
 {
-    //DeleteDB();
+    DeleteDB();
 
     QMap<QString,QVector<int>> map_class;
     ParseClassFile(map_class);
@@ -690,94 +767,84 @@ void UpdateDataDlg::UpdateDatabase()
     QSet<QString> set_rare;
     ParseRareList(set_rare);
 
+    bool isDRB = false;
     auto itor = map_class.begin();
     for(;itor != map_class.end();itor++)
     {
-        QVector<QMap<QString,QString>> vec_map_info;
+//        QString str_path = QString("F:/test/%1_test.txt").arg(itor.key());
+//        if(QFile::exists(str_path)) continue;
+
+
         QString str_version;
-        ParseNucFile(itor.key(), str_version, vec_map_info);
-
-//        QMap<QString,QString> map_info;
-
-//        ParseNucFile(itor.key(), str_version, map_info);
-
-//        if(map_info.empty())
-//        {
-//            continue;
-//        }
-
-        for(int i=0;i<vec_map_info.size();i++)
+        QMap<QString, QHash<QString,QString>> map_hash_info;
+        if(itor.key().contains("DRB"))
         {
-    QFile file_out(QString("E:/test/%1_test.txt").arg(itor.key()));
-    file_out.open(QIODevice::WriteOnly);
-    QTextStream out(&file_out);
+            if(!isDRB) //DRB文件未解析
+            {
+                isDRB = true;
+                ParseNucFile_DRB(str_version, map_hash_info);
+            }
+            else
+            {
+                continue;
+            }
+        }
+        else
+        {
+            ParseNucFile(itor.key(), str_version, map_hash_info);
+        }
 
+        auto hash_itor=map_hash_info.begin();
+        for(;hash_itor!=map_hash_info.end();hash_itor++)
+        {
+            QHash<QString,QString> &hash_info = *hash_itor;
+            QString str_firstname = hash_itor.key();
+            QString str_gene = str_firstname.split('*').at(0);
 
-            QMap<QString,QString> &map_info = vec_map_info[i];
-
+            QFile file_out(QString("F:/test/%1_test.txt").arg(str_gene));
+            file_out.open(QIODevice::WriteOnly);
+            QTextStream out(&file_out);
 
             QVector<int> vec_pos;
-            GetExonPos(map_info.first(), vec_pos);
+            GetExonPos(hash_info[str_firstname], vec_pos);
 
             QMap<int,int> map_dotpos;//位置，长度
-            GetDotPos(map_info.first(), map_dotpos);
+            GetDotPos(hash_info[str_firstname], map_dotpos);
 
-            QVector<SeqLine *> vec_seqline;
-            vec_seqline.reserve(map_info.size());
+            //QVector<SeqLine *> vec_seqline;
+            //vec_seqline.reserve(hash_info.size());
+            QMap<QString, QSharedPointer<SeqLine>> map_SeqLine;
 
             QVector<QSet<char>> vec_set;
 
             QMap<int,int> map_len;
 
-            CreateSeqLine(map_info, vec_pos, map_dotpos, set_rare, vec_seqline, vec_set, map_len);
+            CreateSeqLine(hash_info, str_firstname, vec_pos, map_dotpos, set_rare, map_SeqLine, vec_set, map_len);
 
-            map_info.clear();
+            hash_info.clear();
             map_dotpos.clear();
             set_rare.clear();
 
-            SetSeqLineClassNum(map_len, itor.value(), vec_seqline);
+            QList<QSharedPointer<SeqLine>> list_seqline = map_SeqLine.values();
+
+            SetSeqLineClassNum(map_len, map_class[str_gene], list_seqline);
 
             QByteArray conseq;
             GetConsensusSeq(vec_set, conseq);
 
-            InsertDataToGeneTable(itor.key(), conseq, vec_pos, itor.value(), map_availble[itor.key()], str_version, out);
-    file_out.close();
+            InsertDataToGeneTable(str_gene, conseq, vec_pos, map_class[str_gene], map_availble[str_gene], str_version, out);
+
+//            foreach (QSharedPointer<SeqLine> pseq, list_seqline) {
+//                out<<pseq->GetSeqLineName()<<' '<<pseq->GetClassNumber()<<' '<<pseq->GetSeqArry()<<"\r\n";
+//            }
+            InsertDataToAlleleTable(list_seqline, conseq, str_gene);
+
+            InsertDataToLabAlignTable(list_seqline, str_gene);
+
+
+            file_out.close();
         }
 
-        /*QVector<int> vec_pos;
-        GetExonPos(map_info.first(), vec_pos);
-
-        QMap<int,int> map_dotpos;//位置，长度
-        GetDotPos(map_info.first(), map_dotpos);
-
-        QVector<SeqLine *> vec_seqline;
-        vec_seqline.reserve(map_info.size());
-
-        QVector<QSet<char>> vec_set;
-
-        QMap<int,int> map_len;
-
-        CreateSeqLine(map_info, vec_pos, map_dotpos, set_rare, vec_seqline, vec_set, map_len);
-
-        map_info.clear();
-        map_dotpos.clear();
-        set_rare.clear();
-
-        SetSeqLineClassNum(map_len, itor.value(), vec_seqline);
-
-        QByteArray conseq;
-        GetConsensusSeq(vec_set, conseq);
-
-        InsertDataToGeneTable(itor.key(), conseq, vec_pos, itor.value(), map_availble[itor.key()], str_version, out);
-
-        //InsertDataToAlleleTable(vec_seqline, conseq, itor.key());
-
-        //InsertDataToLabAlignTable(vec_seqline, itor.key());
-
-        for(int i=0;i<vec_seqline.size();i++)
-        {
-            delete vec_seqline[i];
-        }*/
         qDebug()<<itor.key()<<"finish";
 
     }

@@ -450,23 +450,23 @@ void changeAlignMapToAlignString(QMap<int, QString> &typeResult, QString &result
 
 void getZeroResultFromTypeResult(QMap<int, QString> &typeResult, QMap<int, QString> &zeroResult)
 {
-    qDebug()<<(long)QThread::currentThreadId<<__FUNCTION__;
-    QMap<int, QString> newMap;
+    //qDebug()<<(long)QThread::currentThreadId<<__FUNCTION__;
+    //QMap<int, QString> newMap;
     for(QMap<int ,QString>::iterator it = typeResult.begin(); it!= typeResult.end(); it++)
     {
         if(it.key()==0)
         {
-            newMap.insertMulti(it.key(), it.value());
+            zeroResult.insertMulti(it.key(), it.value());
         }
         else
         {
             break;
         }
     }
-    for(QMap<int ,QString>::iterator it = newMap.begin(); it!= newMap.end(); it++)
-    {
-        zeroResult.insertMulti(it.key(), it.value());
-    }
+//    for(QMap<int ,QString>::iterator it = newMap.begin(); it!= newMap.end(); it++)
+//    {
+//        zeroResult.insertMulti(it.key(), it.value());
+//    }
 }
 
 int AnalysisSampleThreadTask::compareGsspWithAlleles(const QByteArray &gsspName, const char *gsspSequence,
@@ -693,5 +693,6 @@ void AnalysisSampleThreadTask::run()
         SoapTypingDB::GetInstance()->insertSampleInfoToRealTimeDatabase(sampleInfo);
     }
 
+    qDebug()<<m_sample<<"analysisfinished";
     emit analysisfinished();
 }

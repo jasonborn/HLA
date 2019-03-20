@@ -115,6 +115,7 @@ public:
 
     void StartTransaction();
     void EndTransaction();
+    void getTypeResultFromSampleTable(const QString &sampleName, QMap<int, QString> &typeResult);
 private:
     bool InitDB();
 
