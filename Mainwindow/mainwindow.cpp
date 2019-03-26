@@ -632,7 +632,7 @@ void MainWindow::slotShowStatusBarMsg(const QString &msg)
     ui->statusbarright->setText(msg);
 }
 
-//由于峰图进行了编辑或变更，导致数据库发生变化，除峰图和样品树外，其他需要刷新
+//由于峰图进行了编辑或变更，导致数据库发生变化，除峰图外，其他需要刷新
 void MainWindow::slotChangeDB(const QString &str_samplename)
 {
     Tipbox msg(this);
@@ -646,6 +646,7 @@ void MainWindow::slotChangeDB(const QString &str_samplename)
     m_pMatchListWidget->SetRefresh(true);
     m_pExonNavigatorWidget->SetRefresh(true);
     m_pBaseAlignTableWidget->SetRefresh(true);
+    m_pSampleTreeWidget->RefreshSelectSample(m_str_SelectSample);
     //slotSampleTreeItemChanged(m_pSelectItem, 0);
 
     QString str_info = m_pSelectItem->text(1);

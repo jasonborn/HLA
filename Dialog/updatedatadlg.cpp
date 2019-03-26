@@ -587,9 +587,9 @@ void GetConsensusSeq(QVector<QSet<char>> &vec_set, QByteArray &conseq)
             unsigned int a = 0;
             for(;itor!=set.end();itor++)
             {
-                a |= Core::GetInstance()->format(*itor);
+                a |= Core::GetInstance()->formatMerge(*itor);
             }
-            arry.append(Core::GetInstance()->reformat(a));
+            arry.append(Core::GetInstance()->reFormatMerge(a));
         }
         else if(set.size() == 1)
         {

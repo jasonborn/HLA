@@ -1,5 +1,5 @@
 #include "core.h"
-
+#include <QDebug>
 
 #define LEFT 1
 #define TOP  2
@@ -30,16 +30,15 @@ void Core::AnalysisAb1()
 
 }
 
-int Core::equal(char a, char b)
+int Core::equal(char a, char b)//简并碱基有相同的碱基，认为是相同（H=Y H=W）
 {
-    int fa = 0, fb = 0;
-    fa = format(a);
-    fb = format(b);
+    int fa = formatMerge(a);
+    int fb = formatMerge(b);
 
     return fa & fb;
 }
 
-unsigned int Core::format(char a)
+/*unsigned int Core::format(char a)
 {
     switch(a)
     {
@@ -87,7 +86,7 @@ char Core::reformat(unsigned int a)
     case 0xf: return 'N';
     }
     return '-';
-}
+}*/
 
 char *Core::reverse(char *s)
 {
@@ -109,7 +108,7 @@ bool Core::can_merge(char A, char B)
         return false;
     if(B == 'N')
         return true;
-    return ((~format(A)) & format(B)) == 0;
+    return ((~formatMerge(A)) & formatMerge(B)) == 0;
 }
 
 void Core::GetFileAlignResult(FileAlignNew &file_align_new, FileAlignResult &result, bool auto_cut)
@@ -137,14 +136,76 @@ void Core::GetFileAlignResult(FileAlignNew &file_align_new, FileAlignResult &res
         Align_LCS(file_align_new.consensus, file_align_new.raw_seq+tmp_result.left_cut, &al, align_length);
     }
 
-    result.sampleAlign = (char*) malloc(sizeof(char) * (strlen(file_align_new.consensus)+1));
-    result.baseMatchConsensusPos = (int*) malloc(sizeof(int) * (strlen(file_align_new.raw_seq)));
+    qDebug()<<tmp_result.consensus_alignment<<"\r\n";
+    qDebug()<<tmp_result.sample_alignment<<"\r\n";
+
+    int ref_len = strlen(file_align_new.consensus);
+    int seq_len = strlen(file_align_new.raw_seq);
+    result.sampleAlign = (char*) malloc(sizeof(char) * (ref_len+1));
+    result.baseMatchConsensusPos = (int*) malloc(sizeof(int) * (seq_len));
     if(tmp_result.is_match)
     {
         result.isUnDefined = 0;
         result.leftLimit = tmp_result.left_cut;
-        result.rightLimit = strlen(file_align_new.raw_seq) -tmp_result.right_cut;
-        int start=0, end=tmp_result.sample_alignment.size();
+        result.rightLimit = seq_len -tmp_result.right_cut;
+
+
+        for(int i=0;i<seq_len;i++)
+        {
+            result.baseMatchConsensusPos[i] = -1;
+        }
+
+        int cmp_len = tmp_result.consensus_alignment.size(); //比对后的参考序列，其大小大于ref_len
+        int index = 0;
+        int pos = tmp_result.left_cut;
+        for(int i=0;i<cmp_len;i++)
+        {
+            if(tmp_result.consensus_alignment[i] !='.') //参考序列经过比对处理，可能存在缺失情况，需要过滤掉
+            {
+                if(tmp_result.sample_alignment[i]=='.')
+                {
+                    result.sampleAlign[index]='-';
+                }
+                else
+                {
+                    result.sampleAlign[index]= tmp_result.sample_alignment[i];
+                    result.baseMatchConsensusPos[pos++] = index+file_align_new.consensus_start;
+                }
+                index++;
+            }
+            else
+            {
+                pos++;
+            }
+        }
+        result.sampleAlign[ref_len] ='\0';
+
+        //int c_index = 0;
+//        for(int i=0;i<seq_len;i++)
+//        {
+//            if(i<result.leftLimit || i > result.rightLimit)
+//            {
+//                result.baseMatchConsensusPos[i]=-1;
+//            }
+//            else
+//            {
+//                int tmp = i - result.leftLimit;
+//                if(tmp_result.consensus_alignment[tmp] != '.' &&
+//                   tmp_result.sample_alignment[tmp]!='.')
+//                {
+//                    result.baseMatchConsensusPos[i] = tmp+file_align_new.consensus_start;
+
+//                }
+//                else
+//                {
+//                    result.baseMatchConsensusPos[i]=-1;
+//                }
+//            }
+//        }
+
+
+
+        /*int start=0, end=tmp_result.sample_alignment.size();
         for(int i=0; i<end; i++){
             if(tmp_result.sample_alignment[i]=='.'){
                 result.sampleAlign[i]='-';
@@ -187,7 +248,7 @@ void Core::GetFileAlignResult(FileAlignNew &file_align_new, FileAlignResult &res
             result.baseMatchConsensusPos[index]=-1;
             index++;
         }
-        result.sampleAlign[strlen(file_align_new.consensus)]='\0';
+        result.sampleAlign[strlen(file_align_new.consensus)]='\0';*/
     }
     else
     {
@@ -330,7 +391,7 @@ void Core::Align_LCS(char *s1, char *s2, align *sg, int length)
         direction = backtrace[j][i];
         if (direction == DIAG)
         {
-            if(!(equal(s1[i-1], s2[j-1]))||format(s2[j-1]) > format(s1[i-1]))
+            if(!(equal(s1[i-1], s2[j-1]))||formatMerge(s2[j-1]) > formatMerge(s1[i-1]))
                 sg->errors += 1;
             re1[k++] = s1[i-1];
             re2[q++] = s2[j-1];
@@ -408,14 +469,81 @@ void Core::Align_LCS(char *s1, char *s2, align *sg, int length)
 
 bool Core::Optimize_boundary(align *nw, FileAlignResultNew *result, bool auto_cut)
 {
-    if(nw->r1==NULL || nw->r2==NULL){
+    if(nw->r1==nullptr || nw->r2==nullptr){
         result->is_match = false;
         return true;
     }
 
     char *ref = nw->r1;
     char *seq = nw->r2;
-    int start = nw->start2, end=nw->stop2;
+
+    int start = nw->start1 > nw->start2 ? nw->start1 : nw->start2;
+    int end = nw->stop1 < nw->stop2 ? nw->stop1 : nw->stop2;
+    int length = end - start;
+
+    if (nw->start1 > 0)//参照ref，掐头
+    {
+        result->left_cut += nw->start1;
+    }
+
+//    if (nw->stop1 < strlen(seq))//参照ref，去尾
+//    {
+//        result->right_cut += strlen(seq) - nw->stop1;
+//        nw->r1[nw->stop1]='\0';
+//        nw->r2[nw->stop1]='\0';
+//    }
+
+    int *mis = new int[length];
+    mis[0] = 0;
+    int mis_index = 0;
+    int total_mis = 0;
+
+    for (int i = start; i < end; i++)
+    {
+        if (seq[i] == ref[i] || can_merge(ref[i], seq[i]))
+        {
+            mis[mis_index]++;
+        }
+        else
+        {
+            mis_index++;
+            mis[mis_index] = 1;
+
+            total_mis++;
+        }
+    }
+
+
+    if (total_mis > MIN_MIS)
+    {
+        if (mis[0] > MIN_CUT_MIS)
+        {
+            result->left_cut++;
+        }
+        else
+        {
+            result->left_cut += mis[0];
+        }
+
+        delete[]mis;
+        return false;
+    }
+    else
+    {
+        if (nw->stop1 < strlen(seq))//参照ref，去尾
+        {
+            result->right_cut += strlen(seq) - nw->stop1;
+            nw->r1[nw->stop1]='\0';
+            nw->r2[nw->stop1]='\0';
+        }
+        result->consensus_alignment = ref+nw->start1;
+        result->sample_alignment = seq + nw->start1;
+        result->is_match = true;
+        delete[]mis;
+        return true;
+    }
+
+    /*int start = nw->start2, end=nw->stop2;
     int length = strlen(seq);
     if(nw->stop1<length)
     {
@@ -467,9 +595,9 @@ bool Core::Optimize_boundary(align *nw, FileAlignResultNew *result, bool auto_cu
 
     if(total_mis > MIN_MIS)
     {
-        if(left_mis<=right_mis)
-            result->right_cut++;
-        else
+//        if(left_mis<=right_mis)
+//            result->right_cut++;
+//        else
             result->left_cut++;
         delete []mis;
         return false;
@@ -528,13 +656,14 @@ bool Core::Optimize_boundary(align *nw, FileAlignResultNew *result, bool auto_cu
         if(seq[i]=='.')
             result->right_cut--;
     }
-    return false;
+    return false;*/
 }
 
 unsigned int Core::formatMerge(char A)
 {
     switch(A)
     {
+    case '-': return 0x0;
     case 'A': return 0x1;
     case 'G': return 0x2;
     case 'T': return 0x4;
@@ -550,10 +679,18 @@ unsigned int Core::formatMerge(char A)
     case 'H': return 0xd;
     case 'V': return 0xb;
     case 'N': return 0xf;
-    case '-': return 0x0;
-    case '.': return 0x1f;
+    case '.':
+    {
+        qDebug()<<__func__<<".";
+        return 0x1f;
     }
-    return 0xf;
+    case '*':
+    {
+        qDebug()<<__func__<<"*";
+        return 0x2f;
+    }
+    }
+    return 0x0;
 }
 
 char Core::reFormatMerge(unsigned int a)
@@ -571,11 +708,15 @@ char Core::reFormatMerge(unsigned int a)
     case 0xa: return 'S';
     case 0x9: return 'M';
     case 0x6: return 'K';
+    case 0xe: return 'B';
+    case 0x7: return 'D';
+    case 0xd: return 'H';
+    case 0xb: return 'V';
+    case 0xf: return 'N';
     case 0x1f: return '.';
     default:
-        return 'n';
+        return '-';
     }
-    return 'n';
 }
 
 char Core::mergeBases(char A, char B)

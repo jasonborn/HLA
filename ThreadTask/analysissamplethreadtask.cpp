@@ -47,7 +47,7 @@ void mergeForwardAndReverseToPattern(char *forwardSeq, char *reverseSeq, char *p
         if(forwardSeq[i] == reverseSeq[i])
         {
             patternSeq[i] = forwardSeq[i];
-            if(patternSeq[i]=='n')
+            if(patternSeq[i]=='N')
             {
                 frDifferenceList.push_back(QString::number(i+exonStartPos));
             }
@@ -67,7 +67,7 @@ void mergeForwardAndReverseToPattern(char *forwardSeq, char *reverseSeq, char *p
             patternSeq[i] = Core::GetInstance()->mergeBases(forwardSeq[i], reverseSeq[i]);
         }
 
-        if(patternSeq[i] == 'n' || (patternSeq[i] != forwardSeq[i] && patternSeq[i] != reverseSeq[i]))
+        if(patternSeq[i] == 'N' || (patternSeq[i] != forwardSeq[i] && patternSeq[i] != reverseSeq[i]))
         {
             frDifferenceList.push_back(QString::number(i+exonStartPos));//指不兼容
         }
@@ -91,7 +91,7 @@ void comparePatternWithConsensus(char *patternSeq, char *consensusSeq, int exonS
     int size = strlen(patternSeq) < strlen(consensusSeq) ? strlen(patternSeq):strlen(consensusSeq);
     for(int i=0; i<size; i++)
     {
-        if(patternSeq[i] == '-' || patternSeq[i] == 'n')
+        if(patternSeq[i] == '-' || patternSeq[i] == 'N')
         {
             continue;
         }

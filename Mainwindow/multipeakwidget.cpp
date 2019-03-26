@@ -274,6 +274,7 @@ void MultiPeakWidget::SetPeakData(const QString &str_samplename, int index, cons
     int i_count_peak = m_vec_filetable.size();
     if(i_count_peak == 0)
     {
+        update();
         return;
     }
     std::set<int> set_left,set_right; //以ExonStartPos和ExonEndPos为界，计算左右两边的长度
@@ -311,6 +312,11 @@ void MultiPeakWidget::CalcPeakLineData(int exon_pos)
 {
     std::set<int> set_left,set_right;
     int i_count_peak = m_vec_filetable.size();
+    if(i_count_peak == 0)
+    {
+        update();
+        return;
+    }
     for(int i=0;i<i_count_peak;i++)
     {
         Ab1FileTableBase &table = m_vec_filetable[i];
@@ -321,16 +327,19 @@ void MultiPeakWidget::CalcPeakLineData(int exon_pos)
         QVector<QStringRef> aligninfo = table.getAlignInfo().splitRef(':');
         QString ref(QString::number(exon_pos-1));
         int index = aligninfo.indexOf(&ref);//根据外显子坐标，找到对齐的峰图下标
-        if(index == -1) continue;
-        if(i == m_index_PeakLine)
+        int i_left = 0;
+        int i_right = 0;
+        if(index != -1) //没有超过峰图边界
         {
-            m_index_Select = index;
+            if(i == m_index_PeakLine)
+            {
+                m_index_Select = index;
+            }
+            int tmp = baseposion[index].toInt();
+            i_left = tmp*m_x_step;
+            i_right = (l_size - tmp)*m_x_step;
         }
-        //int i_AlgineStartPos = table.getAlignStartPos()+pos;
-        //if(i==1) i_AlgineStartPos+=2;
-        int tmp = baseposion[index].toInt();
-        int i_left = tmp*m_x_step;
-        int i_right = (l_size - tmp)*m_x_step;
+
         set_left.insert(i_left);
         set_right.insert(i_right);
 
@@ -338,6 +347,7 @@ void MultiPeakWidget::CalcPeakLineData(int exon_pos)
         pPeakLine->setXLeft(i_left);
     }
 
+    Q_ASSERT(!set_left.empty());
     for(int i=0;i<i_count_peak;i++)
     {
         QSharedPointer<PeakLine> pPeakLine = m_vec_Peakline[i];
@@ -681,6 +691,11 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
 
                 QVector<QStringRef> aligninfo = m_vec_filetable[m_index_PeakLine].getAlignInfo().splitRef(':');
                 m_x_index =  aligninfo[m_index_Select].toInt()+1;
+                if(m_x_index == 0)
+                {
+                    qDebug()<<"mismatch del";
+                    return;
+                }
 
                 CalcPeakLineData(m_x_index);
 
@@ -698,29 +713,32 @@ void MultiPeakWidget::mousePressEvent(QMouseEvent *event)
 
 
         QString str_msg;
-        if(m_bIsSelect)
+        if(m_index_Select>1)
         {
-            str_msg = QString("Signal G:%1 T:%2 A:%3 C:%4 N/S:%5% QV:%6 Space:%7").
-                    arg(vec_GeneLetter[m_index_Select].g_signal).arg(vec_GeneLetter[m_index_Select].t_signal).
-                    arg(vec_GeneLetter[m_index_Select].a_signal).arg(vec_GeneLetter[m_index_Select].c_signal).
-                    arg(QString::number(m_vec_Peakline[m_index_PeakLine]->getAvgSignal()*100,'f',2)).
-                    arg(vec_GeneLetter[m_index_Select].qual).
-                    arg(QString::number(m_vec_Peakline[m_index_PeakLine]->getAvgWidth(),'f',2));
-        }
-        else
-        {
-            int selectpos = m_x_index;
-            int integer = (selectpos + 2 - m_vec_filetable[m_index_PeakLine].getAlignStartPos())/3;
-            int Remainder = (selectpos + 2 - m_vec_filetable[m_index_PeakLine].getAlignStartPos())%3;
-            QString str_codon = QString("%1.%2").arg(integer).arg(Remainder);
-            QString str_code(vec_GeneLetter[m_index_Select-1].type);
-            str_code.append(vec_GeneLetter[m_index_Select].type);
-            str_code.append(vec_GeneLetter[m_index_Select+1].type);
+            if(m_bIsSelect)
+            {
+                str_msg = QString("Signal G:%1 T:%2 A:%3 C:%4 N/S:%5% QV:%6 Space:%7").
+                        arg(vec_GeneLetter[m_index_Select].g_signal).arg(vec_GeneLetter[m_index_Select].t_signal).
+                        arg(vec_GeneLetter[m_index_Select].a_signal).arg(vec_GeneLetter[m_index_Select].c_signal).
+                        arg(QString::number(m_vec_Peakline[m_index_PeakLine]->getAvgSignal()*100,'f',2)).
+                        arg(vec_GeneLetter[m_index_Select].qual).
+                        arg(QString::number(m_vec_Peakline[m_index_PeakLine]->getAvgWidth(),'f',2));
+            }
+            else
+            {
+                int selectpos = m_x_index;
+                int integer = (selectpos + 2 - m_vec_filetable[m_index_PeakLine].getAlignStartPos())/3;
+                int Remainder = (selectpos + 2 - m_vec_filetable[m_index_PeakLine].getAlignStartPos())%3;
+                QString str_codon = QString("%1.%2").arg(integer).arg(Remainder);
+                QString str_code(vec_GeneLetter[m_index_Select-1].type);
+                str_code.append(vec_GeneLetter[m_index_Select].type);
+                str_code.append(vec_GeneLetter[m_index_Select+1].type);
 
-            str_msg = QString("Exon:%1 Codon:%2 Pos:%3 Code:%4 QV:%5").arg(m_index_Exon).arg(str_codon).
-                    arg(selectpos).arg(str_code).arg(vec_GeneLetter[m_index_Select].qual);
+                str_msg = QString("Exon:%1 Codon:%2 Pos:%3 Code:%4 QV:%5").arg(m_index_Exon).arg(str_codon).
+                        arg(selectpos).arg(str_code).arg(vec_GeneLetter[m_index_Select].qual);
+            }
+            emit signalSendStatusBarMsg(str_msg);
         }
-        emit signalSendStatusBarMsg(str_msg);
         update();
     }
 }
@@ -785,10 +803,9 @@ void MultiPeakWidget::SetSelectPos(int exon_pos,int x_pos)
         pParent->horizontalScrollBar()->setSliderPosition(pos);
 
         QString str_msg("Ready");
-        if(m_index_Select>1)
+        QVector<GeneLetter> &vec_GeneLetter = m_vec_Peakline[m_index_PeakLine]->GetGeneLetter();
+        if(m_index_Select>1 && m_index_Select < vec_GeneLetter.size()-1)
         {
-            QVector<GeneLetter> &vec_GeneLetter = m_vec_Peakline[m_index_PeakLine]->GetGeneLetter();
-
             int selectpos = exon_pos;
             int integer = (selectpos + 2 - m_vec_filetable[m_index_PeakLine].getAlignStartPos())/3;
             int Remainder = (selectpos + 2 - m_vec_filetable[m_index_PeakLine].getAlignStartPos())%3;

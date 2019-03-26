@@ -93,7 +93,7 @@ public:
     MultiPeakWidget(QWidget *parent = nullptr);
     ~MultiPeakWidget();
     void SetPeakData(const QString &str_samplename, int index, const QString &str_file);
-    void SetSelectPos(int subpos,int x=0);
+    void SetSelectPos(int exon_pos,int x=0);//exon_pos 导航条外显子下标（起点为1）
     void AdjustPeakHeight(int height);
     void AdjustPeakY(int y);
     void AdjustPeakX(int x);
@@ -115,7 +115,7 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void SetPeakLineData();
-    void CalcPeakLineData(int exon_pos); //以m_start_exon为起点
+    void CalcPeakLineData(int exon_pos); //exon_pos 导航条外显子下标
     void ExcludeArea(int type); //type:1代表左排除，2代表右排除,3代表恢复
     void loadFontFromFile();
 public slots:

@@ -70,25 +70,21 @@ void SoapTypingDB::GetGsspNames(QStringList &gsspNames)
     }
 }
 
-//根据gssp名称查询F/R和外显子序号，所以geneName一列没啥影响
-bool SoapTypingDB::FindExonAndRFByGsspName(const QString &name, QString &exonIndex, QString &RF)
+//CommonGssp里的数据虽然是引物，但是当作正常的序列进行处理
+bool SoapTypingDB::GetCommonGsspMapToExonAndFR(QMap<QString, ExonAndRF> &mapToExonAndFR)
 {
     QSqlQuery query(m_SqlDB);
-    query.prepare("SELECT exonIndex,fOrR FROM commonGsspTable WHERE gsspName=?");
-    query.bindValue(0, name);
+    query.prepare("SELECT gsspName, exonIndex,fOrR FROM commonGsspTable");
     bool isSuccess = query.exec();
     if(isSuccess)
     {
-        if(query.next())
+        while(query.next())
         {
-            exonIndex = query.value(0).toString();
-            RF = query.value(1).toString();
-            return true;
+            ExonAndRF exonAndRF;
+            exonAndRF.exonIndex = query.value(1).toString();
+            exonAndRF.rOrF = query.value(2).toString();
+            mapToExonAndFR.insert(query.value(0).toString(), exonAndRF);
         }
-    }
-    else
-    {
-        return false;
     }
 }
 
@@ -101,20 +97,6 @@ void SoapTypingDB::GetGsspMapToExonAndFR(QMap<QString, ExonAndRF> &mapToExonAndF
     if(isSuccess)
     {
         while(query.next())
-        {
-            ExonAndRF exonAndRF;
-            exonAndRF.exonIndex = query.value(1).toString();
-            exonAndRF.rOrF = query.value(2).toString();
-            mapToExonAndFR.insert(query.value(0).toString(), exonAndRF);
-        }
-    }
-
-    query.prepare("SELECT gsspName, exonIndex,fOrR FROM commonGsspTable");
-    query.prepare(str_sql);
-    isSuccess = query.exec();
-    if(isSuccess)
-    {
-        if(query.next())
         {
             ExonAndRF exonAndRF;
             exonAndRF.exonIndex = query.value(1).toString();
@@ -730,6 +712,24 @@ void SoapTypingDB::getSampleTreeDataFromSampleTable(QMap<QString,SampleTreeInfo_
 
         }
     }
+}
+
+bool SoapTypingDB::getSampleanalysisType(const QString &samplename, int &analysisType, int &markType)
+{
+    QSqlQuery query(m_SqlDB);
+    query.prepare("SELECT analysisType, markType FROM sampleTable where sampleName=?");
+    query.bindValue(0, samplename);
+    bool isSuccess = query.exec();
+    if(isSuccess)
+    {
+        if(query.next())
+        {
+            analysisType = query.value(0).toInt();
+            markType = query.value(1).toInt();
+            return true;
+        }
+    }
+    return false;
 }
 
 void SoapTypingDB::getFileTreeInfosFromRealTimeDatabase(const QString &sampleName, QVector<FileTreeInfo_t> &fileTreeInfos)
