@@ -594,10 +594,12 @@ void SoapTypingDB::getAlleleInfosFromStaticDatabase(const QString &geneName, int
             int max = star.at(1).toInt();
             if(min>max)
             {
-                for(int i=minExonIndex; i<=maxExonIndex; i++)
-                {
-                    alleleInfo.starInfo.append(QString("*%1").arg(i));
-                }
+//                for(int i=minExonIndex; i<=maxExonIndex; i++)
+//                {
+//                    alleleInfo.starInfo.append(QString("*%1").arg(i));
+//                }
+                qDebug()<<__func__<<alleleInfo.alleleName<<query.value(4).toString()<<"error";
+                continue;
             }
             else
             {
@@ -611,7 +613,7 @@ void SoapTypingDB::getAlleleInfosFromStaticDatabase(const QString &geneName, int
                     {
                         alleleInfo.starInfo.append(QString("*%1").arg(i));
                     }
-                    for(int i=maxExonIndex; i>max; i--)
+                    for(int i=max; i<maxExonIndex; i++)
                     {
                         alleleInfo.starInfo.append(QString("*%1").arg(i));
                     }

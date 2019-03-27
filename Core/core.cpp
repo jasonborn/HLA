@@ -681,12 +681,12 @@ unsigned int Core::formatMerge(char A)
     case 'N': return 0xf;
     case '.':
     {
-        qDebug()<<__func__<<".";
+        //qDebug()<<__func__<<".";
         return 0x1f;
     }
     case '*':
     {
-        qDebug()<<__func__<<"*";
+        //qDebug()<<__func__<<"*";
         return 0x2f;
     }
     }
@@ -776,4 +776,11 @@ void Core::SetConfig(const QString &key, const QString &value)
 void Core::GetConfig(const QString &key,QString &value)
 {
     value = m_pConfigSet->value(key).toString();
+}
+
+bool Core::isEqualPC(char A, char B)
+{
+    unsigned int a = formatMerge(A);
+    unsigned int b = formatMerge(B);
+    return (a|b)==a;
 }

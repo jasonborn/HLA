@@ -31,6 +31,7 @@ public:
     QString getMarkType(int type);
     void SetConfig(const QString &key, const QString &value);
     void GetConfig(const QString &key, QString &value);
+    bool isEqualPC(char A, char B);
 private: //禁用构造函数
     Core();
     Core(const Core &){}

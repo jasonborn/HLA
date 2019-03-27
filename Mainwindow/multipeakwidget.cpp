@@ -769,7 +769,7 @@ void MultiPeakWidget::keyPressEvent(QKeyEvent *event)
                 {
                     if(vec_GeneLetter[i].oldtype != ' ')
                     {
-                        int selectpos = m_start_exon + m_x_index;
+                        int selectpos = m_x_index-1;
                         list_editinfo.push_back(QString("%1:%2:%3").arg(i).arg(selectpos).arg(vec_GeneLetter[i].type));
                     }
                 }
@@ -985,7 +985,7 @@ void MultiPeakWidget::slotActanalyze()
         {
             if(vec_GeneLetter[i].oldtype != ' ')
             {
-                int selectpos = m_start_exon+m_x_index;
+                int selectpos = m_x_index-1;
                 list_editinfo.push_back(QString("%1:%2:%3").arg(i).arg(selectpos).arg(vec_GeneLetter[i].type));
             }
         }
