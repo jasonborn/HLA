@@ -108,7 +108,8 @@ bool Core::can_merge(char A, char B)
         return false;
     if(B == 'N')
         return true;
-    return ((~formatMerge(A)) & formatMerge(B)) == 0;
+    //return ((~formatMerge(A)) & formatMerge(B)) == 0;
+    return equal(A, B);
 }
 
 void Core::GetFileAlignResult(FileAlignNew &file_align_new, FileAlignResult &result, bool auto_cut)
@@ -500,7 +501,8 @@ bool Core::Optimize_boundary(align *nw, FileAlignResultNew *result, bool auto_cu
 
     for (int i = start; i < end; i++)
     {
-        if (seq[i] == ref[i] || can_merge(ref[i], seq[i]))
+        //if (seq[i] == ref[i] || can_merge(ref[i], seq[i]))
+        if(equal(ref[i], seq[i]))
         {
             mis[mis_index]++;
         }
@@ -530,133 +532,33 @@ bool Core::Optimize_boundary(align *nw, FileAlignResultNew *result, bool auto_cu
     }
     else
     {
+
         if (nw->stop1 < strlen(seq))//参照ref，去尾
         {
             result->right_cut += strlen(seq) - nw->stop1;
             nw->r1[nw->stop1]='\0';
             nw->r2[nw->stop1]='\0';
         }
+
+        if (total_mis != 0)
+        {
+            int len = mis[total_mis];
+            if (len < MIN_CUT_MIS)
+            {
+                result->right_cut += len;
+                for (int i = len; i > 0; i--)
+                {
+                    nw->r2[end - i] = '.';
+                }
+            }
+        }
+
         result->consensus_alignment = ref+nw->start1;
         result->sample_alignment = seq + nw->start1;
         result->is_match = true;
         delete[]mis;
         return true;
     }
-
-    /*int start = nw->start2, end=nw->stop2;
-    int length = strlen(seq);
-    if(nw->stop1<length)
-    {
-        result->right_cut+=length-nw->stop1;
-        nw->r1[nw->stop1]='\0';
-        nw->r2[nw->stop1]='\0';
-        end = nw->stop1;
-    }
-
-    if(nw->start1>0)
-    {
-        result->left_cut+=nw->start1;
-        ref = ref+nw->start1;
-        seq = seq+nw->start1;
-        end -= nw->start1;
-    }
-
-    length = end - start;
-
-    int *mis= new int[length];
-    mis[0]=0;
-    int mis_index=0,max_leng=0;
-
-    int left_mis=0, right_mis=0, half_pos = (start+end)/2;
-    for(int i=start; i<end; i++)
-    {
-        if(seq[i]==ref[i] || can_merge(ref[i], seq[i]))
-        {
-            mis[mis_index]++;
-        }
-        else
-        {
-            if(max_leng<mis[mis_index])
-                max_leng = mis[mis_index];
-            mis_index++;
-            mis[mis_index]=1;
-
-            if(i<=half_pos)
-                left_mis++;
-            else
-                right_mis++;
-        }
-    }
-
-    int total_mis = left_mis+right_mis;
-    if(max_leng<mis[mis_index]){
-        max_leng = mis[mis_index];
-    }
-
-    if(total_mis > MIN_MIS)
-    {
-//        if(left_mis<=right_mis)
-//            result->right_cut++;
-//        else
-            result->left_cut++;
-        delete []mis;
-        return false;
-    }
-
-
-    // >= 50
-    if(!auto_cut)
-    {
-        result->consensus_alignment = QByteArray(ref);
-        result->sample_alignment = QByteArray(seq);
-        result->is_match = true;
-        delete[] mis;
-        return true;
-    }
-
-    int left_cut=0,right_cut=0;
-    for(int i=0; i<=mis_index; i++)
-    {
-        if(mis[i]>=MIN_CUT_MIS)
-        {
-            if(!can_merge(ref[start+left_cut], seq[start+left_cut]))
-                left_cut++;
-            break;
-        }
-        left_cut+=mis[i];
-    }
-
-    for(int i=mis_index; i>=0; i--)
-    {
-        if(mis[i]>=MIN_CUT_MIS)
-            break;
-        right_cut+=mis[i];
-    }
-
-    delete[] mis;
-    if(left_cut==0 && right_cut==0)
-    {
-        result->consensus_alignment = QByteArray(ref);
-        result->sample_alignment = QByteArray(seq);
-        result->is_match = true;
-        return true;
-    }
-
-
-    result->left_cut += left_cut;
-    for(int i=start; i<start+left_cut; i++)
-    {
-        if(seq[i]=='.')
-            result->left_cut--;
-    }
-
-    result->right_cut += right_cut;
-    for(int i=end-right_cut; i<end; i++)
-    {
-        if(seq[i]=='.')
-            result->right_cut--;
-    }
-    return false;*/
 }
 
 unsigned int Core::formatMerge(char A)
@@ -682,7 +584,7 @@ unsigned int Core::formatMerge(char A)
     case '.':
     {
         //qDebug()<<__func__<<".";
-        return 0x1f;
+        return 0x0;
     }
     case '*':
     {

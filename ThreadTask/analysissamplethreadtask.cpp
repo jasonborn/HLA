@@ -5,7 +5,7 @@
 #include <QtConcurrent>
 #include "Core/core.h"
 #include "DataBase/soaptypingdb.h"
-const int MAX_THREAD_NUM = 3;
+const int MAX_THREAD_NUM = 5;
 AnalysisSampleThreadTask::AnalysisSampleThreadTask(const QString &str_sample):m_sample(str_sample)
 {
 
@@ -159,7 +159,7 @@ void removeAlleleInfoByPatternNew(char *patternSeq, QVector<AlleleInfo> &alleleI
         tmpSet.insert(it.value());
     }
     //**取原本方法中兼容的序列
-    /*QVector<int> pos;
+    QVector<int> pos;
     for(int i=0; i<size; i++)
     {
         switch(patternSeq[i])
@@ -205,7 +205,7 @@ void removeAlleleInfoByPatternNew(char *patternSeq, QVector<AlleleInfo> &alleleI
                 tmpSet.insert(i);
             }
         }
-    }*/
+    }
 
 
     for(int i=alleleSize-1; i>=0; i--){
@@ -387,6 +387,7 @@ bool runComparePA(const char *patternSeq, QVector<AlleleInfo> &alleleInfos,
     int size = alleleInfos.size();
     int rLimit = 500;
     int maxTop = 10000;
+    qDebug()<<startIndex<<endIndex<<size;
     /*
      *Map中的顺序为[0错配[倒叙Allele], 1错配[倒叙Allele], 2, 3, ....]
      *这回导致如果0错配的比较多，比较小的Allele可能会被Erase掉，那么需要做一个保证，就是如果第500个错配和500个之后的错配数量如果相等的话，那么要将后边相等的错配保留下来。
@@ -395,7 +396,7 @@ bool runComparePA(const char *patternSeq, QVector<AlleleInfo> &alleleInfos,
     QSet<int> difpos;
     for(int i=startIndex; i<endIndex; i++)
     {
-        for(int j=i; j<size; j++)
+        for(int j=i+1; j<size; j++)
         {
             QString alignInfo;
 //            int mis = compareByAlleleInfoAndDiffPos(patternSeq, alleleInfos.at(i),
@@ -584,8 +585,6 @@ int AnalysisSampleThreadTask::compareGsspWithAlleles(const QByteArray &gsspName,
     QVector<GsspAlleleInfo> gsspAlleleInfos;
     SoapTypingDB::GetInstance()->getGsspAlleleInfosFromStaticDatabase(geneName, exonStartPos, gsspL,
                                                                       gsspAlleleInfos, gsspName);
-    //    removeUnRelationAllelesByGssp(gsspName, gsspAlleleInfos, exonStartPos, gsspL);
-
     //没有屏蔽indel
     QMap<int, QString> misInfo;
     for(int i=gsspAlleleInfos.size()-1; i>=0; i--)
@@ -595,7 +594,7 @@ int AnalysisSampleThreadTask::compareGsspWithAlleles(const QByteArray &gsspName,
         for(int j=0; j<gsspL; j++)
         {
             //1.3.0定为缺失时, 不算错误.
-            if(gsspSequence[j]!=seq[j] && gsspSequence[j]!='-' && gsspSequence[j]!='.')
+            if(gsspSequence[j]!='-' && gsspSequence[j]!='.'&& seq[j] != '*' &&gsspSequence[j]!=seq[j])
             {
                 mis++;
             }

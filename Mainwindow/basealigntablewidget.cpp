@@ -276,11 +276,11 @@ void BaseAlignTableWidget::SetAlignTableData(QString &str_samplename,  QString &
                 item(3, i+info.gsspFileAlignStartPos - m_BaseAlignSampleInfo.alignStartPos + i_startColumn)->setText(line.at(i));
             }
         }
-        line = info.gsspSeq;
-        for(int i=0; i<line.size(); i++)
-        {
-            item(3, i+info.gsspPostion - m_BaseAlignSampleInfo.alignStartPos + i_startColumn)->setText(line.at(i));
-        }
+        //line = info.gsspSeq;
+        //for(int i=0; i<line.size(); i++)
+        //{
+            item(3, info.gsspPostion - m_BaseAlignSampleInfo.alignStartPos + i_startColumn)->setText(info.gsspSeq);
+        //}
     }
 }
 

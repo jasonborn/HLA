@@ -6,6 +6,7 @@
 #include <QRegularExpression>
 #include <QDebug>
 #include <Core/core.h>
+#include <QDir>
 
 UpdateDataDlg::UpdateDataDlg(QWidget *parent) :
     QDialog(parent),
@@ -13,6 +14,7 @@ UpdateDataDlg::UpdateDataDlg(QWidget *parent) :
 {
     ui->setupUi(this);
     ConnectSignalandSlot();
+    m_str_dir = "";
 }
 
 UpdateDataDlg::~UpdateDataDlg()
@@ -27,6 +29,7 @@ void UpdateDataDlg::ConnectSignalandSlot()
     connect(ui->btnGssp, &QPushButton::clicked, this, &UpdateDataDlg::slotOpenFileFlg);
     connect(ui->btnLabAlign, &QPushButton::clicked, this, &UpdateDataDlg::slotOpenFileFlg);
     connect(ui->btnCommon, &QPushButton::clicked, this, &UpdateDataDlg::slotOpenFileFlg);
+    connect(ui->btnNuc, &QPushButton::clicked, this, &UpdateDataDlg::slotOpenDir);
     connect(ui->btnApply, &QPushButton::clicked, this, &UpdateDataDlg::slotApply);
     connect(ui->btnExit, &QPushButton::clicked, this, &UpdateDataDlg::close);
 
@@ -35,10 +38,15 @@ void UpdateDataDlg::ConnectSignalandSlot()
     connect(ui->btnExit_2, &QPushButton::clicked, this, &UpdateDataDlg::close);
 }
 
+void UpdateDataDlg::slotOpenDir()
+{
+    m_str_dir = QFileDialog::getExistingDirectory(this,"Nuc Dir","");
+    ui->lineEdit_Nuc->setText(m_str_dir);
+}
 
 void UpdateDataDlg::slotOpenFileFlg()
 {
-    QString file = QFileDialog::getOpenFileName(this, "Open", m_str_dir);
+    QString file = QFileDialog::getOpenFileName(this, "Open");
     if(!file.isEmpty())
     {
         QPushButton*btn = qobject_cast<QPushButton*>(sender());//获取发射信号的对象
@@ -62,9 +70,6 @@ void UpdateDataDlg::slotOpenFileFlg()
         {
             ui->lineEdit_Common->setText(file);
         }
-
-        QFileInfo f(file);
-        m_str_dir=f.absoluteFilePath();
     }
 }
 
@@ -79,15 +84,13 @@ bool UpdateDataDlg::isFileExists(const QString &file)
 
 void UpdateDataDlg::slotApply()
 {
-    UpdateDatabase();
-    return;
-
     ui->tab->setEnabled(false);
     QString geneFile = ui->lineEdit_Gene->text();
     QString alleleFile = ui->lineEdit_Allele->text();
     QString gsspFile = ui->lineEdit_Gssp->text();
     QString labAlignFile = ui->lineEdit_LabAlign->text();
     QString CommGsspFile = ui->lineEdit_Common->text();
+    //QString NucPath = ui->lineEdit_Nuc->text();
 
     if(isFileExists(geneFile))
     {
@@ -112,6 +115,11 @@ void UpdateDataDlg::slotApply()
     if(isFileExists(CommGsspFile))
     {
         SoapTypingDB::GetInstance()->readCommonGsspTableTxt(CommGsspFile);
+    }
+
+    if(!m_str_dir.isEmpty())
+    {
+        UpdateDatabase();
     }
 
     ui->tab->setEnabled(true);
@@ -228,10 +236,10 @@ void InsertMapInfo(int split_pos, QString &line, QHash<QString, QString> &hash_i
     }
 }
 
-void ParseNucFile_DRB(QString &strver,
+void ParseNucFile_DRB(QString &strver, QString &str_dir,
                       QMap<QString, QHash<QString,QString>> &map_hash_info)
 {
-    QString str_path = QString("E:/alignments/%1_nuc.txt").arg("DRB");
+    QString str_path = QString("%1/%2_nuc.txt").arg(str_dir).arg("DRB");
     QString str_start1("DRB1*");
     QString str_start3("DRB3*");
     QString str_start4("DRB4*");
@@ -335,10 +343,10 @@ void ParseNucFile_DRB(QString &strver,
     map_hash_info.insert(str_firstname_DRB5, hash_DRB5);
 }
 
-void ParseNucFile(const QString &strgene, QString &strver,
+void ParseNucFile(const QString &strgene, QString &strver, QString &str_dir,
                   QMap<QString, QHash<QString,QString>> &map_hash_info)
 {
-    QString str_path = QString("E:/alignments/%1_nuc.txt").arg(strgene);
+    QString str_path = QString("%1/%2_nuc.txt").arg(str_dir).arg(strgene);
     QString str_start = QString("%1*").arg(strgene);
     int split_pos = 0;
     bool isfirstline = true;
@@ -434,7 +442,7 @@ int GetRealPos(QMap<int,int> &map_dotpos,int pos) //去除'.'后，获取变化�
         }
         total += itor.value();
     }
-    return pos - total+1;
+    return pos - total;
 }
 
 //hash_info，入参，传入解析文件获取的信息
@@ -628,8 +636,7 @@ void DeleteDB()
 }
 
 void InsertDataToGeneTable(const QString &genename, const QByteArray &seqarry, const QVector<int> &vec_pos,
-                           const QVector<int> &vec_class,const QString &availble, const QString &version,
-                           QTextStream &out)
+                           const QVector<int> &vec_class,const QString &availble, const QString &version)
 {
     GeneTable geneTable;
     geneTable.geneName = genename;
@@ -697,7 +704,7 @@ void InsertDataToAlleleTable(QList<QSharedPointer<SeqLine>> &list_seqline, const
                 auto itor = map_del.begin();
                 for(;itor!=map_del.end();itor++)  //修正为简并序列碱基
                 {
-                    itor.value() = seqarry[itor.key()-1];
+                    itor.value() = seqarry[itor.key()];
                 }
                 QString str_seq;
                 alleleTable.indelPosition = GetIndelInfo(map_del, str_seq);
@@ -782,7 +789,7 @@ void UpdateDataDlg::UpdateDatabase()
             if(!isDRB) //DRB文件未解析
             {
                 isDRB = true;
-                ParseNucFile_DRB(str_version, map_hash_info);
+                ParseNucFile_DRB(str_version, m_str_dir, map_hash_info);
             }
             else
             {
@@ -791,7 +798,7 @@ void UpdateDataDlg::UpdateDatabase()
         }
         else
         {
-            ParseNucFile(itor.key(), str_version, map_hash_info);
+            ParseNucFile(itor.key(), str_version, m_str_dir, map_hash_info);
         }
 
         auto hash_itor=map_hash_info.begin();
@@ -801,9 +808,9 @@ void UpdateDataDlg::UpdateDatabase()
             QString str_firstname = hash_itor.key();
             QString str_gene = str_firstname.split('*').at(0);
 
-            QFile file_out(QString("F:/test/%1_test.txt").arg(str_gene));
-            file_out.open(QIODevice::WriteOnly);
-            QTextStream out(&file_out);
+//            QFile file_out(QString("F:/test/%1_test.txt").arg(str_gene));
+//            file_out.open(QIODevice::WriteOnly);
+//            QTextStream out(&file_out);
 
             QVector<int> vec_pos;
             GetExonPos(hash_info[str_firstname], vec_pos);
@@ -832,7 +839,7 @@ void UpdateDataDlg::UpdateDatabase()
             QByteArray conseq;
             GetConsensusSeq(vec_set, conseq);
 
-            InsertDataToGeneTable(str_gene, conseq, vec_pos, map_class[str_gene], map_availble[str_gene], str_version, out);
+            InsertDataToGeneTable(str_gene, conseq, vec_pos, map_class[str_gene], map_availble[str_gene], str_version);
 
 //            foreach (QSharedPointer<SeqLine> pseq, list_seqline) {
 //                out<<pseq->GetSeqLineName()<<' '<<pseq->GetClassNumber()<<' '<<pseq->GetSeqArry()<<"\r\n";
@@ -842,7 +849,7 @@ void UpdateDataDlg::UpdateDatabase()
             InsertDataToLabAlignTable(list_seqline, str_gene);
 
 
-            file_out.close();
+            //file_out.close();
         }
 
         qDebug()<<itor.key()<<"finish";

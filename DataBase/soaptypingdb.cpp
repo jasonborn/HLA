@@ -628,7 +628,7 @@ void SoapTypingDB::getGsspPosAndSeqFromGsspDatabase(const QString &gsspName, int
 {
     QSqlQuery query(m_SqlDB);
     query.prepare("SELECT position,base FROM gsspTable WHERE gsspName =?");
-    query.bindValue(0, gsspName.toLatin1());
+    query.bindValue(0, gsspName);
     bool isSuccess = query.exec();
     if(isSuccess)
     {
@@ -661,14 +661,11 @@ void SoapTypingDB::getGsspAlleleInfosFromStaticDatabase(const QString &geneName,
             GsspAlleleInfo gsspAlleleInfo;
             gsspAlleleInfo.alleleName = query.value(0).toString();
             QByteArray alleleSequence = query.value(1).toByteArray();
-            for(int i=0; i<gssp_seq.size(); i++)
-            {
-                if(alleleSequence[i+gssp_pos]!=gssp_seq[i].toLatin1())
-                    goto WHILE_LABLE;
-            }
+            if(alleleSequence[gssp_pos]!=gssp_seq[0].toLatin1())
+                continue;
+
             gsspAlleleInfo.alleleSequence = alleleSequence.mid(exonStartPos, gsspLength);
             gsspAlleleInfos.push_back(gsspAlleleInfo);//i2++;
-WHILE_LABLE:;
         }
     }
 }
@@ -1396,9 +1393,10 @@ void SoapTypingDB::getExonIndexAndGeneBySampleName(const QString &sampleName, in
 void SoapTypingDB::getGsspTablesFromGsspDatabase(const QString &geneName, int exon, QVector<GsspTable> &gsspTables)
 {
     QSqlQuery query(m_SqlDB);
-    query.prepare("SELECT gsspName,rOrF,position,base FROM gsspTable WHERE geneName =? AND exonIndex=?");
+    //query.prepare("SELECT gsspName,rOrF,position,base FROM gsspTable WHERE geneName =? AND exonIndex=?");
+    query.prepare("SELECT gsspName,rOrF,position,base FROM gsspTable WHERE geneName =?");
     query.bindValue(0, geneName);
-    query.bindValue(1, exon);
+    //query.bindValue(1, exon);
     bool isSuccess = query.exec();
     if(isSuccess)
     {
