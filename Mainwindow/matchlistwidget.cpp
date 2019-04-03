@@ -342,7 +342,7 @@ void findUsefulGssp_new(const char *seq11, const char *seq12, const char *seq21,
 
     foreach(const GsspTable & gsspinfo, gsspTables)
     {
-        if(dif_pos.contains(gsspinfo.position))
+        if(dif_pos.contains(gsspinfo.position-1))
         {
             gssps.push_back(gsspinfo.gsspName);
             QChar ch11 = seq11[gsspinfo.position];
@@ -351,7 +351,7 @@ void findUsefulGssp_new(const char *seq11, const char *seq12, const char *seq21,
             QChar ch22 = seq22[gsspinfo.position];
 
             infos.push_back(QString("%1:%2:%3:%4:%5:%6:%7:%8:%9").arg(ch11).arg(ch12).arg(ch21).arg(ch22)
-                            .arg(gsspinfo.position+1)
+                            .arg(gsspinfo.position)
                             .arg(gsspinfo.exonIndex).arg(gsspinfo.rOrF)
                             .arg(gsspinfo.gsspName)
                             .arg(QString(gsspinfo.base)));
@@ -361,7 +361,7 @@ void findUsefulGssp_new(const char *seq11, const char *seq12, const char *seq21,
 
 }
 
-void MatchListWidget::findUsefulGssp(const char *seq11, const char *seq12, const char *seq21, const char *seq22,
+/*void MatchListWidget::findUsefulGssp(const char *seq11, const char *seq12, const char *seq21, const char *seq22,
                     int exonStart, int exonEnd, QVector<GsspTable> &gsspTables,
                     QStringList &gssps, QStringList &infos)
 {
@@ -510,7 +510,7 @@ void MatchListWidget::findUsefulGssp(const char *seq11, const char *seq12, const
                         .arg(QString(gsspTables.at(i).gsspName))
                         .arg(QString(gsspTables.at(i).base)));
     }
-}
+}*/
 
 bool MatchListWidget::processGssp(const QVector<AllelePair> &allelePairs, const QString &sampleName, QVector<QStringList> &result)
 {

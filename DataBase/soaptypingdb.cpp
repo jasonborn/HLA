@@ -634,7 +634,7 @@ void SoapTypingDB::getGsspPosAndSeqFromGsspDatabase(const QString &gsspName, int
     {
         while(query.next())
         {
-            gsspPos = query.value(0).toInt();
+            gsspPos = query.value(0).toInt()-1;
             gsspSeq = query.value(1).toString();
         }
     }
@@ -1393,10 +1393,8 @@ void SoapTypingDB::getExonIndexAndGeneBySampleName(const QString &sampleName, in
 void SoapTypingDB::getGsspTablesFromGsspDatabase(const QString &geneName, int exon, QVector<GsspTable> &gsspTables)
 {
     QSqlQuery query(m_SqlDB);
-    //query.prepare("SELECT gsspName,rOrF,position,base FROM gsspTable WHERE geneName =? AND exonIndex=?");
     query.prepare("SELECT gsspName,rOrF,position,base FROM gsspTable WHERE geneName =?");
     query.bindValue(0, geneName);
-    //query.bindValue(1, exon);
     bool isSuccess = query.exec();
     if(isSuccess)
     {
@@ -2093,10 +2091,23 @@ void SoapTypingDB::readCommonGsspTableTxt(const QString &txtFile)
             {
                 CommonGsspTable commonGsspTable;
                 commonGsspTable.gsspName = part.at(0);
-                commonGsspTable.geneName = part.at(1);
                 commonGsspTable.exonIndex = part.at(2);
                 commonGsspTable.fOrR = part.at(3);
-                insertCommonGsspTable(commonGsspTable);
+                QString str_tmp = part.at(1);
+                if(str_tmp.contains(':'))
+                {
+                    QStringList str_gene_list = str_tmp.split(':');
+                    foreach(const QString &name, str_gene_list)
+                    {
+                        commonGsspTable.geneName = name;
+                        insertCommonGsspTable(commonGsspTable);
+                    }
+                }
+                else
+                {
+                    commonGsspTable.geneName = str_tmp;
+                    insertCommonGsspTable(commonGsspTable);
+                }
             }
         }
         file.close();

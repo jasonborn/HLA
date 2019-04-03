@@ -441,7 +441,7 @@ bool Core::Optimize_boundary(align *nw, FileAlignResultNew *result, bool auto_cu
 
     if (total_mis > MIN_MIS)
     {
-        if (mis[0] > MIN_CUT_MIS)
+        if (mis[0] > MIN_CUT_MIS || mis[0] == 0)
         {
             result->left_cut++;
         }
