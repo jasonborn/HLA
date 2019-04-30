@@ -119,7 +119,13 @@ void removeAlleleInfoByPatternNew(char *patternSeq, QVector<AlleleInfo> &alleleI
         }
         for(int j=0; j<size; j++){
 
-            if(alleleSeq[j]=='*' ||patternSeq[j]=='-' || alleleSeq[j]=='.' || patternSeq[j]=='N' || patternSeq[j]=='.'){
+//            if(alleleSeq[j]=='*' ||patternSeq[j]=='-' || alleleSeq[j]=='.' || patternSeq[j]=='N' || patternSeq[j]=='.'){
+//                continue;
+//            }
+            if(alleleSeq[j]=='*' ||patternSeq[j]=='-' || patternSeq[j]=='N') continue;
+            if(alleleSeq[j]=='.' || patternSeq[j]=='.')
+            {
+                mis++;
                 continue;
             }
             if(!isEqualPC(patternSeq[j], alleleSeq[j]))
@@ -137,7 +143,7 @@ void removeAlleleInfoByPatternNew(char *patternSeq, QVector<AlleleInfo> &alleleI
     }
 
     QSet<int> tmpSet;//缓存留下的allele
-    //取最好的前200个不带有*的序列
+    //取最好的前300个不带有*的序列
     for(QMap<int, int>::iterator it=tmpNomalPos.begin(); it!=tmpNomalPos.end(); it++){
         tmpCount++;
         if(tmpCount>200 && it.key()>tmpMis){
@@ -159,7 +165,7 @@ void removeAlleleInfoByPatternNew(char *patternSeq, QVector<AlleleInfo> &alleleI
         tmpSet.insert(it.value());
     }
     //**取原本方法中兼容的序列
-    QVector<int> pos;
+    /*QVector<int> pos;
     for(int i=0; i<size; i++)
     {
         switch(patternSeq[i])
@@ -205,7 +211,7 @@ void removeAlleleInfoByPatternNew(char *patternSeq, QVector<AlleleInfo> &alleleI
                 tmpSet.insert(i);
             }
         }
-    }
+    }*/
 
 
     for(int i=alleleSize-1; i>=0; i--){

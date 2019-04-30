@@ -100,7 +100,7 @@ void OpenFileDialog::SlotOpenFile()
     QString strdir;
     Core::GetInstance()->GetConfig("Path/OpenDir", strdir);
     QStringList filePathList = QFileDialog::getOpenFileNames(this, tr("open files"),
-                                                             strdir, "Peak Files(*.ab1 *.*)");
+                                                             strdir, "Peak Files(*.ab1)");
 
     if(!filePathList.empty())
     {
@@ -189,7 +189,6 @@ void OpenFileDialog::SetProcessbarValue()
             connect(task, &AnalysisSampleThreadTask::analysisfinished, this, &OpenFileDialog::SetProcessbarValue);
             QThreadPool::globalInstance()->start(task);
         }
-
     }
     else if (m_iPrgvalue == ui->tableWidget->rowCount()+m_set_sample.size())
     {

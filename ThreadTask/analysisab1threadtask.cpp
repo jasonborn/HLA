@@ -56,7 +56,7 @@ void AnalysisAB1ThreadTask::run()
     Baseo* baseC = (Baseo*)malloc(sizeof(Baseo)*i_signalnum);
 
     ab1.getBaseSeq(i_base_offset, i_basenum, orignal_seq);
-    qDebug()<<orignal_seq<<"\r\n";
+    //qDebug()<<orignal_seq<<"\r\n";
     int i_maxQuality = 0;
     ab1.getBaseQual(i_qual_offset, i_basenum, quality, i_maxQuality);
     m_pFiletable->setMaxQuality(i_maxQuality);
