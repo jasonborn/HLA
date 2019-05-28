@@ -637,9 +637,13 @@ void MultiPeakWidget::DrawExcludeArea(QPainter *pter)
         m_vec_Peakline[i]->GetExcludePos(left_exclude, right_exclude);
 
         QVector<GeneLetter> &vec_geneLetter = m_vec_Peakline[i]->GetGeneLetter();
+        if(right_exclude == vec_geneLetter.size())
+        {
+            right_exclude--;
+        }
         int w_left =  vec_geneLetter[left_exclude].pos.x();
         pter->drawRect(0,60+height_area, w_left, i_height-60);
-        int w_right = vec_geneLetter[right_exclude-1].pos.x();
+        int w_right = vec_geneLetter[right_exclude].pos.x();
         pter->drawRect(w_right,60+height_area, i_width, i_height-60);
     }
 }
@@ -1055,7 +1059,7 @@ void MultiPeakWidget::ExcludeArea(int type)
             SoapTypingDB::GetInstance()->upDataExclude(m_vec_Peakline[m_index_PeakLine]->GetGssp(),
                                                        m_vec_Peakline[m_index_PeakLine]->GetFileName(),
                                                        selectpos,
-                                                       m_vec_filetable[m_index_PeakLine].getExcludeRight());
+                                                       -1);
         }
         else if (type == 2)//调整右排除
         {
@@ -1063,7 +1067,7 @@ void MultiPeakWidget::ExcludeArea(int type)
             m_vec_Peakline[m_index_PeakLine]->SetExcludePos(-1, selectpos);
             SoapTypingDB::GetInstance()->upDataExclude(m_vec_Peakline[m_index_PeakLine]->GetGssp(),
                                                        m_vec_Peakline[m_index_PeakLine]->GetFileName(),
-                                                       m_vec_filetable[m_index_PeakLine].getExcludeLeft(),
+                                                       -1,
                                                        selectpos);
         }
 

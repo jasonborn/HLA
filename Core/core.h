@@ -44,7 +44,7 @@ public:
     bool isEqualPC(char A, char B);
     void zzk(const char *ref, const char *seq, Myalign &zlign);
     bool zzk_boundary(const char *ref, const char *seq, Myalign &zlign, FileAlignResultNew *result);
-    void zzk_zzk(const char *ref, const char *seq, FileAlignResultNew *result);
+    void Align_LCS_new(const char *ref, const char *seq, FileAlignResultNew *result);
 private: //禁用构造函数
     Core();
     Core(const Core &){}

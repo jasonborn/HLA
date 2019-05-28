@@ -141,16 +141,10 @@ void Core::GetFileAlignResult(FileAlignNew &file_align_new, FileAlignResult &res
 //    qDebug()<<file_align_new.consensus<<"\r\n";
 //    qDebug()<<file_align_new.raw_seq<<"\r\n";
 
-//    Myalign zalign;
-//    zzk(file_align_new.consensus, file_align_new.raw_seq, zalign);
-//    while (!zzk_boundary(file_align_new.consensus, file_align_new.raw_seq, zalign, &tmp_result)) {
-//        zzk(file_align_new.consensus, file_align_new.raw_seq+tmp_result.left_cut , zalign);
-//    }
+    Align_LCS_new(file_align_new.consensus, file_align_new.raw_seq, &tmp_result);
 
-    zzk_zzk(file_align_new.consensus, file_align_new.raw_seq, &tmp_result);
-
-//    qDebug()<<tmp_result.consensus_alignment<<"\r\n";
-//    qDebug()<<tmp_result.sample_alignment<<"\r\n";
+    //qDebug()<<tmp_result.consensus_alignment<<"\r\n";
+    //qDebug()<<tmp_result.sample_alignment<<"\r\n";
 
     int ref_len = strlen(file_align_new.consensus);
     int seq_len = strlen(file_align_new.raw_seq);
@@ -192,6 +186,7 @@ void Core::GetFileAlignResult(FileAlignNew &file_align_new, FileAlignResult &res
             else
             {
                 pos++;
+                result.rightLimit--;
             }
         }
         result.sampleAlign[ref_len] ='\0';
@@ -202,7 +197,7 @@ void Core::GetFileAlignResult(FileAlignNew &file_align_new, FileAlignResult &res
     }
     //al.clear();
 
-    qDebug()<<result.sampleAlign;
+    //qDebug()<<result.sampleAlign;
 }
 
 void Core::Align_LCS(char *s1, char *s2, align *sg, int length)
@@ -938,7 +933,7 @@ bool Core::zzk_boundary(const char *ref, const char *seq, Myalign &zlign, FileAl
 }
 
 
-void Core::zzk_zzk(const char *ref, const char *seq, FileAlignResultNew *result)
+void Core::Align_LCS_new(const char *ref, const char *seq, FileAlignResultNew *result)
 {
     int m = strlen(ref);
     int n = strlen(seq);
@@ -1011,20 +1006,49 @@ void Core::zzk_zzk(const char *ref, const char *seq, FileAlignResultNew *result)
     std::reverse(ref_back.begin(), ref_back.end());
     std::reverse(seq_back.begin(), seq_back.end());
 
+    int dif_num = 0;
+    std::vector<char> ref_back_tmp;
+    std::vector<char> seq_back_tmp;
+    int ref_stop_tmp = ref_stop;
+    int seq_stop_tmp = seq_stop;
     while (ref_stop < m && seq_stop< n)
     {
         if (equal(ref[ref_stop], seq[seq_stop]))
         {
-            ref_back.push_back(ref[ref_stop]);
-            seq_back.push_back(seq[seq_stop]);
+            ref_back_tmp.push_back(ref[ref_stop]);
+            seq_back_tmp.push_back(seq[seq_stop]);
             ref_stop++;
             seq_stop++;
         }
         else
         {
-            ref_back.push_back('-');
-            seq_back.push_back(seq[seq_stop]);
+            ref_back_tmp.push_back('-');
+            seq_back_tmp.push_back(seq[seq_stop]);
             seq_stop++;
+            dif_num++;
+        }
+    }
+
+    if(dif_num > 5) //不一致的过多
+    {
+        ref_stop = ref_stop_tmp;
+        seq_stop = seq_stop_tmp;
+//        seq_stop = seq_stop_tmp+(m-ref_stop);
+//        if(seq_stop>n)
+//        {
+//            seq_stop = n;
+//        }
+    }
+    else
+    {
+        for(auto it=ref_back_tmp.begin();it!=ref_back_tmp.end();it++)
+        {
+            ref_back.push_back(*it);
+        }
+
+        for(auto it=seq_back_tmp.begin();it!=seq_back_tmp.end();it++)
+        {
+            seq_back.push_back(*it);
         }
     }
     while (ref_stop < m)

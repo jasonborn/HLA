@@ -100,7 +100,7 @@ void OpenFileDialog::SlotOpenFile()
     QString strdir;
     Core::GetInstance()->GetConfig("Path/OpenDir", strdir);
     QStringList filePathList = QFileDialog::getOpenFileNames(this, tr("open files"),
-                                                             strdir, "Peak Files(*.ab1)");
+                                                             strdir, "Peak Files(*.ab1 *.*)");
 
     if(!filePathList.empty())
     {

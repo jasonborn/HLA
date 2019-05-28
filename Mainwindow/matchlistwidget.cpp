@@ -44,10 +44,10 @@ void MatchListWidget::InitUI()
 
     QStringList defaultHead_;
     defaultHead_<<"  Mis"<<"Allele1"<<"Allele2"<<"Info"<<"GSSP";
-    this->setColumnWidth(0,60);
-    this->setColumnWidth(1,92);
-    this->setColumnWidth(2,92);
-    this->setColumnWidth(3,62);
+    this->setColumnWidth(0,40);
+    this->setColumnWidth(1,100);
+    this->setColumnWidth(2,100);
+    this->setColumnWidth(3,55);
     this->setColumnWidth(4,40);
     this->setHorizontalHeaderLabels(defaultHead_);
     QTableWidgetItem *itemArray = new QTableWidgetItem[I_ROWNUM * I_COLNUM];
@@ -124,20 +124,22 @@ void MatchListWidget::SetTableData(const QString &str_sample, const QString &str
     }
 
     m_iRowCount = m_strlist_result.size();
+    int i_row = 0;
     for(int i=0; i<m_iRowCount; i++)
     {
         QStringList line = m_strlist_result.at(i).split(",");
-        if(line.size() > 3 && line.at(3).toInt()!=0)
+        if(line.size() > 3 && line.at(3).toInt()!=0) //该型别对存在插入缺失的情况
         {
-            line[0].append("*");
+            //line[0].append("*");
+            continue;
         }
         line.removeAt(3);
         for(int j=0;j<line.size();j++)
         {
-            this->item(i, j)->setText(line.at(j));
+            this->item(i_row, j)->setText(line.at(j));
         }
-
-        if(i >= 500)
+        i_row++;
+        if(i_row >= 500)
         {
             m_iRowCount = 500;
             break;

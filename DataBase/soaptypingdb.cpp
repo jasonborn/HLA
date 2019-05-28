@@ -609,7 +609,7 @@ void SoapTypingDB::getAlleleInfosFromStaticDatabase(const QString &geneName, int
                 }
                 else
                 {
-                    for(int i=minExonIndex; i<min; i++)
+                    for(int i=minExonIndex; i<min; i++) //样品外显子范围超过了该型别的外显子范围
                     {
                         alleleInfo.starInfo.append(QString("*%1").arg(i));
                     }
@@ -713,7 +713,7 @@ void SoapTypingDB::getSampleTreeDataFromSampleTable(QMap<QString,SampleTreeInfo_
     }
 }
 
-bool SoapTypingDB::getSampleanalysisType(const QString &samplename, int &analysisType, int &markType)
+bool SoapTypingDB::getSampleanalysisType(const QString &samplename, SampleTreeInfo_t &sampleTreeInfo)
 {
     QSqlQuery query(m_SqlDB);
     query.prepare("SELECT analysisType, markType FROM sampleTable where sampleName=?");
@@ -722,9 +722,11 @@ bool SoapTypingDB::getSampleanalysisType(const QString &samplename, int &analysi
     if(isSuccess)
     {
         if(query.next())
-        {
-            analysisType = query.value(0).toInt();
-            markType = query.value(1).toInt();
+        {           
+            sampleTreeInfo.analysisType = query.value(0).toInt();
+            sampleTreeInfo.markType = query.value(1).toInt();
+            getFileTreeInfosFromRealTimeDatabase(samplename, sampleTreeInfo.treeinfo);
+            getGsspFileTreeInfosFromRealTimeDatabase(samplename, sampleTreeInfo.treeinfo);
             return true;
         }
     }
@@ -1813,15 +1815,48 @@ bool SoapTypingDB::upDataExclude(bool isgssp, const QString &filename, int exclu
     QSqlQuery query(m_SqlDB);
     if(isgssp)
     {
-        query.prepare("UPDATE gsspFileTable SET excludeLeft=?,excludeRight=?  WHERE fileName=?");
+        if(exclude_left == -1)
+        {
+            query.prepare("UPDATE gsspFileTable SET excludeRight=?  WHERE fileName=?");
+            query.bindValue(0, exclude_right);
+            query.bindValue(1, filename);
+        }
+        else if(exclude_right == -1)
+        {
+            query.prepare("UPDATE gsspFileTable SET excludeLeft=? WHERE fileName=?");
+            query.bindValue(0, exclude_left);
+            query.bindValue(1, filename);
+        }
+        else
+        {
+            query.prepare("UPDATE gsspFileTable SET excludeLeft=?,excludeRight=?  WHERE fileName=?");
+            query.bindValue(0, exclude_left);
+            query.bindValue(1, exclude_right);
+        }
     }
     else
     {
-        query.prepare("UPDATE fileTable SET excludeLeft=?,excludeRight=?  WHERE fileName=?");
+        if(exclude_left == -1)
+        {
+            query.prepare("UPDATE fileTable SET excludeRight=?  WHERE fileName=?");
+            query.bindValue(0, exclude_right);
+            query.bindValue(1, filename);
+        }
+        else if(exclude_right == -1)
+        {
+            query.prepare("UPDATE fileTable SET excludeLeft=? WHERE fileName=?");
+            query.bindValue(0, exclude_left);
+            query.bindValue(1, filename);
+        }
+        else
+        {
+            query.prepare("UPDATE fileTable SET excludeLeft=?,excludeRight=?  WHERE fileName=?");
+            query.bindValue(0, exclude_left);
+            query.bindValue(1, exclude_right);
+            query.bindValue(2, filename);
+        }
     }
-    query.bindValue(0, exclude_left);
-    query.bindValue(1, exclude_right);
-    query.bindValue(2, filename);
+
     if(!query.exec())
     {
         return false;

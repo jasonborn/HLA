@@ -26,7 +26,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 int main(int argc, char *argv[])
 {
 #ifndef QT_NO_DEBUG
-    //qInstallMessageHandler(myMessageOutput);
+    qInstallMessageHandler(myMessageOutput);
 #endif
     QApplication a(argc, argv);
 
